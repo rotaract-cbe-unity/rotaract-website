@@ -1,0 +1,3998 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | Rotaract Club of Coimbatore Unity</title>
+  <meta name="theme-color" content="#2563eb" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root{
+      --font:'Poppins',sans-serif;
+      --bg-primary:#030712;
+      --bg-secondary:#0a0f1a;
+      --bg-tertiary:#111827;
+      --text-primary:#f8fafc;
+      --text-secondary:#94a3b8;
+      --text-muted:#64748b;
+
+      --glass:rgba(255,255,255,.05);
+      --glass-strong:rgba(255,255,255,.08);
+      --glass-hover:rgba(255,255,255,.12);
+      --glass-border:rgba(255,255,255,.12);
+      --glass-border-hover:rgba(255,255,255,.2);
+
+      --primary:#2563eb;
+      --secondary:#7c3aed;
+      --accent:#06b6d4;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --error:#ef4444;
+      --pink:#ec4899;
+
+      --gradient-primary:linear-gradient(135deg,#2563eb 0%, #7c3aed 100%);
+      --gradient-treasury:linear-gradient(135deg,#f59e0b 0%, #ec4899 100%);
+      --gradient-success:linear-gradient(135deg,#10b981 0%, #059669 100%);
+      --gradient-expense:linear-gradient(135deg,#ef4444 0%, #dc2626 100%);
+
+      --shadow-sm:0 4px 14px rgba(0,0,0,.18);
+      --shadow-md:0 10px 28px rgba(0,0,0,.26);
+      --shadow-lg:0 22px 60px rgba(0,0,0,.35);
+      --shadow-glow:0 0 42px rgba(37,99,235,.28);
+
+      --radius-sm:8px;
+      --radius-md:14px;
+      --radius-lg:22px;
+      --radius-xl:30px;
+      --radius-2xl:38px;
+      --radius-full:9999px;
+
+      --transition:.35s cubic-bezier(.16,1,.3,1);
+    }
+
+    [data-theme="light"]{
+      --bg-primary:#f4f8ff;
+      --bg-secondary:#ffffff;
+      --bg-tertiary:#edf3ff;
+      --text-primary:#0f172a;
+      --text-secondary:#475569;
+      --text-muted:#64748b;
+      --glass:rgba(255,255,255,.72);
+      --glass-strong:rgba(255,255,255,.9);
+      --glass-hover:rgba(255,255,255,.96);
+      --glass-border:rgba(37,99,235,.14);
+      --glass-border-hover:rgba(37,99,235,.28);
+      --shadow-sm:0 4px 12px rgba(37,99,235,.08);
+      --shadow-md:0 10px 26px rgba(37,99,235,.12);
+      --shadow-lg:0 22px 58px rgba(37,99,235,.16);
+      --shadow-glow:0 0 42px rgba(37,99,235,.18);
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      font-family:var(--font);
+      background:var(--bg-primary);
+      color:var(--text-primary);
+      overflow:hidden;
+      transition:background-color .4s ease,color .4s ease;
+    }
+
+    a{text-decoration:none;color:inherit}
+    button{font-family:var(--font);border:none;background:none;cursor:pointer}
+    input,select,textarea{font-family:var(--font);outline:none}
+    textarea{resize:vertical}
+    img{display:block;max-width:100%}
+
+    .theme-bg{
+      position:fixed;inset:0;z-index:-3;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(37,99,235,.18), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(124,58,237,.16), transparent 28%),
+        radial-gradient(circle at 20% 84%, rgba(6,182,212,.12), transparent 28%);
+      transition:.5s ease;
+    }
+
+    .theme-grid{
+      position:fixed;inset:0;z-index:-2;pointer-events:none;
+      background-image:
+        linear-gradient(var(--glass-border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--glass-border) 1px, transparent 1px);
+      background-size:58px 58px;
+      mask-image:radial-gradient(circle at center, rgba(0,0,0,.9) 16%, transparent 74%);
+      -webkit-mask-image:radial-gradient(circle at center, rgba(0,0,0,.9) 16%, transparent 74%);
+      opacity:.7;
+    }
+
+    .orb{
+      position:fixed;border-radius:50%;filter:blur(95px);opacity:.22;z-index:-1;
+      animation:orbFloat 18s ease-in-out infinite;
+    }
+    .orb.one{width:340px;height:340px;background:var(--primary);top:-80px;left:-70px}
+    .orb.two{width:300px;height:300px;background:var(--secondary);right:-80px;bottom:-80px;animation-delay:-6s}
+    .orb.three{width:240px;height:240px;background:var(--accent);top:42%;left:48%;animation-delay:-10s}
+    @keyframes orbFloat{
+      0%,100%{transform:translate(0,0) scale(1)}
+      25%{transform:translate(24px,-28px) scale(1.08)}
+      50%{transform:translate(-18px,18px) scale(.95)}
+      75%{transform:translate(18px,24px) scale(1.03)}
+    }
+
+    .dashboard{
+      height:100%;
+      display:grid;
+      grid-template-columns:300px 1fr;
+    }
+
+    .sidebar{
+      background:var(--glass-strong);
+      border-right:1px solid var(--glass-border);
+      backdrop-filter:blur(22px);
+      -webkit-backdrop-filter:blur(22px);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      box-shadow:var(--shadow-md);
+    }
+
+    .sidebar-top{
+      padding:22px 20px 18px;
+      border-bottom:1px solid var(--glass-border);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .brand-logo{
+      width:58px;height:58px;border-radius:50%;
+      border:2px solid var(--primary);
+      padding:2px;
+      background:var(--bg-secondary);
+      box-shadow:var(--shadow-glow);
+      object-fit:cover;
+      flex-shrink:0;
+    }
+
+    .brand-title{
+      font-size:.98rem;
+      font-weight:800;
+      line-height:1.35;
+      letter-spacing:-.01em;
+      background:linear-gradient(135deg,var(--text-primary),var(--primary));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    .brand-sub{
+      font-size:.72rem;
+      color:var(--text-secondary);
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      margin-top:4px;
+    }
+
+    .user-card{
+      background:var(--glass);
+      border:1px solid var(--glass-border);
+      border-radius:22px;
+      padding:16px;
+      backdrop-filter:blur(18px);
+    }
+
+    .user-top{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .user-avatar{
+      width:48px;height:48px;border-radius:50%;
+      background:var(--gradient-primary);
+      color:#fff;
+      font-weight:800;
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;
+      box-shadow:var(--shadow-glow);
+    }
+
+    .user-name{
+      font-size:.95rem;
+      font-weight:700;
+      line-height:1.2;
+    }
+
+    .user-role{
+      font-size:.76rem;
+      color:var(--text-secondary);
+      margin-top:2px;
+      text-transform:capitalize;
+    }
+
+    .user-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--glass-hover);
+      border:1px solid var(--glass-border);
+      font-size:.72rem;
+      color:var(--text-secondary);
+      font-weight:700;
+    }
+
+    .sidebar-nav{
+      flex:1;
+      overflow:auto;
+      padding:16px 14px;
+    }
+
+    .nav-section-label{
+      font-size:.72rem;
+      color:var(--text-muted);
+      text-transform:uppercase;
+      letter-spacing:1px;
+      font-weight:700;
+      margin:10px 10px 10px;
+    }
+
+    .nav-item{
+      width:100%;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px 14px;
+      border-radius:16px;
+      color:var(--text-secondary);
+      font-size:.92rem;
+      font-weight:600;
+      transition:var(--transition);
+      margin-bottom:6px;
+      position:relative;
+      overflow:hidden;
+      text-align:left;
+    }
+
+    .nav-item::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:var(--gradient-primary);
+      opacity:0;
+      transition:var(--transition);
+      z-index:-1;
+    }
+
+    .nav-item:hover{
+      color:var(--text-primary);
+      transform:translateX(4px);
+    }
+
+    .nav-item.active{
+      color:#fff;
+      box-shadow:var(--shadow-glow);
+    }
+
+    .nav-item.active::before{
+      opacity:1;
+    }
+
+    .nav-item i{
+      width:18px;
+      text-align:center;
+      flex-shrink:0;
+    }
+
+    .nav-badge{
+      margin-left:auto;
+      min-width:22px;height:22px;
+      border-radius:999px;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(255,255,255,.14);
+      font-size:.7rem;
+      font-weight:800;
+      color:inherit;
+      padding:0 6px;
+    }
+
+    .sidebar-bottom{
+      padding:16px 18px 20px;
+      border-top:1px solid var(--glass-border);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .sidebar-action.surprise{
+      background: linear-gradient(135deg, var(--secondary), var(--accent));
+      color:#fff;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 12px 28px rgba(6,182,212,.12);
+    }
+
+    .sidebar-action.surprise:hover{
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+
+    /* The game iframe inside the popup */
+    .game-frame{
+      width:100%;
+      height:min(72vh, 720px);
+      border:0;
+      border-radius:18px;
+      background: var(--bg-tertiary);
+    }
+
+    .sidebar-action{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:12px 14px;
+      border-radius:16px;
+      font-weight:700;
+      transition:var(--transition);
+    }
+
+    .sidebar-action.secondary{
+      background:var(--glass);
+      border:1px solid var(--glass-border);
+      color:var(--text-primary);
+    }
+
+    .sidebar-action.logout{
+      background:linear-gradient(135deg,#ef4444,#dc2626);
+      color:#fff;
+      box-shadow:0 10px 24px rgba(239,68,68,.22);
+    }
+
+    .main{
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+      overflow:hidden;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:18px 22px;
+      background:var(--glass-strong);
+      border-bottom:1px solid var(--glass-border);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+    }
+
+    .topbar-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .menu-toggle{
+      display:none;
+      width:44px;height:44px;
+      border-radius:14px;
+      background:var(--glass);
+      border:1px solid var(--glass-border);
+      color:var(--text-primary);
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .page-title-wrap{min-width:0}
+    .page-title{
+      font-size:1.35rem;
+      font-weight:800;
+      line-height:1.2;
+      letter-spacing:-.02em;
+    }
+    .page-subtitle{
+      font-size:.84rem;
+      color:var(--text-secondary);
+      margin-top:3px;
+    }
+
+    .topbar-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .top-btn{
+      height:44px;
+      padding:0 16px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      background:var(--glass);
+      border:1px solid var(--glass-border);
+      color:var(--text-primary);
+      font-weight:700;
+      transition:var(--transition);
+      backdrop-filter:blur(16px);
+    }
+
+    .top-btn.icon{
+      width:44px;
+      padding:0;
+      border-radius:50%;
+    }
+
+    .top-btn.primary{
+      background:var(--gradient-primary);
+      border-color:transparent;
+      color:#fff;
+      box-shadow:var(--shadow-glow);
+    }
+
+    .top-btn:hover{transform:translateY(-2px)}
+
+    .content{
+      flex:1;
+      overflow:auto;
+      padding:22px;
+    }
+
+    .page-section{
+      display:none;
+      animation:fadeIn .35s ease;
+    }
+    .page-section.active{display:block}
+    @keyframes fadeIn{
+      from{opacity:0;transform:translateY(8px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:18px;
+      margin-bottom:22px;
+    }
+
+    .stat-card{
+      padding:22px;
+      border-radius:24px;
+      background:var(--glass);
+      border:1px solid var(--glass-border);
+      backdrop-filter:blur(20px);
+      box-shadow:var(--shadow-md);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .stat-card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 40%);
+      pointer-events:none;
+    }
+
+    .stat-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .stat-title{
+      font-size:.82rem;
+      color:var(--text-secondary);
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.8px;
+    }
+
+    .stat-icon{
+      width:46px;height:46px;
+      border-radius:16px;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--gradient-primary);
+      color:#fff;
+      font-size:1.1rem;
+      box-shadow:var(--shadow-glow);
+      flex-shrink:0;
+    }
+
+    .stat-card.treasury .stat-icon{background:var(--gradient-treasury)}
+    .stat-card.income .stat-icon{background:var(--gradient-success)}
+    .stat-card.expense .stat-icon{background:var(--gradient-expense)}
+
+    .stat-value{
+      font-size:2rem;
+      font-weight:900;
+      line-height:1;
+      margin-bottom:8px;
+      background:linear-gradient(135deg,var(--text-primary),var(--primary));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    .stat-card.treasury .stat-value{
+      background:linear-gradient(135deg,#f59e0b,#ec4899);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    .stat-card.income .stat-value{
+      background:linear-gradient(135deg,#10b981,#059669);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    .stat-card.expense .stat-value{
+      background:linear-gradient(135deg,#ef4444,#dc2626);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    .stat-desc{
+      font-size:.82rem;
+      color:var(--text-muted);
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:18px;
+      margin-bottom:22px;
+    }
+
+    .panel{
+      background:var(--glass);
+      border:1px solid var(--glass-border);
+      backdrop-filter:blur(20px);
+      border-radius:26px;
+      box-shadow:var(--shadow-md);
+      overflow:hidden;
+    }
+
+    .panel-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:18px 18px 14px;
+      border-bottom:1px solid var(--glass-border);
+    }
+
+    .panel-title{
+      font-size:1rem;
+      font-weight:800;
+    }
+
+    .panel-subtitle{
+      font-size:.8rem;
+      color:var(--text-secondary);
+      margin-top:4px;
+    }
+
+    .panel-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .mini-btn{
+      padding:10px 14px;
+      border-radius:12px;
+      background:var(--glass-hover);
+      border:1px solid var(--glass-border);
+      color:var(--text-primary);
+      font-size:.8rem;
+      font-weight:700;
+      transition:var(--transition);
+    }
+
+    .mini-btn:hover{
+      transform:translateY(-2px);
+      border-color:var(--glass-border-hover);
+    }
+
+    .panel-body{
+      padding:18px;
+    }
+
+    .quick-actions{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+    }
+
+    .quick-card{
+      padding:18px;
+      border-radius:20px;
+      background:var(--glass-hover);
+      border:1px solid var(--glass-border);
+      transition:var(--transition);
+      cursor:pointer;
+    }
+
+    .quick-card:hover{
+      transform:translateY(-4px);
+      border-color:var(--glass-border-hover);
+      box-shadow:var(--shadow-md);
+    }
+
+    .quick-icon{
+      width:44px;height:44px;
+      border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--gradient-primary);
+      color:#fff;
+      margin-bottom:12px;
+      box-shadow:var(--shadow-glow);
+    }
+
+    .quick-card.treasury .quick-icon{background:var(--gradient-treasury)}
+    .quick-title{font-weight:800;margin-bottom:6px}
+    .quick-desc{font-size:.82rem;color:var(--text-secondary);line-height:1.6}
+
+    .table-wrap{overflow:auto}
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:720px;
+    }
+    th,td{
+      padding:14px 12px;
+      text-align:left;
+      border-bottom:1px solid var(--glass-border);
+      vertical-align:middle;
+    }
+    th{
+      font-size:.76rem;
+      color:var(--text-secondary);
+      text-transform:uppercase;
+      letter-spacing:.9px;
+      font-weight:800;
+      background:rgba(255,255,255,.02);
+    }
+    td{font-size:.9rem;color:var(--text-primary)}
+    tr:hover td{background:rgba(255,255,255,.02)}
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:.72rem;
+      font-weight:800;
+      text-transform:capitalize;
+    }
+    .status.approved,.status.active,.status.sent,.status.income{
+      background:rgba(16,185,129,.14);
+      color:#10b981;
+      border:1px solid rgba(16,185,129,.28);
+    }
+    .status.pending{
+      background:rgba(245,158,11,.14);
+      color:#f59e0b;
+      border:1px solid rgba(245,158,11,.28);
+    }
+    .status.rejected,.status.error,.status.inactive,.status.expense{
+      background:rgba(239,68,68,.14);
+      color:#ef4444;
+      border:1px solid rgba(239,68,68,.28);
+    }
+
+    .table-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .action-btn{
+      width:34px;height:34px;
+      border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--glass-hover);
+      border:1px solid var(--glass-border);
+      color:var(--text-primary);
+      transition:var(--transition);
+    }
+
+    .action-btn:hover{
+      transform:translateY(-2px);
+      border-color:var(--glass-border-hover);
+    }
+    .action-btn.approve{color:var(--success)}
+    .action-btn.reject,.action-btn.delete{color:var(--error)}
+    .action-btn.edit{color:var(--warning)}
+    .action-btn.view{color:var(--primary)}
+
+    .toolbar{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .search-wrap{
+      position:relative;
+      flex:1;
+      min-width:220px;
+    }
+
+    .search-wrap i{
+      position:absolute;
+      left:14px;
+      top:50%;
+      transform:translateY(-50%);
+      color:var(--text-muted);
+    }
+
+    .search-input, .select-input, .text-input, .textarea-input{
+      width:100%;
+      padding:13px 14px 13px 42px;
+      border-radius:14px;
+      border:1px solid var(--glass-border);
+      background:var(--glass);
+      backdrop-filter:blur(14px);
+      color:var(--text-primary);
+      font-size:.9rem;
+      transition:var(--transition);
+    }
+
+    .select-input, .text-input, .textarea-input{padding-left:14px}
+    .search-input:focus, .select-input:focus, .text-input:focus, .textarea-input:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 4px rgba(37,99,235,.12);
+    }
+    .select-input{min-width:180px}
+    .textarea-input{min-height:120px;resize:vertical}
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+      margin-bottom:14px;
+    }
+
+    .form-grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:14px;
+      margin-bottom:14px;
+    }
+
+    .form-group{margin-bottom:14px}
+    .form-label{
+      display:block;
+      font-size:.82rem;
+      font-weight:700;
+      color:var(--text-secondary);
+      margin-bottom:7px;
+    }
+
+    .form-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    .btn{
+      padding:12px 18px;
+      border-radius:14px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      transition:var(--transition);
+    }
+
+    .btn.primary{
+      background:var(--gradient-primary);
+      color:#fff;
+      box-shadow:var(--shadow-glow);
+    }
+    .btn.secondary{
+      background:var(--glass-hover);
+      border:1px solid var(--glass-border);
+      color:var(--text-primary);
+    }
+    .btn.success{
+      background:linear-gradient(135deg,#10b981,#059669);
+      color:#fff;
+    }
+    .btn.danger{
+      background:linear-gradient(135deg,#ef4444,#dc2626);
+      color:#fff;
+    }
+    .btn.treasury{
+      background:var(--gradient-treasury);
+      color:#fff;
+      box-shadow:0 0 28px rgba(236,72,153,.18);
+    }
+    .btn:hover{transform:translateY(-2px)}
+
+    .permission-box{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .permission-chip{
+      padding:8px 12px;
+      border-radius:999px;
+      background:var(--glass-hover);
+      border:1px solid var(--glass-border);
+      color:var(--text-secondary);
+      font-size:.76rem;
+      font-weight:700;
+    }
+
+    .money{
+      font-variant-numeric:tabular-nums;
+      white-space:nowrap;
+      font-weight:800;
+    }
+    .money.income{color:#10b981}
+    .money.expense{color:#ef4444}
+    .money.balance{color:#f59e0b}
+
+    .hidden{display:none !important}
+
+    .toast-container{
+      position:fixed;
+      top:86px;
+      right:18px;
+      z-index:9999;
+      width:min(380px,calc(100% - 36px));
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .toast{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:16px 18px;
+      border-radius:20px;
+      background:var(--glass-strong);
+      border:1px solid var(--glass-border);
+      backdrop-filter:blur(20px);
+      box-shadow:var(--shadow-lg);
+      position:relative;
+      overflow:hidden;
+      animation:toastIn .4s cubic-bezier(.16,1,.3,1);
+    }
+
+    .toast::before{
+      content:"";
+      position:absolute;
+      left:0;top:0;bottom:0;
+      width:4px;
+    }
+    .toast.success::before{background:var(--success)}
+    .toast.error::before{background:var(--error)}
+    .toast.warning::before{background:var(--warning)}
+    .toast.info::before{background:var(--primary)}
+    .toast.removing{animation:toastOut .3s ease forwards}
+    @keyframes toastIn{
+      from{opacity:0;transform:translateX(100%) scale(.9)}
+      to{opacity:1;transform:translateX(0) scale(1)}
+    }
+    @keyframes toastOut{
+      to{opacity:0;transform:translateX(100%) scale(.9)}
+    }
+    .toast-title{font-size:.92rem;font-weight:800;margin-bottom:2px}
+    .toast-message{font-size:.82rem;color:var(--text-secondary);line-height:1.55}
+
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.65);
+      backdrop-filter:blur(10px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      opacity:0;
+      visibility:hidden;
+      transition:var(--transition);
+      z-index:2000;
+    }
+    .modal-overlay.active{opacity:1;visibility:visible}
+    .modal{
+      width:100%;
+      max-width:900px;
+      max-height:90vh;
+      overflow:auto;
+      border-radius:28px;
+      background:var(--bg-secondary);
+      border:1px solid var(--glass-border);
+      transform:translateY(24px) scale(.96);
+      transition:var(--transition);
+      box-shadow:var(--shadow-lg);
+    }
+    .modal-overlay.active .modal{transform:translateY(0) scale(1)}
+    .modal-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:18px 20px;
+      border-bottom:1px solid var(--glass-border);
+      position:sticky;
+      top:0;
+      background:var(--bg-secondary);
+      z-index:1;
+    }
+    .modal-title{font-size:1rem;font-weight:800}
+    .modal-close{
+      width:40px;height:40px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--glass);
+      border:1px solid var(--glass-border);
+      color:var(--text-primary);
+    }
+    .modal-body{padding:20px}
+
+    .empty-state{
+      padding:40px 20px;
+      text-align:center;
+      color:var(--text-secondary);
+    }
+    .empty-state i{
+      font-size:2.8rem;
+      margin-bottom:14px;
+      color:var(--text-muted);
+    }
+
+    @media (max-width:1180px){
+      .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .grid-2{grid-template-columns:1fr}
+      .form-grid-3{grid-template-columns:1fr}
+    }
+
+    @media (max-width:980px){
+      .dashboard{grid-template-columns:1fr}
+      .sidebar{
+        position:fixed;
+        top:0;left:0;bottom:0;
+        width:290px;
+        transform:translateX(-100%);
+        transition:var(--transition);
+        z-index:1500;
+      }
+      .sidebar.active{transform:translateX(0)}
+      .sidebar-overlay{
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.45);
+        backdrop-filter:blur(4px);
+        opacity:0;visibility:hidden;
+        transition:var(--transition);
+        z-index:1400;
+      }
+      .sidebar-overlay.active{opacity:1;visibility:visible}
+      .menu-toggle{display:flex}
+      .content{padding:18px}
+    }
+
+    @media (max-width:700px){
+      .stats-grid{grid-template-columns:1fr}
+      .quick-actions{grid-template-columns:1fr}
+      .form-grid{grid-template-columns:1fr}
+      .topbar{padding:14px 16px}
+      .content{padding:14px}
+      .panel-header{flex-direction:column;align-items:flex-start}
+      .topbar-right{width:100%;justify-content:flex-start}
+    }
+
+    @media (max-width:560px){
+      .page-title{font-size:1.1rem}
+      .brand-title{font-size:.88rem}
+      .sidebar{width:100%;max-width:320px}
+      .toolbar{flex-direction:column}
+      .search-wrap,.select-input{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="theme-bg" id="themeBg"></div>
+  <div class="theme-grid"></div>
+  <div class="orb one"></div>
+  <div class="orb two"></div>
+  <div class="orb three"></div>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="dashboard">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <div class="brand">
+          <img src="https://via.placeholder.com/120/2563eb/ffffff?text=RC" id="clubLogo" class="brand-logo" alt="Logo">
+          <div>
+            <div class="brand-title" id="clubName">Rotaract Club of Coimbatore Unity</div>
+            <div class="brand-sub" id="clubDistrict">District 3206</div>
+          </div>
+        </div>
+
+        <div class="user-card">
+          <div class="user-top">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div>
+              <div class="user-name" id="userName">Admin User</div>
+              <div class="user-role" id="userRole">superadmin</div>
+            </div>
+          </div>
+          <div class="user-meta">
+            <span class="pill" id="themeLabel">Theme: Aurora</span>
+            <span class="pill" id="userPermissionSummary">All Access</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-nav" id="sidebarNav">
+        <div class="nav-section-label">Dashboard</div>
+
+        <button class="nav-item active" data-section="overview">
+          <i class="fas fa-grid-2"></i>
+          <span>Overview</span>
+        </button>
+
+        <button class="nav-item" data-section="events" data-permission="events">
+          <i class="fas fa-calendar-days"></i>
+          <span>Events</span>
+          <span class="nav-badge" id="eventsCountBadge">0</span>
+        </button>
+
+        <button class="nav-item" data-section="members" data-permission="members">
+          <i class="fas fa-users"></i>
+          <span>Members</span>
+          <span class="nav-badge" id="membersCountBadge">0</span>
+        </button>
+
+        <button class="nav-item" data-section="joinRequests" data-permission="join_requests">
+          <i class="fas fa-user-plus"></i>
+          <span>Join Requests</span>
+          <span class="nav-badge" id="joinRequestsBadge">0</span>
+        </button>
+
+        <button class="nav-item" data-section="bulletins" data-permission="bulletins">
+          <i class="fas fa-newspaper"></i>
+          <span>Bulletins</span>
+          <span class="nav-badge" id="bulletinsCountBadge">0</span>
+        </button>
+
+        <button class="nav-item" data-section="leaders">
+          <i class="fas fa-crown"></i>
+          <span>Leaders</span>
+        </button>
+
+        <button class="nav-item" data-section="analytics" data-permission="analytics">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </button>
+
+        <button class="nav-item" data-section="treasury" data-permission="finance">
+          <i class="fas fa-wallet"></i>
+          <span>Treasury</span>
+        </button>
+
+        <div class="nav-section-label">Management</div>
+
+        <button class="nav-item" data-section="users" data-role-only="superadmin">
+          <i class="fas fa-user-shield"></i>
+          <span>Users</span>
+        </button>
+
+        <button class="nav-item" data-section="settings" data-role-only="superadmin">
+          <i class="fas fa-gear"></i>
+          <span>Settings</span>
+        </button>
+
+        <button class="nav-item" data-section="emailLogs" data-role-only="superadmin">
+          <i class="fas fa-envelope-circle-check"></i>
+          <span>Email Logs</span>
+        </button>
+      </div>
+
+      <div class="sidebar-bottom">
+        <button class="sidebar-action secondary surprise" id="surpriseBtn">
+          <i class="fas fa-gamepad"></i>
+          <span>Surprise</span>
+        </button>
+
+        <button class="sidebar-action secondary" id="themeSwitchBtn">
+          <i class="fas fa-wand-magic-sparkles"></i>
+          <span>Change Theme</span>
+        </button>
+
+        <button class="sidebar-action secondary" id="siteBtn">
+          <i class="fas fa-globe"></i>
+          <span>Open Website</span>
+        </button>
+
+        <button class="sidebar-action logout" id="logoutBtn">
+          <i class="fas fa-right-from-bracket"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="page-title-wrap">
+            <div class="page-title" id="pageTitle">Overview</div>
+            <div class="page-subtitle" id="pageSubtitle">Manage Rotaract Club of Coimbatore Unity with style</div>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="top-btn icon" id="modeToggleBtn" title="Toggle dark/light mode">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button class="top-btn primary" id="quickActionBtn">
+            <i class="fas fa-plus"></i>
+            <span id="quickActionText">Quick Add</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- OVERVIEW -->
+        <section class="page-section active" id="section-overview">
+          <div class="stats-grid" id="overviewStats"></div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-title">Quick Actions</div>
+                  <div class="panel-subtitle">Shortcuts based on your role and permissions</div>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="quick-actions" id="quickActions"></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-title">Your Access</div>
+                  <div class="panel-subtitle">Current role permissions</div>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="permission-box" id="permissionBox"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Recent Join Requests</div>
+                <div class="panel-subtitle">Latest applications waiting for review</div>
+              </div>
+              <div class="panel-actions">
+                <button class="mini-btn" data-open-section="joinRequests">View All</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentJoinRequestsTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- EVENTS -->
+        <section class="page-section" id="section-events">
+          <div class="toolbar">
+            <div class="search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" class="search-input" id="eventsSearch" placeholder="Search events by name, venue, avenue">
+            </div>
+            <select class="select-input" id="eventsStatusFilter">
+              <option value="all">All Status</option>
+              <option value="approved">Approved</option>
+              <option value="pending">Pending</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            <button class="btn primary" id="openAddEventBtn">
+              <i class="fas fa-plus"></i>
+              <span>Add Event</span>
+            </button>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Events Management</div>
+                <div class="panel-subtitle">Create, review and manage club events</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Date</th>
+                      <th>Avenue</th>
+                      <th>Status</th>
+                      <th>Chair</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="eventsTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MEMBERS -->
+        <section class="page-section" id="section-members">
+          <div class="toolbar">
+            <div class="search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" class="search-input" id="membersSearch" placeholder="Search members by name, email, role">
+            </div>
+            <select class="select-input" id="membersStatusFilter">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <button class="btn primary" id="openAddMemberBtn">
+              <i class="fas fa-plus"></i>
+              <span>Add Member</span>
+            </button>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Members Management</div>
+                <div class="panel-subtitle">View and maintain active member records</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="membersTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- JOIN REQUESTS -->
+        <section class="page-section" id="section-joinRequests">
+          <div class="toolbar">
+            <div class="search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" class="search-input" id="requestsSearch" placeholder="Search requests by name or email">
+            </div>
+            <select class="select-input" id="requestsStatusFilter">
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Join Requests</div>
+                <div class="panel-subtitle">Approve or reject membership applications</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>DOB</th>
+                      <th>Blood</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="requestsTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- BULLETINS -->
+        <section class="page-section" id="section-bulletins">
+          <div class="toolbar">
+            <div class="search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" class="search-input" id="bulletinsSearch" placeholder="Search bulletins by title">
+            </div>
+            <button class="btn primary" id="openAddBulletinBtn">
+              <i class="fas fa-plus"></i>
+              <span>Add Bulletin</span>
+            </button>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Bulletins Management</div>
+                <div class="panel-subtitle">Publish and manage club bulletins</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Date</th>
+                      <th>Approved</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bulletinsTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- LEADERS -->
+        <section class="page-section" id="section-leaders">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Past Leaders</div>
+                <div class="panel-subtitle">Leadership history of the club</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Role</th>
+                      <th>Name</th>
+                      <th>Year Start</th>
+                      <th>Year End</th>
+                      <th>LinkedIn</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leadersTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ANALYTICS -->
+        <section class="page-section" id="section-analytics">
+          <div class="stats-grid" id="analyticsStats"></div>
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Analytics Summary</div>
+                <div class="panel-subtitle">Statistics pulled live from workbook</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="permission-box" id="analyticsSummary"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TREASURY -->
+        <section class="page-section" id="section-treasury">
+          <div class="stats-grid" id="treasuryStats"></div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-title">Treasury Controls</div>
+                  <div class="panel-subtitle">Advanced income, expense, sponsor and due tracking</div>
+                </div>
+                <div class="panel-actions">
+                  <button class="mini-btn" id="openAddTreasuryEntryBtn">Add Entry</button>
+                  <button class="mini-btn" id="openTreasuryCalculatorBtn">Calculator</button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="quick-actions" id="treasuryActions"></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-title">Treasury Notes</div>
+                  <div class="panel-subtitle">Private working notes for treasurer</div>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="form-group">
+                  <label class="form-label">Working Notes</label>
+                  <textarea class="textarea-input" id="treasuryNotes" placeholder="Monthly notes, follow-ups, collection reminders, reimbursement remarks..."></textarea>
+                </div>
+                <div class="form-actions">
+                  <button class="btn treasury" id="saveTreasuryNotesBtn"><i class="fas fa-floppy-disk"></i><span>Save Notes</span></button>
+                  <button class="btn secondary" id="clearTreasuryNotesBtn"><i class="fas fa-eraser"></i><span>Clear</span></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-bottom:18px;">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Treasury Filters & Statement Export</div>
+                <div class="panel-subtitle">Monthly, half-yearly and yearly statement generation in Indian currency format</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label class="form-label">Year</label>
+                  <select class="select-input" id="treasuryYearFilter"></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Month</label>
+                  <select class="select-input" id="treasuryMonthFilter">
+                    <option value="all">All Months</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Period</label>
+                  <select class="select-input" id="treasuryPeriodFilter">
+                    <option value="monthly">Monthly</option>
+                    <option value="half-yearly">Half-Yearly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn treasury" id="refreshTreasurySummaryBtn">
+                  <i class="fas fa-rotate"></i>
+                  <span>Refresh Summary</span>
+                </button>
+                <button class="btn success" id="downloadTreasuryStatementBtn">
+                  <i class="fas fa-file-excel"></i>
+                  <span>Download Statement</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-title">Treasury Summary</div>
+                  <div class="panel-subtitle">Income, expense, sponsor and balance summary</div>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="permission-box" id="treasurySummary"></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-title">Sponsor Contribution Summary</div>
+                  <div class="panel-subtitle">Track who sponsored what</div>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="permission-box" id="sponsorSummary"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Treasury Ledger</div>
+                <div class="panel-subtitle">Every income and expenditure with exact date and purpose</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="toolbar">
+                <div class="search-wrap">
+                  <i class="fas fa-search"></i>
+                  <input type="text" class="search-input" id="treasurySearch" placeholder="Search by source, sponsor, purpose, member, notes">
+                </div>
+                <select class="select-input" id="treasuryTypeFilter">
+                  <option value="all">All Types</option>
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                </select>
+                <select class="select-input" id="treasuryCategoryFilter">
+                  <option value="all">All Categories</option>
+                  <option value="membership_due">Membership Due</option>
+                  <option value="sponsorship">Sponsorship</option>
+                  <option value="donation">Donation</option>
+                  <option value="event_collection">Event Collection</option>
+                  <option value="event_expense">Event Expense</option>
+                  <option value="travel">Travel</option>
+                  <option value="stationery">Stationery</option>
+                  <option value="venue">Venue</option>
+                  <option value="food">Food</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type</th>
+                      <th>Category</th>
+                      <th>Source / Sponsor</th>
+                      <th>Member / Contact</th>
+                      <th>Purpose / Used For</th>
+                      <th>Amount</th>
+                      <th>Reference</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="treasuryTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-section" id="section-users">
+          <div class="toolbar">
+            <div class="search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" class="search-input" id="usersSearch" placeholder="Search admin users">
+            </div>
+            <button class="btn primary" id="openAddUserBtn">
+              <i class="fas fa-user-plus"></i>
+              <span>Add User</span>
+            </button>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Admin Users</div>
+                <div class="panel-subtitle">User roles and permissions</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Avenue</th>
+                      <th>Active</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usersTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-section" id="section-settings">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Site Settings</div>
+                <div class="panel-subtitle">Update central settings for website and API use</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Club Name</label>
+                  <input type="text" class="text-input" id="settingClubName">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">District</label>
+                  <input type="text" class="text-input" id="settingDistrict">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Admin Email</label>
+                  <input type="email" class="text-input" id="settingAdminEmail">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Members Group Email</label>
+                  <input type="email" class="text-input" id="settingMembersGroupEmail">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Chartered Date</label>
+                  <input type="text" class="text-input" id="settingCharteredDate">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Theme Color</label>
+                  <input type="text" class="text-input" id="settingThemeColor">
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn primary" id="saveSettingsBtn">
+                  <i class="fas fa-floppy-disk"></i>
+                  <span>Save Settings</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-section" id="section-emailLogs">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Email Logs</div>
+                <div class="panel-subtitle">System sent email history</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Type</th>
+                      <th>To</th>
+                      <th>Subject</th>
+                      <th>Sent At</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="emailLogsTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="formModalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">Form</div>
+        <button class="modal-close" id="closeModalBtn"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwffBUW47Tc-pJZqTXEI2yxBAOvTuGcpo70U28z-EUP0EbPx0tMkihR6vxV5RXAzo95/exec';
+
+    const SURPRISE_GAME_URL = 'game.html'; // change this if your game file is elsewhere
+
+    const THEMES = [
+      { name:'Aurora', bg:`radial-gradient(circle at 10% 10%, rgba(37,99,235,.18), transparent 28%), radial-gradient(circle at 86% 12%, rgba(124,58,237,.16), transparent 28%), radial-gradient(circle at 20% 84%, rgba(6,182,212,.12), transparent 28%)`, primary:'#2563eb', secondary:'#7c3aed', accent:'#06b6d4' },
+      { name:'Sunset Bloom', bg:`radial-gradient(circle at 12% 12%, rgba(244,114,182,.18), transparent 28%), radial-gradient(circle at 84% 14%, rgba(251,113,133,.16), transparent 28%), radial-gradient(circle at 24% 80%, rgba(251,146,60,.12), transparent 28%)`, primary:'#ec4899', secondary:'#fb7185', accent:'#fb923c' },
+      { name:'Emerald Wave', bg:`radial-gradient(circle at 8% 14%, rgba(16,185,129,.2), transparent 28%), radial-gradient(circle at 86% 10%, rgba(6,182,212,.16), transparent 28%), radial-gradient(circle at 18% 82%, rgba(52,211,153,.14), transparent 28%)`, primary:'#10b981', secondary:'#06b6d4', accent:'#34d399' },
+      { name:'Royal Velvet', bg:`radial-gradient(circle at 10% 10%, rgba(124,58,237,.22), transparent 28%), radial-gradient(circle at 84% 14%, rgba(168,85,247,.16), transparent 28%), radial-gradient(circle at 22% 80%, rgba(59,130,246,.12), transparent 28%)`, primary:'#7c3aed', secondary:'#a855f7', accent:'#3b82f6' },
+      { name:'Amber Sky', bg:`radial-gradient(circle at 10% 12%, rgba(245,158,11,.22), transparent 28%), radial-gradient(circle at 84% 12%, rgba(249,115,22,.17), transparent 28%), radial-gradient(circle at 22% 84%, rgba(251,191,36,.12), transparent 28%)`, primary:'#f59e0b', secondary:'#f97316', accent:'#fbbf24' },
+      { name:'Rose Nebula', bg:`radial-gradient(circle at 10% 10%, rgba(244,63,94,.22), transparent 28%), radial-gradient(circle at 84% 12%, rgba(236,72,153,.18), transparent 28%), radial-gradient(circle at 24% 82%, rgba(168,85,247,.12), transparent 28%)`, primary:'#f43f5e', secondary:'#ec4899', accent:'#a855f7' },
+      { name:'Ocean Spark', bg:`radial-gradient(circle at 10% 10%, rgba(14,165,233,.22), transparent 28%), radial-gradient(circle at 84% 12%, rgba(37,99,235,.18), transparent 28%), radial-gradient(circle at 24% 82%, rgba(6,182,212,.12), transparent 28%)`, primary:'#0ea5e9', secondary:'#2563eb', accent:'#06b6d4' }
+    ];
+
+    const state = {
+      user: null,
+      token: null,
+      allData: null,
+      usersData: [],
+      joinRequests: [],
+      treasuryEntries: [],
+      currentSection: 'overview',
+      currentThemeIndex: 0
+    };
+
+    const els = {
+      clubLogo: document.getElementById('clubLogo'),
+      clubName: document.getElementById('clubName'),
+      clubDistrict: document.getElementById('clubDistrict'),
+      userAvatar: document.getElementById('userAvatar'),
+      userName: document.getElementById('userName'),
+      userRole: document.getElementById('userRole'),
+      userPermissionSummary: document.getElementById('userPermissionSummary'),
+      themeLabel: document.getElementById('themeLabel'),
+      pageTitle: document.getElementById('pageTitle'),
+      pageSubtitle: document.getElementById('pageSubtitle'),
+      sidebar: document.getElementById('sidebar'),
+      sidebarOverlay: document.getElementById('sidebarOverlay'),
+      menuToggle: document.getElementById('menuToggle'),
+      modeToggleBtn: document.getElementById('modeToggleBtn'),
+      themeBg: document.getElementById('themeBg'),
+      quickActionBtn: document.getElementById('quickActionBtn'),
+      quickActionText: document.getElementById('quickActionText'),
+      overviewStats: document.getElementById('overviewStats'),
+      quickActions: document.getElementById('quickActions'),
+      permissionBox: document.getElementById('permissionBox'),
+      recentJoinRequestsTable: document.getElementById('recentJoinRequestsTable'),
+      eventsTable: document.getElementById('eventsTable'),
+      membersTable: document.getElementById('membersTable'),
+      requestsTable: document.getElementById('requestsTable'),
+      bulletinsTable: document.getElementById('bulletinsTable'),
+      leadersTable: document.getElementById('leadersTable'),
+      usersTable: document.getElementById('usersTable'),
+      analyticsStats: document.getElementById('analyticsStats'),
+      analyticsSummary: document.getElementById('analyticsSummary'),
+      treasuryStats: document.getElementById('treasuryStats'),
+      treasuryActions: document.getElementById('treasuryActions'),
+      treasurySummary: document.getElementById('treasurySummary'),
+      sponsorSummary: document.getElementById('sponsorSummary'),
+      treasuryNotes: document.getElementById('treasuryNotes'),
+      saveTreasuryNotesBtn: document.getElementById('saveTreasuryNotesBtn'),
+      clearTreasuryNotesBtn: document.getElementById('clearTreasuryNotesBtn'),
+      treasuryYearFilter: document.getElementById('treasuryYearFilter'),
+      treasuryMonthFilter: document.getElementById('treasuryMonthFilter'),
+      treasuryPeriodFilter: document.getElementById('treasuryPeriodFilter'),
+      refreshTreasurySummaryBtn: document.getElementById('refreshTreasurySummaryBtn'),
+      downloadTreasuryStatementBtn: document.getElementById('downloadTreasuryStatementBtn'),
+      treasurySearch: document.getElementById('treasurySearch'),
+      treasuryTypeFilter: document.getElementById('treasuryTypeFilter'),
+      treasuryCategoryFilter: document.getElementById('treasuryCategoryFilter'),
+      treasuryTable: document.getElementById('treasuryTable'),
+      openAddTreasuryEntryBtn: document.getElementById('openAddTreasuryEntryBtn'),
+      openTreasuryCalculatorBtn: document.getElementById('openTreasuryCalculatorBtn'),
+      emailLogsTable: document.getElementById('emailLogsTable'),
+      formModalOverlay: document.getElementById('formModalOverlay'),
+      modalTitle: document.getElementById('modalTitle'),
+      modalBody: document.getElementById('modalBody'),
+      closeModalBtn: document.getElementById('closeModalBtn'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      surpriseBtn: document.getElementById('surpriseBtn'),
+      themeSwitchBtn: document.getElementById('themeSwitchBtn'),
+      siteBtn: document.getElementById('siteBtn'),
+      settingClubName: document.getElementById('settingClubName'),
+      settingDistrict: document.getElementById('settingDistrict'),
+      settingAdminEmail: document.getElementById('settingAdminEmail'),
+      settingMembersGroupEmail: document.getElementById('settingMembersGroupEmail'),
+      settingCharteredDate: document.getElementById('settingCharteredDate'),
+      settingThemeColor: document.getElementById('settingThemeColor'),
+      saveSettingsBtn: document.getElementById('saveSettingsBtn'),
+      eventsSearch: document.getElementById('eventsSearch'),
+      eventsStatusFilter: document.getElementById('eventsStatusFilter'),
+      membersSearch: document.getElementById('membersSearch'),
+      membersStatusFilter: document.getElementById('membersStatusFilter'),
+      requestsSearch: document.getElementById('requestsSearch'),
+      requestsStatusFilter: document.getElementById('requestsStatusFilter'),
+      bulletinsSearch: document.getElementById('bulletinsSearch'),
+      usersSearch: document.getElementById('usersSearch'),
+      eventsCountBadge: document.getElementById('eventsCountBadge'),
+      membersCountBadge: document.getElementById('membersCountBadge'),
+      bulletinsCountBadge: document.getElementById('bulletinsCountBadge'),
+      joinRequestsBadge: document.getElementById('joinRequestsBadge')
+    };
+
+    function safeGet(obj, key, fallback = '') {
+      if (!obj || typeof obj !== 'object') return fallback;
+      const value = obj[key];
+      return value === undefined || value === null || value === '' ? fallback : value;
+    }
+
+    function formatINR(value) {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 2
+      }).format(Number(value || 0));
+    }
+
+    function showToast(title, message = '', type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-triangle-exclamation',
+        info: 'fa-info-circle'
+      };
+      toast.innerHTML = `
+        <div><i class="fas ${icons[type] || icons.info}"></i></div>
+        <div style="flex:1">
+          <div class="toast-title">${title}</div>
+          ${message ? `<div class="toast-message">${message}</div>` : ''}
+        </div>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300);
+      }, 4200);
+    }
+
+    async function fetchData(action = 'getData', params = {}) {
+      let url = `${API_URL}?action=${action}`;
+      Object.keys(params).forEach(key => {
+        url += `&${key}=${encodeURIComponent(params[key])}`;
+      });
+
+      const response = await fetch(url, { method: 'GET', redirect: 'follow' });
+      if (!response.ok) throw new Error(`HTTP error ${response.status} for ${action}`);
+      const text = await response.text();
+
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        console.error('Invalid JSON response for', action, text);
+        throw new Error(`Invalid JSON returned for ${action}`);
+      }
+    }
+
+    async function postData(data) {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+      const text = await response.text();
+      return JSON.parse(text);
+    }
+
+    function convertDriveUrl(url) {
+      if (!url) return '';
+      if (url.includes('drive.google.com')) {
+        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+        if (match) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      }
+      return url;
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return 'TBD';
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return dateString;
+      return d.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function normalizeStatus(status) {
+      return String(status || '').toLowerCase();
+    }
+
+    function applyRandomTheme() {
+      const stored = sessionStorage.getItem('dashboardThemeIndex');
+      if (stored !== null) {
+        state.currentThemeIndex = parseInt(stored, 10);
+      } else {
+        state.currentThemeIndex = Math.floor(Math.random() * THEMES.length);
+        sessionStorage.setItem('dashboardThemeIndex', state.currentThemeIndex);
+      }
+      applyThemeByIndex(state.currentThemeIndex);
+    }
+
+    function applyThemeByIndex(index) {
+      const theme = THEMES[index % THEMES.length];
+      state.currentThemeIndex = index % THEMES.length;
+      sessionStorage.setItem('dashboardThemeIndex', state.currentThemeIndex);
+
+      document.documentElement.style.setProperty('--primary', theme.primary);
+      document.documentElement.style.setProperty('--secondary', theme.secondary);
+      document.documentElement.style.setProperty('--accent', theme.accent);
+      document.documentElement.style.setProperty('--gradient-primary', `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`);
+      els.themeBg.style.background = theme.bg;
+      els.themeLabel.textContent = `Theme: ${theme.name}`;
+    }
+
+    function cycleTheme() {
+      applyThemeByIndex((state.currentThemeIndex + 1) % THEMES.length);
+      showToast('Theme Changed', `Now using ${THEMES[state.currentThemeIndex].name}`, 'info');
+    }
+
+    function restoreMode() {
+      const saved = localStorage.getItem('dashboardThemeMode') || localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+      els.modeToggleBtn.innerHTML = saved === 'dark'
+        ? '<i class="fas fa-sun"></i>'
+        : '<i class="fas fa-moon"></i>';
+    }
+
+    function toggleMode() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('dashboardThemeMode', next);
+      els.modeToggleBtn.innerHTML = next === 'dark'
+        ? '<i class="fas fa-sun"></i>'
+        : '<i class="fas fa-moon"></i>';
+    }
+
+    function loadSession() {
+      const user = localStorage.getItem('rotaractUser');
+      const token = localStorage.getItem('rotaractToken');
+
+      if (!user || !token) {
+        window.location.href = 'admin-login.html';
+        return false;
+      }
+
+      try {
+        state.user = JSON.parse(user);
+        state.token = token;
+        return true;
+      } catch (e) {
+        localStorage.removeItem('rotaractUser');
+        localStorage.removeItem('rotaractToken');
+        window.location.href = 'admin-login.html';
+        return false;
+      }
+    }
+
+    function updateUserCard() {
+      const user = state.user || {};
+      els.userName.textContent = safeGet(user, 'name', 'Admin User');
+      els.userRole.textContent = safeGet(user, 'role', 'member');
+      els.userAvatar.textContent = (safeGet(user, 'name', 'A').trim().charAt(0) || 'A').toUpperCase();
+
+      const permissions = safeGet(user, 'permissions', []);
+      const permissionText = permissions.includes('all')
+        ? 'All Access'
+        : permissions.length
+          ? permissions.slice(0, 3).join(', ')
+          : 'View Only';
+      els.userPermissionSummary.textContent = permissionText;
+    }
+
+    function updateBrand() {
+      const header = safeGet(state.allData, 'header', {});
+      const title = safeGet(header, 'title', 'Rotaract Club of Coimbatore Unity');
+      const district = safeGet(header, 'district', '3206');
+      const logo = convertDriveUrl(safeGet(header, 'logo', ''));
+
+      els.clubName.textContent = title;
+      els.clubDistrict.textContent = `District ${district}`;
+
+      if (logo) els.clubLogo.src = logo;
+    }
+
+    function canAccess(permission) {
+      const user = state.user || {};
+      const perms = safeGet(user, 'permissions', []);
+      return perms.includes('all') || perms.includes(permission);
+    }
+
+    function isRole(role) {
+      return String(safeGet(state.user, 'role', '')).toLowerCase() === String(role).toLowerCase();
+    }
+
+    function applyRoleVisibility() {
+      document.querySelectorAll('[data-permission]').forEach(el => {
+        const permission = el.getAttribute('data-permission');
+        if (!canAccess(permission)) el.classList.add('hidden');
+      });
+
+      document.querySelectorAll('[data-role-only]').forEach(el => {
+        const role = el.getAttribute('data-role-only');
+        if (!isRole(role)) el.classList.add('hidden');
+      });
+
+      if (isRole('treasurer')) {
+        document.querySelector('.nav-item[data-section="treasury"]')?.classList.remove('hidden');
+      }
+    }
+
+    function setPageHeading(section) {
+      const map = {
+        overview: ['Overview', 'Role-based dashboard and quick insights'],
+        events: ['Events', 'Create, review and manage club events'],
+        members: ['Members', 'View and maintain active member records'],
+        joinRequests: ['Join Requests', 'Approve or reject membership applications'],
+        bulletins: ['Bulletins', 'Publish and manage club bulletins'],
+        leaders: ['Leaders', 'Club leadership history'],
+        analytics: ['Analytics', 'Live workbook-driven insights'],
+        treasury: ['Treasury', 'Advanced finance management and statements'],
+        users: ['Users', 'Admin users and permissions'],
+        settings: ['Settings', 'Control central site configuration'],
+        emailLogs: ['Email Logs', 'Review email system activity']
+      };
+      const data = map[section] || ['Dashboard', 'Manage club operations'];
+      els.pageTitle.textContent = data[0];
+      els.pageSubtitle.textContent = data[1];
+    }
+
+    function openSection(section) {
+      state.currentSection = section;
+      document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      const activeSection = document.getElementById(`section-${section}`);
+      if (activeSection) activeSection.classList.add('active');
+
+      const activeNav = document.querySelector(`.nav-item[data-section="${section}"]`);
+      if (activeNav) activeNav.classList.add('active');
+
+      setPageHeading(section);
+      updateQuickActionButton();
+      closeSidebarMobile();
+    }
+
+    function updateQuickActionButton() {
+      const section = state.currentSection;
+      const map = {
+        overview: 'Quick Add',
+        events: 'Add Event',
+        members: 'Add Member',
+        joinRequests: 'Review Requests',
+        bulletins: 'Add Bulletin',
+        users: 'Add User',
+        settings: 'Save Settings',
+        treasury: 'Add Entry'
+      };
+      els.quickActionText.textContent = map[section] || 'Quick Add';
+    }
+
+    function closeSidebarMobile() {
+      els.sidebar.classList.remove('active');
+      els.sidebarOverlay.classList.remove('active');
+    }
+
+    function openSidebarMobile() {
+      els.sidebar.classList.add('active');
+      els.sidebarOverlay.classList.add('active');
+    }
+
+    async function loadTreasuryEntries() {
+      try {
+        const res = await fetchData('getTreasury');
+        state.treasuryEntries = res.success ? (res.data || []) : [];
+      } catch (e) {
+        console.error('Treasury load error:', e);
+        state.treasuryEntries = [];
+      }
+    }
+
+    async function loadAllData() {
+      const allDataRes = await fetchData('getAdminData');
+      if (!allDataRes.success) throw new Error(allDataRes.message || 'getAdminData failed');
+      state.allData = allDataRes;
+
+      try {
+        const usersRes = await fetchData('getUsers');
+        state.usersData = usersRes.success ? (usersRes.data || []) : [];
+      } catch (e) {
+        console.warn('getUsers failed', e);
+        state.usersData = [];
+      }
+
+      try {
+        const requestsRes = await fetchData('getJoinRequests');
+        state.joinRequests = requestsRes.success ? (requestsRes.data || []) : [];
+      } catch (e) {
+        console.warn('getJoinRequests failed', e);
+        state.joinRequests = [];
+      }
+
+      await loadTreasuryEntries();
+
+      updateBrand();
+      updateUserCard();
+      renderOverview();
+      renderEventsTable();
+      renderMembersTable();
+      renderRequestsTable();
+      renderBulletinsTable();
+      renderLeadersTable();
+      renderUsersTable();
+      renderAnalytics();
+      renderTreasury();
+      renderSettings();
+      renderEmailLogs();
+      updateBadges();
+      fillTreasuryYearOptions();
+    }
+
+    function updateBadges() {
+      els.eventsCountBadge.textContent = (safeGet(state.allData, 'events', []) || []).length;
+      els.membersCountBadge.textContent = (safeGet(state.allData, 'members', []) || []).length;
+      els.bulletinsCountBadge.textContent = (safeGet(state.allData, 'bulletins', []) || []).length;
+      const pending = (state.joinRequests || []).filter(r => normalizeStatus(safeGet(r, 'status', 'pending')) === 'pending');
+      els.joinRequestsBadge.textContent = pending.length;
+    }
+
+    function renderOverview() {
+      const stats = safeGet(state.allData, 'statistics', {});
+      const members = safeGet(state.allData, 'members', []).length;
+      const events = safeGet(state.allData, 'events', []).length;
+      const pendingRequests = (state.joinRequests || []).filter(r => normalizeStatus(safeGet(r, 'status', 'pending')) === 'pending').length;
+      const treasuryIncome = calculateTreasurySummary().totalIncome;
+
+      els.overviewStats.innerHTML = `
+        ${renderStatCard('Members', members, 'fas fa-users', 'Active member records')}
+        ${renderStatCard('Events', events, 'fas fa-calendar-days', 'All event records including pending')}
+        ${renderStatCard('Pending Requests', pendingRequests, 'fas fa-user-plus', 'Applications awaiting action')}
+        ${renderStatCard('Income', formatINR(treasuryIncome), 'fas fa-wallet', 'Treasury income overview', 'income')}
+      `;
+
+      renderQuickActions();
+      renderPermissions();
+      renderRecentJoinRequests();
+    }
+
+    function renderStatCard(title, value, icon, desc, extraClass = '') {
+      return `
+        <div class="stat-card ${extraClass}">
+          <div class="stat-top">
+            <div><div class="stat-title">${title}</div></div>
+            <div class="stat-icon"><i class="${icon}"></i></div>
+          </div>
+          <div class="stat-value">${value}</div>
+          <div class="stat-desc">${desc}</div>
+        </div>
+      `;
+    }
+
+    function renderQuickActions() {
+      const actions = [];
+
+      if (canAccess('events')) actions.push({ icon:'fas fa-calendar-plus', title:'Create Event', desc:'Add a new event proposal or approved event', click:`openAddEventModal()`, cls:'' });
+      if (canAccess('members')) actions.push({ icon:'fas fa-user-plus', title:'Add Member', desc:'Create a new member entry manually', click:`openAddMemberModal()`, cls:'' });
+      if (canAccess('join_requests')) actions.push({ icon:'fas fa-clipboard-check', title:'Review Requests', desc:'Approve or reject pending join requests', click:`openSection('joinRequests')`, cls:'' });
+      if (canAccess('bulletins')) actions.push({ icon:'fas fa-newspaper', title:'Add Bulletin', desc:'Publish a new bulletin issue', click:`openAddBulletinModal()`, cls:'' });
+      if (isRole('superadmin')) actions.push({ icon:'fas fa-user-shield', title:'Manage Users', desc:'Create and update admin accounts', click:`openSection('users')`, cls:'' });
+      if (canAccess('analytics')) actions.push({ icon:'fas fa-chart-pie', title:'View Analytics', desc:'Inspect workbook-driven statistics', click:`openSection('analytics')`, cls:'' });
+      if (canAccess('finance') || isRole('treasurer')) actions.push({ icon:'fas fa-wallet', title:'Treasury Hub', desc:'Open finance tools, statements and sponsor tracking', click:`openSection('treasury')`, cls:'treasury' });
+
+      els.quickActions.innerHTML = actions.map(a => `
+        <div class="quick-card ${a.cls}" onclick="${a.click}">
+          <div class="quick-icon"><i class="${a.icon}"></i></div>
+          <div class="quick-title">${a.title}</div>
+          <div class="quick-desc">${a.desc}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderPermissions() {
+      const permissions = safeGet(state.user, 'permissions', []);
+      const role = safeGet(state.user, 'role', 'member');
+      const items = permissions.length ? permissions : ['view'];
+
+      els.permissionBox.innerHTML = `
+        <div class="permission-chip">Role: ${role}</div>
+        ${items.map(p => `<div class="permission-chip">${p}</div>`).join('')}
+      `;
+    }
+
+    function renderRecentJoinRequests() {
+      const recent = (state.joinRequests || []).slice(0, 5);
+      if (!recent.length) {
+        els.recentJoinRequestsTable.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-inbox"></i><div>No recent requests</div></div></td></tr>`;
+        return;
+      }
+
+      els.recentJoinRequestsTable.innerHTML = recent.map(req => `
+        <tr>
+          <td>${safeGet(req, 'name', '-')}</td>
+          <td>${safeGet(req, 'email', '-')}</td>
+          <td>${safeGet(req, 'phone', '-')}</td>
+          <td><span class="status ${normalizeStatus(safeGet(req,'status','pending'))}">${safeGet(req,'status','pending')}</span></td>
+          <td>
+            <div class="table-actions">
+              ${normalizeStatus(safeGet(req,'status','pending')) === 'pending' && canAccess('approve')
+                ? `<button class="action-btn approve" onclick="approveJoinRequest('${safeGet(req,'id','')}')"><i class="fas fa-check"></i></button>
+                   <button class="action-btn reject" onclick="rejectJoinRequest('${safeGet(req,'id','')}')"><i class="fas fa-xmark"></i></button>`
+                : `<button class="action-btn view" onclick="openSection('joinRequests')"><i class="fas fa-eye"></i></button>`
+              }
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderEventsTable() {
+      const q = (els.eventsSearch.value || '').toLowerCase();
+      const statusFilter = els.eventsStatusFilter.value || 'all';
+      let events = safeGet(state.allData, 'events', []) || [];
+
+      if (q) {
+        events = events.filter(e =>
+          safeGet(e, 'name', '').toLowerCase().includes(q) ||
+          safeGet(e, 'venue', '').toLowerCase().includes(q) ||
+          safeGet(e, 'avenue', '').toLowerCase().includes(q)
+        );
+      }
+
+      if (statusFilter !== 'all') {
+        events = events.filter(e => normalizeStatus(safeGet(e, 'status', '')) === statusFilter);
+      }
+
+      if (!events.length) {
+        els.eventsTable.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-calendar-xmark"></i><div>No events found</div></div></td></tr>`;
+        return;
+      }
+
+      els.eventsTable.innerHTML = events.map(event => `
+        <tr>
+          <td>${safeGet(event, 'name', '-')}</td>
+          <td>${formatDate(safeGet(event, 'date', '-'))}</td>
+          <td>${safeGet(event, 'avenue', '-')}</td>
+          <td><span class="status ${normalizeStatus(safeGet(event,'status','approved'))}">${safeGet(event,'status','approved')}</span></td>
+          <td>${safeGet(event, 'chair', '-')}</td>
+          <td>
+            <div class="table-actions">
+              <button class="action-btn view" onclick="previewEvent('${safeGet(event,'id','')}')"><i class="fas fa-eye"></i></button>
+              ${canAccess('events') ? `<button class="action-btn edit" onclick="openEditEventModal('${safeGet(event,'id','')}')"><i class="fas fa-pen"></i></button>` : ''}
+              ${canAccess('approve') && normalizeStatus(safeGet(event,'status','')) === 'pending'
+                ? `<button class="action-btn approve" onclick="approveEventAdmin('${safeGet(event,'id','')}')"><i class="fas fa-check"></i></button>
+                   <button class="action-btn reject" onclick="rejectEventAdmin('${safeGet(event,'id','')}')"><i class="fas fa-xmark"></i></button>`
+                : ''
+              }
+              ${(canAccess('events') || canAccess('all')) ? `<button class="action-btn delete" onclick="deleteEventAdmin('${safeGet(event,'id','')}')"><i class="fas fa-trash"></i></button>` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderMembersTable() {
+      const q = (els.membersSearch.value || '').toLowerCase();
+      const statusFilter = els.membersStatusFilter.value || 'all';
+      let members = safeGet(state.allData, 'members', []) || [];
+
+      if (q) {
+        members = members.filter(m =>
+          safeGet(m, 'name', '').toLowerCase().includes(q) ||
+          safeGet(m, 'email', '').toLowerCase().includes(q) ||
+          safeGet(m, 'role', '').toLowerCase().includes(q)
+        );
+      }
+
+      if (statusFilter !== 'all') {
+        members = members.filter(m => normalizeStatus(safeGet(m, 'status', 'active')) === statusFilter);
+      }
+
+      if (!members.length) {
+        els.membersTable.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-users-slash"></i><div>No members found</div></div></td></tr>`;
+        return;
+      }
+
+      els.membersTable.innerHTML = members.map(member => `
+        <tr>
+          <td>${safeGet(member, 'name', '-')}</td>
+          <td>${safeGet(member, 'email', '-')}</td>
+          <td>${safeGet(member, 'phone', '-')}</td>
+          <td>${safeGet(member, 'role', '-')}</td>
+          <td><span class="status ${normalizeStatus(safeGet(member,'status','active'))}">${safeGet(member,'status','active')}</span></td>
+          <td>
+            <div class="table-actions">
+              <button class="action-btn view" onclick="previewMember('${safeGet(member,'id','')}')"><i class="fas fa-eye"></i></button>
+              ${canAccess('members') ? `<button class="action-btn edit" onclick="openEditMemberModal('${safeGet(member,'id','')}')"><i class="fas fa-pen"></i></button>` : ''}
+              ${canAccess('members') ? `<button class="action-btn delete" onclick="deleteMemberAdmin('${safeGet(member,'id','')}')"><i class="fas fa-trash"></i></button>` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderRequestsTable() {
+      const q = (els.requestsSearch.value || '').toLowerCase();
+      const statusFilter = els.requestsStatusFilter.value || 'all';
+      let requests = state.joinRequests || [];
+
+      if (q) {
+        requests = requests.filter(r =>
+          safeGet(r, 'name', '').toLowerCase().includes(q) ||
+          safeGet(r, 'email', '').toLowerCase().includes(q)
+        );
+      }
+
+      if (statusFilter !== 'all') {
+        requests = requests.filter(r => normalizeStatus(safeGet(r, 'status', 'pending')) === statusFilter);
+      }
+
+      if (!requests.length) {
+        els.requestsTable.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fas fa-inbox"></i><div>No requests found</div></div></td></tr>`;
+        return;
+      }
+
+      els.requestsTable.innerHTML = requests.map(req => `
+        <tr>
+          <td>${safeGet(req, 'name', '-')}</td>
+          <td>${safeGet(req, 'email', '-')}</td>
+          <td>${safeGet(req, 'phone', '-')}</td>
+          <td>${formatDate(safeGet(req, 'dob', '-'))}</td>
+          <td>${safeGet(req, 'blood', '-')}</td>
+          <td><span class="status ${normalizeStatus(safeGet(req,'status','pending'))}">${safeGet(req,'status','pending')}</span></td>
+          <td>
+            <div class="table-actions">
+              ${normalizeStatus(safeGet(req,'status','pending')) === 'pending' && canAccess('approve')
+                ? `<button class="action-btn approve" onclick="approveJoinRequest('${safeGet(req,'id','')}')"><i class="fas fa-check"></i></button>
+                   <button class="action-btn reject" onclick="rejectJoinRequest('${safeGet(req,'id','')}')"><i class="fas fa-xmark"></i></button>`
+                : ''
+              }
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderBulletinsTable() {
+      const q = (els.bulletinsSearch.value || '').toLowerCase();
+      let bulletins = safeGet(state.allData, 'bulletins', []) || [];
+
+      if (q) {
+        bulletins = bulletins.filter(b => safeGet(b, 'title', '').toLowerCase().includes(q));
+      }
+
+      if (!bulletins.length) {
+        els.bulletinsTable.innerHTML = `<tr><td colspan="4"><div class="empty-state"><i class="fas fa-newspaper"></i><div>No bulletins found</div></div></td></tr>`;
+        return;
+      }
+
+      els.bulletinsTable.innerHTML = bulletins.map(bulletin => `
+        <tr>
+          <td>${safeGet(bulletin, 'title', '-')}</td>
+          <td>${formatDate(safeGet(bulletin, 'date', '-'))}</td>
+          <td><span class="status approved">${String(safeGet(bulletin,'approved','TRUE')).toUpperCase() === 'TRUE' ? 'approved' : 'pending'}</span></td>
+          <td>
+            <div class="table-actions">
+              <button class="action-btn view" onclick="window.open('${safeGet(bulletin,'pdf_link','#')}', '_blank')"><i class="fas fa-eye"></i></button>
+              ${canAccess('bulletins') ? `<button class="action-btn delete" onclick="deleteBulletinAdmin('${safeGet(bulletin,'id','')}')"><i class="fas fa-trash"></i></button>` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderLeadersTable() {
+      const leaders = safeGet(state.allData, 'leaders', []) || [];
+      if (!leaders.length) {
+        els.leadersTable.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-crown"></i><div>No leaders found</div></div></td></tr>`;
+        return;
+      }
+
+      els.leadersTable.innerHTML = leaders.map(leader => `
+        <tr>
+          <td>${safeGet(leader, 'role', '-')}</td>
+          <td>${safeGet(leader, 'name', '-')}</td>
+          <td>${safeGet(leader, 'year_start', '-')}</td>
+          <td>${safeGet(leader, 'year_end', '-')}</td>
+          <td>${safeGet(leader, 'linkedin', '-') ? `<a href="${safeGet(leader,'linkedin','')}" target="_blank">Open</a>` : '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderUsersTable() {
+      if (!state.usersData.length) {
+        els.usersTable.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-user-shield"></i><div>No users found</div></div></td></tr>`;
+        return;
+      }
+
+      const q = (els.usersSearch.value || '').toLowerCase();
+      const users = state.usersData.filter(user =>
+        safeGet(user, 'name', '').toLowerCase().includes(q) ||
+        safeGet(user, 'email', '').toLowerCase().includes(q) ||
+        safeGet(user, 'role', '').toLowerCase().includes(q)
+      );
+
+      els.usersTable.innerHTML = users.map(user => `
+        <tr>
+          <td>${safeGet(user, 'name', '-')}</td>
+          <td>${safeGet(user, 'email', '-')}</td>
+          <td>${safeGet(user, 'role', '-')}</td>
+          <td>${safeGet(user, 'avenue', '-')}</td>
+          <td><span class="status ${String(safeGet(user,'active','TRUE')).toUpperCase() === 'TRUE' ? 'active' : 'inactive'}">${String(safeGet(user,'active','TRUE')).toUpperCase() === 'TRUE' ? 'active' : 'inactive'}</span></td>
+          <td>
+            <div class="table-actions">
+              <button class="action-btn edit" onclick="openEditUserModal('${safeGet(user,'email','')}')"><i class="fas fa-pen"></i></button>
+              ${safeGet(user, 'email', '') !== safeGet(state.user, 'email', '') ? `<button class="action-btn delete" onclick="deleteUserAdmin('${safeGet(user,'email','')}')"><i class="fas fa-trash"></i></button>` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAnalytics() {
+      const stats = safeGet(state.allData, 'statistics', {});
+      const cards = [
+        ['Members', safeGet(stats, 'members', 0), 'fas fa-users', 'Active members'],
+        ['Events', safeGet(stats, 'events', 0), 'fas fa-calendar-days', 'Approved events'],
+        ['Club Service', safeGet(stats, 'club_service', 0), 'fas fa-home', 'Club service events'],
+        ['Community Service', safeGet(stats, 'community_service', 0), 'fas fa-hands-helping', 'Community service events'],
+        ['Professional', safeGet(stats, 'professional_service', 0), 'fas fa-briefcase', 'Professional service events'],
+        ['International', safeGet(stats, 'international_service', 0), 'fas fa-globe', 'International service events'],
+        ['DPP', safeGet(stats, 'dpp', 0), 'fas fa-bullseye', 'DPP events'],
+        ['Beneficiaries', safeGet(stats, 'beneficiaries', 0), 'fas fa-heart', 'Direct impact count']
+      ];
+
+      els.analyticsStats.innerHTML = cards.map(c => renderStatCard(c[0], c[1], c[2], c[3])).join('');
+      els.analyticsSummary.innerHTML = Object.keys(stats).filter(k => !k.endsWith('_icon')).map(key => `
+        <div class="permission-chip">${key}: ${safeGet(stats, key, 0)}</div>
+      `).join('');
+    }
+
+    function fillTreasuryYearOptions() {
+      const entries = state.treasuryEntries || [];
+      const yearsSet = new Set(entries.map(e => new Date(e.date).getFullYear()).filter(Boolean));
+      yearsSet.add(new Date().getFullYear());
+      const years = Array.from(yearsSet).sort((a, b) => b - a);
+
+      const currentValue = els.treasuryYearFilter.value;
+      els.treasuryYearFilter.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+      if (currentValue && years.includes(Number(currentValue))) {
+        els.treasuryYearFilter.value = currentValue;
+      }
+    }
+
+    function getFilteredTreasuryEntries() {
+      let entries = [...(state.treasuryEntries || [])];
+      const year = Number(els.treasuryYearFilter.value || new Date().getFullYear());
+      const month = els.treasuryMonthFilter.value;
+      const period = els.treasuryPeriodFilter.value || 'monthly';
+      const search = (els.treasurySearch.value || '').toLowerCase().trim();
+      const typeFilter = els.treasuryTypeFilter.value || 'all';
+      const categoryFilter = els.treasuryCategoryFilter.value || 'all';
+
+      entries = entries.filter(entry => {
+        const d = new Date(entry.date);
+        if (isNaN(d.getTime())) return false;
+        if (d.getFullYear() !== year) return false;
+
+        if (period === 'monthly') {
+          if (month !== 'all' && Number(month) !== (d.getMonth() + 1)) return false;
+        } else if (period === 'half-yearly') {
+          const m = d.getMonth() + 1;
+          if (month !== 'all') {
+            const selected = Number(month);
+            const selectedHalf = selected <= 6 ? 1 : 2;
+            const rowHalf = m <= 6 ? 1 : 2;
+            if (selectedHalf !== rowHalf) return false;
+          }
+        }
+
+        if (typeFilter !== 'all' && entry.type !== typeFilter) return false;
+        if (categoryFilter !== 'all' && entry.category !== categoryFilter) return false;
+
+        if (search) {
+          const hay = [
+            entry.source,
+            entry.sponsor_name,
+            entry.member_name,
+            entry.purpose,
+            entry.notes,
+            entry.reference_no
+          ].join(' ').toLowerCase();
+          if (!hay.includes(search)) return false;
+        }
+
+        return true;
+      });
+
+      return entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    function calculateTreasurySummary() {
+      const entries = getFilteredTreasuryEntries();
+      let totalIncome = 0;
+      let totalExpense = 0;
+      let totalSponsor = 0;
+      let totalDue = 0;
+
+      const sponsorMap = {};
+      const purposeMap = {};
+
+      entries.forEach(entry => {
+        const amount = Number(entry.amount || 0);
+        if (entry.type === 'income') totalIncome += amount;
+        if (entry.type === 'expense') totalExpense += amount;
+        if (entry.category === 'sponsorship') totalSponsor += amount;
+        if (entry.category === 'membership_due') totalDue += amount;
+
+        if (entry.sponsor_name) sponsorMap[entry.sponsor_name] = (sponsorMap[entry.sponsor_name] || 0) + amount;
+        if (entry.purpose) purposeMap[entry.purpose] = (purposeMap[entry.purpose] || 0) + amount;
+      });
+
+      return {
+        entries,
+        totalIncome,
+        totalExpense,
+        totalSponsor,
+        totalDue,
+        balance: totalIncome - totalExpense,
+        sponsorMap,
+        purposeMap
+      };
+    }
+
+    function renderTreasury() {
+      const summary = calculateTreasurySummary();
+
+      els.treasuryStats.innerHTML = `
+        ${renderStatCard('Income', formatINR(summary.totalIncome), 'fas fa-arrow-trend-up', 'Total inflow for selected period', 'income')}
+        ${renderStatCard('Expenses', formatINR(summary.totalExpense), 'fas fa-arrow-trend-down', 'Total outflow for selected period', 'expense')}
+        ${renderStatCard('Sponsors', formatINR(summary.totalSponsor), 'fas fa-hand-holding-heart', 'Sponsor support received', 'treasury')}
+        ${renderStatCard('Balance', formatINR(summary.balance), 'fas fa-wallet', 'Current balance for selected period', 'treasury')}
+      `;
+
+      els.treasuryActions.innerHTML = `
+        <div class="quick-card treasury" onclick="openAddTreasuryEntryModal('income')">
+          <div class="quick-icon"><i class="fas fa-circle-plus"></i></div>
+          <div class="quick-title">Add Income</div>
+          <div class="quick-desc">Record sponsor amount, member due, donation or collection</div>
+        </div>
+        <div class="quick-card treasury" onclick="openAddTreasuryEntryModal('expense')">
+          <div class="quick-icon"><i class="fas fa-circle-minus"></i></div>
+          <div class="quick-title">Add Expense</div>
+          <div class="quick-desc">Record venue, food, travel, stationery or other expenses</div>
+        </div>
+        <div class="quick-card treasury" onclick="downloadTreasuryStatement()">
+          <div class="quick-icon"><i class="fas fa-file-excel"></i></div>
+          <div class="quick-title">Export Statement</div>
+          <div class="quick-desc">Download filtered treasury statement as Excel-compatible file</div>
+        </div>
+        <div class="quick-card treasury" onclick="openTreasuryCalculator()">
+          <div class="quick-icon"><i class="fas fa-calculator"></i></div>
+          <div class="quick-title">Treasury Calculator</div>
+          <div class="quick-desc">Estimate monthly, half-yearly and yearly collections</div>
+        </div>
+      `;
+
+      const savedNotes = localStorage.getItem('treasuryNotes') || '';
+      els.treasuryNotes.value = savedNotes;
+
+      els.treasurySummary.innerHTML = `
+        <div class="permission-chip">Income: ${formatINR(summary.totalIncome)}</div>
+        <div class="permission-chip">Expenses: ${formatINR(summary.totalExpense)}</div>
+        <div class="permission-chip">Balance: ${formatINR(summary.balance)}</div>
+        <div class="permission-chip">Sponsors: ${formatINR(summary.totalSponsor)}</div>
+        <div class="permission-chip">Due Collected: ${formatINR(summary.totalDue)}</div>
+        <div class="permission-chip">Entries: ${summary.entries.length}</div>
+      `;
+
+      const sponsorEntries = Object.entries(summary.sponsorMap);
+      els.sponsorSummary.innerHTML = sponsorEntries.length
+        ? sponsorEntries.map(([name, amount]) => `<div class="permission-chip">${name}: ${formatINR(amount)}</div>`).join('')
+        : `<div class="permission-chip">No sponsor data in selected period</div>`;
+
+      renderTreasuryTable(summary.entries);
+    }
+
+    function renderTreasuryTable(entries) {
+      if (!entries.length) {
+        els.treasuryTable.innerHTML = `<tr><td colspan="9"><div class="empty-state"><i class="fas fa-wallet"></i><div>No treasury entries found</div></div></td></tr>`;
+        return;
+      }
+
+      els.treasuryTable.innerHTML = entries.map(entry => `
+        <tr>
+          <td>${formatDate(entry.date)}</td>
+          <td><span class="status ${entry.type}">${entry.type}</span></td>
+          <td>${entry.category || '-'}</td>
+          <td>${entry.source || entry.sponsor_name || '-'}</td>
+          <td>${entry.member_name || entry.contact_name || '-'}</td>
+          <td>${entry.purpose || '-'}</td>
+          <td><span class="money ${entry.type}">${formatINR(entry.amount)}</span></td>
+          <td>${entry.reference_no || '-'}</td>
+          <td>
+            <div class="table-actions">
+              <button class="action-btn view" onclick="previewTreasuryEntry('${entry.id}')"><i class="fas fa-eye"></i></button>
+              <button class="action-btn edit" onclick="openEditTreasuryEntryModal('${entry.id}')"><i class="fas fa-pen"></i></button>
+              <button class="action-btn delete" onclick="deleteTreasuryEntry('${entry.id}')"><i class="fas fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderSettings() {
+      const settings = safeGet(state.allData, 'settings', {});
+      els.settingClubName.value = safeGet(settings, 'club_name', '');
+      els.settingDistrict.value = safeGet(settings, 'district', '');
+      els.settingAdminEmail.value = safeGet(settings, 'admin_email', '');
+      els.settingMembersGroupEmail.value = safeGet(settings, 'members_group_email', '');
+      els.settingCharteredDate.value = safeGet(settings, 'chartered_date', '');
+      els.settingThemeColor.value = safeGet(settings, 'theme_color', '');
+    }
+
+    function renderEmailLogs() {
+      els.emailLogsTable.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-info-circle"></i><div>Email logs can be shown here if API endpoint is extended to return EmailLogs sheet data.</div></div></td></tr>`;
+    }
+
+    function openModal(title, html) {
+      els.modalTitle.textContent = title;
+      els.modalBody.innerHTML = html;
+      els.formModalOverlay.classList.add('active');
+    }
+
+    function closeModal() {
+      els.formModalOverlay.classList.remove('active');
+      els.modalBody.innerHTML = '';
+    }
+
+    function openAddEventModal() {
+      if (!canAccess('events')) {
+        return showToast('Permission denied', 'You cannot add events.', 'error');
+      }
+
+      openModal('Add Event', `
+        <form id="modalEventForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Event Name</label>
+              <input class="text-input" name="name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input type="date" class="text-input" name="date" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time</label>
+              <input class="text-input" name="time" placeholder="10:00" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Venue</label>
+              <input class="text-input" name="venue" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mode</label>
+              <select class="select-input" name="mode">
+                <option>In-Person</option>
+                <option>Online</option>
+                <option>Hybrid</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Avenue</label>
+              <select class="select-input" name="avenue">
+                <option>Club Service</option>
+                <option>Community Service</option>
+                <option>Professional Service</option>
+                <option>International Service</option>
+                <option>DPP</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Chair</label>
+              <input class="text-input" name="chair">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Image URL</label>
+              <input class="text-input" name="image">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="textarea-input" name="description"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn primary">
+              <i class="fas fa-floppy-disk"></i>
+              <span>Save Event</span>
+            </button>
+            <button type="button" class="btn secondary" onclick="closeModal()">
+              <i class="fas fa-xmark"></i>
+              <span>Cancel</span>
+            </button>
+          </div>
+        </form>
+      `);
+
+      document.getElementById('modalEventForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const fd = new FormData(this);
+
+        try {
+          const res = await postData({
+            action: 'addEvent',
+            userRole: safeGet(state.user, 'role', ''),
+            userEmail: safeGet(state.user, 'email', ''),
+            userAvenue: safeGet(state.user, 'avenue', ''),
+            name: fd.get('name'),
+            date: fd.get('date'),
+            time: fd.get('time'),
+            venue: fd.get('venue'),
+            mode: fd.get('mode'),
+            image: fd.get('image'),
+            avenue: fd.get('avenue'),
+            description: fd.get('description'),
+            chair: fd.get('chair'),
+            poster: ''
+          });
+
+          if (res.success) {
+            showToast('Event saved', res.message || 'Event added successfully', 'success');
+            closeModal();
+            await refreshDashboard();
+          } else {
+            showToast('Failed', res.message || 'Unable to save event', 'error');
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('Error', 'Unable to save event.', 'error');
+        }
+      });
+    }
+
+    function openEditEventModal(eventId) {
+      const event = (safeGet(state.allData, 'events', []) || []).find(e => safeGet(e, 'id', '') === eventId);
+      if (!event) return showToast('Not found', 'Event not found.', 'error');
+
+      openModal('Edit Event', `
+        <form id="modalEditEventForm">
+          <input type="hidden" name="id" value="${safeGet(event,'id','')}">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Event Name</label>
+              <input class="text-input" name="name" value="${safeGet(event,'name','')}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input type="date" class="text-input" name="date" value="${safeGet(event,'date','')}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time</label>
+              <input class="text-input" name="time" value="${safeGet(event,'time','')}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Venue</label>
+              <input class="text-input" name="venue" value="${safeGet(event,'venue','')}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mode</label>
+              <input class="text-input" name="mode" value="${safeGet(event,'mode','')}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Avenue</label>
+              <input class="text-input" name="avenue" value="${safeGet(event,'avenue','')}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Chair</label>
+              <input class="text-input" name="chair" value="${safeGet(event,'chair','')}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Image URL</label>
+              <input class="text-input" name="image" value="${safeGet(event,'image','')}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="textarea-input" name="description">${safeGet(event,'description','')}</textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn primary">
+              <i class="fas fa-floppy-disk"></i>
+              <span>Update Event</span>
+            </button>
+            <button type="button" class="btn secondary" onclick="closeModal()">
+              <i class="fas fa-xmark"></i>
+              <span>Cancel</span>
+            </button>
+          </div>
+        </form>
+      `);
+
+      document.getElementById('modalEditEventForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const fd = new FormData(this);
+
+        try {
+          const res = await postData({
+            action: 'updateEvent',
+            userRole: safeGet(state.user, 'role', ''),
+            id: fd.get('id'),
+            name: fd.get('name'),
+            date: fd.get('date'),
+            time: fd.get('time'),
+            venue: fd.get('venue'),
+            mode: fd.get('mode'),
+            avenue: fd.get('avenue'),
+            chair: fd.get('chair'),
+            image: fd.get('image'),
+            description: fd.get('description'),
+            poster: ''
+          });
+
+          if (res.success) {
+            showToast('Updated', res.message || 'Event updated', 'success');
+            closeModal();
+            await refreshDashboard();
+          } else {
+            showToast('Failed', res.message || 'Unable to update event', 'error');
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('Error', 'Unable to update event.', 'error');
+        }
+      });
+    }
+
+    function openAddMemberModal() {
+      if (!canAccess('members')) {
+        return showToast('Permission denied', 'You cannot add members.', 'error');
+      }
+
+      openModal('Add Member', `
+        <form id="modalMemberForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Name</label>
+              <input class="text-input" name="name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="text-input" name="email" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input class="text-input" name="phone">
+            </div>
+            <div class="form-group">
+              <label class="form-label">DOB</label>
+              <input type="date" class="text-input" name="dob">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Blood Group</label>
+              <input class="text-input" name="blood">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role</label>
+              <input class="text-input" name="role" value="Member">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Photo URL</label>
+              <input class="text-input" name="photo">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Bio</label>
+            <textarea class="textarea-input" name="bio"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn primary">
+              <i class="fas fa-floppy-disk"></i>
+              <span>Save Member</span>
+            </button>
+            <button type="button" class="btn secondary" onclick="closeModal()">
+              <i class="fas fa-xmark"></i>
+              <span>Cancel</span>
+            </button>
+          </div>
+        </form>
+      `);
+
+      document.getElementById('modalMemberForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const fd = new FormData(this);
+
+        try {
+          const res = await postData({
+            action: 'addMember',
+            userRole: safeGet(state.user, 'role', ''),
+            name: fd.get('name'),
+            email: fd.get('email'),
+            phone: fd.get('phone'),
+            dob: fd.get('dob'),
+            blood: fd.get('blood'),
+            role: fd.get('role'),
+            photo: fd.get('photo'),
+            bio: fd.get('bio')
+          });
+
+          if (res.success) {
+            showToast('Member added', res.message || 'Member added successfully', 'success');
+            closeModal();
+            await refreshDashboard();
+          } else {
+            showToast('Failed', res.message || 'Unable to add member', 'error');
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('Error', 'Unable to add member.', 'error');
+        }
+      });
+    }
+
+     function openEditMemberModal(memberId) {
+       const member = (safeGet(state.allData, 'members', []) || []).find(m => safeGet(m, 'id', '') === memberId);
+       if (!member) return showToast('Not found', 'Member not found.', 'error');
+
+       openModal('Edit Member', `
+         <form id="modalEditMemberForm">
+           <input type="hidden" name="id" value="${safeGet(member,'id','')}">
+           <div class="form-grid">
+             <div class="form-group">
+               <label class="form-label">Name</label>
+               <input class="text-input" name="name" value="${safeGet(member,'name','')}" required>
+             </div>
+             <div class="form-group">
+               <label class="form-label">Email</label>
+               <input type="email" class="text-input" name="email" value="${safeGet(member,'email','')}" required>
+             </div>
+             <div class="form-group">
+               <label class="form-label">Phone</label>
+               <input class="text-input" name="phone" value="${safeGet(member,'phone','')}">
+             </div>
+             <div class="form-group">
+               <label class="form-label">DOB</label>
+               <input type="date" class="text-input" name="dob" value="${safeGet(member,'dob','')}">
+             </div>
+             <div class="form-group">
+               <label class="form-label">Blood Group</label>
+               <input class="text-input" name="blood" value="${safeGet(member,'blood','')}">
+             </div>
+             <div class="form-group">
+               <label class="form-label">Role</label>
+               <input class="text-input" name="role" value="${safeGet(member,'role','')}">
+             </div>
+             <div class="form-group">
+               <label class="form-label">Photo URL</label>
+               <input class="text-input" name="photo" value="${safeGet(member,'photo','')}">
+             </div>
+             <div class="form-group">
+               <label class="form-label">Status</label>
+               <input class="text-input" name="status" value="${safeGet(member,'status','active')}">
+             </div>
+           </div>
+
+           <div class="form-group">
+             <label class="form-label">Bio</label>
+             <textarea class="textarea-input" name="bio">${safeGet(member,'bio','')}</textarea>
+           </div>
+
+           <div class="form-actions">
+             <button type="submit" class="btn primary">
+               <i class="fas fa-floppy-disk"></i>
+               <span>Update Member</span>
+             </button>
+             <button type="button" class="btn secondary" onclick="closeModal()">
+               <i class="fas fa-xmark"></i>
+               <span>Cancel</span>
+             </button>
+           </div>
+         </form>
+       `);
+
+       document.getElementById('modalEditMemberForm').addEventListener('submit', async function(e) {
+         e.preventDefault();
+         const fd = new FormData(this);
+
+         try {
+           const res = await postData({
+             action: 'updateMember',
+             userRole: safeGet(state.user, 'role', ''),
+             id: fd.get('id'),
+             name: fd.get('name'),
+             email: fd.get('email'),
+             phone: fd.get('phone'),
+             dob: fd.get('dob'),
+             blood: fd.get('blood'),
+             role: fd.get('role'),
+             photo: fd.get('photo'),
+             bio: fd.get('bio'),
+             status: fd.get('status')
+           });
+
+           if (res.success) {
+             showToast('Member updated', res.message || 'Member updated successfully', 'success');
+             closeModal();
+             await refreshDashboard();
+           } else {
+             showToast('Failed', res.message || 'Unable to update member', 'error');
+           }
+         } catch (err) {
+           console.error(err);
+           showToast('Error', 'Unable to update member.', 'error');
+         }
+       });
+     }
+
+     function openAddBulletinModal() {
+       if (!canAccess('bulletins')) {
+         return showToast('Permission denied', 'You cannot add bulletins.', 'error');
+       }
+
+       openModal('Add Bulletin', `
+         <form id="modalBulletinForm">
+           <div class="form-grid">
+             <div class="form-group">
+               <label class="form-label">Title</label>
+               <input class="text-input" name="title" required>
+             </div>
+             <div class="form-group">
+               <label class="form-label">Date</label>
+               <input type="date" class="text-input" name="date">
+             </div>
+             <div class="form-group">
+               <label class="form-label">PDF Link</label>
+               <input class="text-input" name="pdf_link">
+             </div>
+             <div class="form-group">
+               <label class="form-label">Cover Image</label>
+               <input class="text-input" name="cover_image">
+             </div>
+           </div>
+
+           <div class="form-group">
+             <label class="form-label">Description</label>
+             <textarea class="textarea-input" name="description"></textarea>
+           </div>
+
+           <div class="form-actions">
+             <button type="submit" class="btn primary">
+               <i class="fas fa-floppy-disk"></i>
+               <span>Save Bulletin</span>
+             </button>
+             <button type="button" class="btn secondary" onclick="closeModal()">
+               <i class="fas fa-xmark"></i>
+               <span>Cancel</span>
+             </button>
+           </div>
+         </form>
+       `);
+
+       document.getElementById('modalBulletinForm').addEventListener('submit', async function(e) {
+         e.preventDefault();
+         const fd = new FormData(this);
+
+         try {
+           const res = await postData({
+             action: 'addBulletin',
+             userRole: safeGet(state.user, 'role', ''),
+             title: fd.get('title'),
+             date: fd.get('date'),
+             pdf_link: fd.get('pdf_link'),
+             cover_image: fd.get('cover_image'),
+             description: fd.get('description')
+           });
+
+           if (res.success) {
+             showToast('Bulletin saved', res.message || 'Bulletin added successfully', 'success');
+             closeModal();
+             await refreshDashboard();
+           } else {
+             showToast('Failed', res.message || 'Unable to save bulletin', 'error');
+           }
+         } catch (err) {
+           console.error(err);
+           showToast('Error', 'Unable to save bulletin.', 'error');
+         }
+       });
+     }
+
+     function openAddUserModal() {
+       if (!isRole('superadmin')) {
+         return showToast('Permission denied', 'Only superadmin can add users.', 'error');
+       }
+
+       openModal('Add Admin User', `
+         <form id="modalUserForm">
+           <div class="form-grid">
+             <div class="form-group">
+               <label class="form-label">Name</label>
+               <input class="text-input" name="name" required>
+             </div>
+             <div class="form-group">
+               <label class="form-label">Email</label>
+               <input type="email" class="text-input" name="email" required>
+             </div>
+             <div class="form-group">
+               <label class="form-label">Password</label>
+               <input class="text-input" name="password" required>
+             </div>
+             <div class="form-group">
+               <label class="form-label">Role</label>
+               <select class="select-input" name="role">
+                 <option value="member">member</option>
+                 <option value="avenue_director">avenue_director</option>
+                 <option value="dpp_chair">dpp_chair</option>
+                 <option value="treasurer">treasurer</option>
+                 <option value="secretary">secretary</option>
+                 <option value="president">president</option>
+                 <option value="superadmin">superadmin</option>
+               </select>
+             </div>
+             <div class="form-group">
+               <label class="form-label">Permissions (comma separated)</label>
+               <input class="text-input" name="permissions" placeholder="events,members">
+             </div>
+             <div class="form-group">
+               <label class="form-label">Avenue</label>
+               <input class="text-input" name="avenue">
+             </div>
+           </div>
+
+           <div class="form-actions">
+             <button type="submit" class="btn primary">
+               <i class="fas fa-user-plus"></i>
+               <span>Create User</span>
+             </button>
+             <button type="button" class="btn secondary" onclick="closeModal()">
+               <i class="fas fa-xmark"></i>
+               <span>Cancel</span>
+             </button>
+           </div>
+         </form>
+       `);
+
+       document.getElementById('modalUserForm').addEventListener('submit', async function(e) {
+         e.preventDefault();
+         const fd = new FormData(this);
+
+         try {
+           const res = await postData({
+             action: 'addUser',
+             userRole: safeGet(state.user, 'role', ''),
+             newUser: {
+               name: fd.get('name'),
+               email: fd.get('email'),
+               password: fd.get('password'),
+               role: fd.get('role'),
+               permissions: fd.get('permissions'),
+               avenue: fd.get('avenue')
+             }
+           });
+
+           if (res.success) {
+             showToast('User created', res.message || 'User added successfully', 'success');
+             closeModal();
+             await refreshDashboard();
+           } else {
+             showToast('Failed', res.message || 'Unable to create user', 'error');
+           }
+         } catch (err) {
+           console.error(err);
+           showToast('Error', 'Unable to create user.', 'error');
+         }
+       });
+     }
+
+     function openEditUserModal(email) {
+       const user = (state.usersData || []).find(u => safeGet(u, 'email', '') === email);
+       if (!user) return showToast('Not found', 'User not found.', 'error');
+       if (!isRole('superadmin')) return showToast('Permission denied', 'Only superadmin can edit users.', 'error');
+
+       openModal('Edit Admin User', `
+         <form id="modalEditUserForm">
+           <input type="hidden" name="targetEmail" value="${safeGet(user,'email','')}">
+           <div class="form-grid">
+             <div class="form-group">
+               <label class="form-label">Name</label>
+               <input class="text-input" name="name" value="${safeGet(user,'name','')}">
+             </div>
+             <div class="form-group">
+               <label class="form-label">Role</label>
+               <input class="text-input" name="role" value="${safeGet(user,'role','')}">
+             </div>
+             <div class="form-group">
+               <label class="form-label">Permissions</label>
+               <input class="text-input" name="permissions" value="${safeGet(user,'permissions','')}">
+             </div>
+             <div class="form-group">
+               <label class="form-label">Avenue</label>
+               <input class="text-input" name="avenue" value="${safeGet(user,'avenue','')}">
+             </div>
+             <div class="form-group">
+               <label class="form-label">Active</label>
+               <input class="text-input" name="active" value="${safeGet(user,'active','TRUE')}">
+             </div>
+           </div>
+
+           <div class="form-actions">
+             <button type="submit" class="btn primary">
+               <i class="fas fa-floppy-disk"></i>
+               <span>Update User</span>
+             </button>
+             <button type="button" class="btn secondary" onclick="closeModal()">
+               <i class="fas fa-xmark"></i>
+               <span>Cancel</span>
+             </button>
+           </div>
+         </form>
+       `);
+
+       document.getElementById('modalEditUserForm').addEventListener('submit', async function(e) {
+         e.preventDefault();
+         const fd = new FormData(this);
+
+         try {
+           const res = await postData({
+             action: 'updateUser',
+             userRole: safeGet(state.user, 'role', ''),
+             targetEmail: fd.get('targetEmail'),
+             updates: {
+               name: fd.get('name'),
+               role: fd.get('role'),
+               permissions: fd.get('permissions'),
+               avenue: fd.get('avenue'),
+               active: fd.get('active')
+             }
+           });
+
+           if (res.success) {
+             showToast('User updated', res.message || 'User updated successfully', 'success');
+             closeModal();
+             await refreshDashboard();
+           } else {
+             showToast('Failed', res.message || 'Unable to update user', 'error');
+           }
+         } catch (err) {
+           console.error(err);
+           showToast('Error', 'Unable to update user.', 'error');
+         }
+       });
+     }
+
+     async function approveJoinRequest(requestId) {
+       if (!canAccess('approve')) return showToast('Permission denied', 'You cannot approve requests.', 'error');
+       if (!confirm('Approve this join request?')) return;
+
+       try {
+         const res = await postData({
+           action: 'approveMember',
+           requestId: requestId,
+           userRole: safeGet(state.user, 'role', ''),
+           userEmail: safeGet(state.user, 'email', '')
+         });
+
+         if (res.success) {
+           showToast('Approved', res.message, 'success');
+           await refreshDashboard();
+         } else {
+           showToast('Failed', res.message, 'error');
+         }
+       } catch (err) {
+         showToast('Error', 'Unable to approve request.', 'error');
+       }
+     }
+
+     async function rejectJoinRequest(requestId) {
+       if (!canAccess('approve')) return showToast('Permission denied', 'You cannot reject requests.', 'error');
+       if (!confirm('Reject this join request?')) return;
+
+       try {
+         const res = await postData({
+           action: 'rejectMember',
+           requestId: requestId,
+           userRole: safeGet(state.user, 'role', ''),
+           userEmail: safeGet(state.user, 'email', '')
+         });
+
+         if (res.success) {
+           showToast('Rejected', res.message, 'warning');
+           await refreshDashboard();
+         } else {
+           showToast('Failed', res.message, 'error');
+         }
+       } catch (err) {
+         showToast('Error', 'Unable to reject request.', 'error');
+       }
+     }
+
+     async function approveEventAdmin(eventId) {
+       if (!canAccess('approve')) return showToast('Permission denied', 'You cannot approve events.', 'error');
+       if (!confirm('Approve this event?')) return;
+
+       try {
+         const res = await postData({
+           action: 'approveEvent',
+           id: eventId,
+           userRole: safeGet(state.user, 'role', ''),
+           userEmail: safeGet(state.user, 'email', '')
+         });
+
+         if (res.success) {
+           showToast('Approved', res.message, 'success');
+           await refreshDashboard();
+         } else {
+           showToast('Failed', res.message, 'error');
+         }
+       } catch (err) {
+         showToast('Error', 'Unable to approve event.', 'error');
+       }
+     }
+
+     async function rejectEventAdmin(eventId) {
+       if (!canAccess('approve')) return showToast('Permission denied', 'You cannot reject events.', 'error');
+       if (!confirm('Reject this event?')) return;
+
+       try {
+         const res = await postData({
+           action: 'rejectEvent',
+           id: eventId,
+           userRole: safeGet(state.user, 'role', '')
+         });
+
+         if (res.success) {
+           showToast('Rejected', res.message, 'warning');
+           await refreshDashboard();
+         } else {
+           showToast('Failed', res.message, 'error');
+         }
+       } catch (err) {
+         showToast('Error', 'Unable to reject event.', 'error');
+       }
+     }
+
+     async function deleteEventAdmin(eventId) {
+       if (!canAccess('events') && !canAccess('all')) return showToast('Permission denied', 'You cannot delete events.', 'error');
+       if (!confirm('Delete this event?')) return;
+
+       try {
+         const res = await postData({
+           action: 'deleteEvent',
+           id: eventId,
+           userRole: safeGet(state.user, 'role', '')
+         });
+
+         if (res.success) {
+           showToast('Deleted', res.message, 'success');
+           await refreshDashboard();
+         } else {
+           showToast('Failed', res.message, 'error');
+         }
+       } catch (err) {
+         showToast('Error', 'Unable to delete event.', 'error');
+       }
+     }
+
+     async function deleteMemberAdmin(memberId) {
+       if (!canAccess('members')) return showToast('Permission denied', 'You cannot delete members.', 'error');
+       if (!confirm('Delete this member?')) return;
+
+       try {
+         const res = await postData({
+           action: 'deleteMember',
+           id: memberId,
+           userRole: safeGet(state.user, 'role', '')
+         });
+
+         if (res.success) {
+           showToast('Deleted', res.message, 'success');
+           await refreshDashboard();
+         } else {
+           showToast('Failed', res.message, 'error');
+         }
+       } catch (err) {
+         showToast('Error', 'Unable to delete member.', 'error');
+       }
+     }
+
+     async function deleteBulletinAdmin(bulletinId) {
+       if (!canAccess('bulletins')) return showToast('Permission denied', 'You cannot delete bulletins.', 'error');
+       if (!confirm('Delete this bulletin?')) return;
+
+       try {
+         const res = await postData({
+           action: 'deleteBulletin',
+           id: bulletinId,
+           userRole: safeGet(state.user, 'role', '')
+         });
+
+         if (res.success) {
+           showToast('Deleted', res.message, 'success');
+           await refreshDashboard();
+         } else {
+           showToast('Failed', res.message, 'error');
+         }
+       } catch (err) {
+         showToast('Error', 'Unable to delete bulletin.', 'error');
+       }
+     }
+
+     async function deleteUserAdmin(email) {
+       if (!isRole('superadmin')) return showToast('Permission denied', 'Only superadmin can delete users.', 'error');
+       if (!confirm('Delete this user?')) return;
+
+       try {
+         const res = await postData({
+           action: 'deleteUser',
+           targetEmail: email,
+           userRole: safeGet(state.user, 'role', ''),
+           userEmail: safeGet(state.user, 'email', '')
+         });
+
+         if (res.success) {
+           showToast('Deleted', res.message, 'success');
+           await refreshDashboard();
+         } else {
+           showToast('Failed', res.message, 'error');
+         }
+       } catch (err) {
+         showToast('Error', 'Unable to delete user.', 'error');
+       }
+     }
+
+    function buildTreasuryEntryForm(entry = null, forcedType = '') {
+      const isEdit = !!entry;
+      const type = entry ? entry.type : forcedType || 'income';
+
+      return `
+        <form id="treasuryEntryForm">
+          ${isEdit ? `<input type="hidden" name="id" value="${entry.id}">` : ''}
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input type="date" class="text-input" name="date" value="${entry ? entry.date : new Date().toISOString().split('T')[0]}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <select class="select-input" name="type" required>
+                <option value="income" ${type === 'income' ? 'selected' : ''}>Income</option>
+                <option value="expense" ${type === 'expense' ? 'selected' : ''}>Expense</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="select-input" name="category" required>
+                <option value="membership_due" ${entry?.category === 'membership_due' ? 'selected' : ''}>membership_due</option>
+                <option value="sponsorship" ${entry?.category === 'sponsorship' ? 'selected' : ''}>sponsorship</option>
+                <option value="donation" ${entry?.category === 'donation' ? 'selected' : ''}>donation</option>
+                <option value="event_collection" ${entry?.category === 'event_collection' ? 'selected' : ''}>event_collection</option>
+                <option value="event_expense" ${entry?.category === 'event_expense' ? 'selected' : ''}>event_expense</option>
+                <option value="travel" ${entry?.category === 'travel' ? 'selected' : ''}>travel</option>
+                <option value="stationery" ${entry?.category === 'stationery' ? 'selected' : ''}>stationery</option>
+                <option value="venue" ${entry?.category === 'venue' ? 'selected' : ''}>venue</option>
+                <option value="food" ${entry?.category === 'food' ? 'selected' : ''}>food</option>
+                <option value="other" ${entry?.category === 'other' ? 'selected' : ''}>other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount (₹)</label>
+              <input type="number" class="text-input" name="amount" value="${entry ? entry.amount : ''}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Source / Sponsor</label>
+              <input class="text-input" name="source" value="${entry ? (entry.source || '') : ''}" placeholder="Sponsor, donation, due, vendor...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sponsor Name</label>
+              <input class="text-input" name="sponsor_name" value="${entry ? (entry.sponsor_name || '') : ''}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Member / Contact</label>
+              <input class="text-input" name="member_name" value="${entry ? (entry.member_name || '') : ''}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reference No</label>
+              <input class="text-input" name="reference_no" value="${entry ? (entry.reference_no || '') : ''}" placeholder="Receipt / Invoice / UTR">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Purpose / Used For</label>
+            <input class="text-input" name="purpose" value="${entry ? (entry.purpose || '') : ''}" placeholder="Why amount was collected / spent">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea class="textarea-input" name="notes">${entry ? (entry.notes || '') : ''}</textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn treasury">
+              <i class="fas fa-floppy-disk"></i>
+              <span>${isEdit ? 'Update Entry' : 'Save Entry'}</span>
+            </button>
+            <button type="button" class="btn secondary" onclick="closeModal()">
+              <i class="fas fa-xmark"></i>
+              <span>Cancel</span>
+            </button>
+          </div>
+        </form>
+      `;
+    }
+
+    function openAddTreasuryEntryModal(forcedType = '') {
+      if (!(canAccess('finance') || isRole('treasurer') || canAccess('all'))) {
+        return showToast('Permission denied', 'You cannot manage treasury data.', 'error');
+      }
+
+      openModal('Add Treasury Entry', buildTreasuryEntryForm(null, forcedType));
+
+      document.getElementById('treasuryEntryForm').addEventListener('submit', async function(e){
+        e.preventDefault();
+        const fd = new FormData(this);
+
+        try {
+          const res = await postData({
+            action: 'addTreasuryEntry',
+            userRole: safeGet(state.user, 'role', ''),
+            date: fd.get('date'),
+            type: fd.get('type'),
+            category: fd.get('category'),
+            amount: Number(fd.get('amount') || 0),
+            source: fd.get('source') || '',
+            sponsor_name: fd.get('sponsor_name') || '',
+            member_name: fd.get('member_name') || '',
+            purpose: fd.get('purpose') || '',
+            notes: fd.get('notes') || '',
+            reference_no: fd.get('reference_no') || '',
+            created_by: safeGet(state.user, 'email', '')
+          });
+
+          if (res.success) {
+            showToast('Entry saved', res.message || 'Treasury record added successfully.', 'success');
+            closeModal();
+            await refreshDashboard();
+          } else {
+            showToast('Failed', res.message || 'Unable to add treasury entry.', 'error');
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('Error', 'Unable to save treasury entry.', 'error');
+        }
+      });
+    }
+
+    function openEditTreasuryEntryModal(entryId) {
+      const entry = (state.treasuryEntries || []).find(e => e.id === entryId);
+      if (!entry) return showToast('Not found', 'Treasury entry not found.', 'error');
+
+      openModal('Edit Treasury Entry', buildTreasuryEntryForm(entry));
+
+      document.getElementById('treasuryEntryForm').addEventListener('submit', async function(e){
+        e.preventDefault();
+        const fd = new FormData(this);
+
+        try {
+          const res = await postData({
+            action: 'updateTreasuryEntry',
+            userRole: safeGet(state.user, 'role', ''),
+            id: entryId,
+            date: fd.get('date'),
+            type: fd.get('type'),
+            category: fd.get('category'),
+            amount: Number(fd.get('amount') || 0),
+            source: fd.get('source') || '',
+            sponsor_name: fd.get('sponsor_name') || '',
+            member_name: fd.get('member_name') || '',
+            purpose: fd.get('purpose') || '',
+            notes: fd.get('notes') || '',
+            reference_no: fd.get('reference_no') || '',
+            status: 'active'
+          });
+
+          if (res.success) {
+            showToast('Entry updated', res.message || 'Treasury record updated successfully.', 'success');
+            closeModal();
+            await refreshDashboard();
+          } else {
+            showToast('Failed', res.message || 'Unable to update treasury entry.', 'error');
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('Error', 'Unable to update treasury entry.', 'error');
+        }
+      });
+    }
+
+    function previewTreasuryEntry(entryId) {
+      const entry = (state.treasuryEntries || []).find(e => e.id === entryId);
+      if (!entry) return showToast('Not found', 'Treasury entry not found.', 'error');
+
+      openModal('Treasury Entry Preview', `
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Date</label><input class="text-input" value="${formatDate(entry.date)}" readonly></div>
+          <div class="form-group"><label class="form-label">Type</label><input class="text-input" value="${entry.type}" readonly></div>
+          <div class="form-group"><label class="form-label">Category</label><input class="text-input" value="${entry.category}" readonly></div>
+          <div class="form-group"><label class="form-label">Amount</label><input class="text-input" value="${formatINR(entry.amount)}" readonly></div>
+          <div class="form-group"><label class="form-label">Source / Sponsor</label><input class="text-input" value="${entry.source || entry.sponsor_name || ''}" readonly></div>
+          <div class="form-group"><label class="form-label">Member / Contact</label><input class="text-input" value="${entry.member_name || ''}" readonly></div>
+          <div class="form-group"><label class="form-label">Reference</label><input class="text-input" value="${entry.reference_no || ''}" readonly></div>
+          <div class="form-group"><label class="form-label">Created By</label><input class="text-input" value="${entry.created_by || ''}" readonly></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Purpose / Used For</label>
+          <textarea class="textarea-input" readonly>${entry.purpose || ''}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="textarea-input" readonly>${entry.notes || ''}</textarea>
+        </div>
+      `);
+    }
+
+    async function deleteTreasuryEntry(entryId) {
+      if (!(canAccess('finance') || isRole('treasurer') || canAccess('all'))) {
+        return showToast('Permission denied', 'You cannot delete treasury entries.', 'error');
+      }
+      if (!confirm('Delete this treasury entry?')) return;
+
+      try {
+        const res = await postData({
+          action: 'deleteTreasuryEntry',
+          userRole: safeGet(state.user, 'role', ''),
+          id: entryId
+        });
+
+        if (res.success) {
+          showToast('Deleted', res.message || 'Treasury entry removed.', 'success');
+          await refreshDashboard();
+        } else {
+          showToast('Failed', res.message || 'Unable to delete treasury entry.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Error', 'Unable to delete treasury entry.', 'error');
+      }
+    }
+
+    function openTreasuryCalculator() {
+      openModal('Treasury Calculator', `
+        <form id="treasuryCalcForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Expected Member Count</label>
+              <input type="number" class="text-input" name="members" value="${safeGet(state.allData?.statistics, 'members', 0)}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Per Member Due (₹)</label>
+              <input type="number" class="text-input" name="fee" value="500">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expected Sponsors (₹)</label>
+              <input type="number" class="text-input" name="sponsor" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Estimated Expenses (₹)</label>
+              <input type="number" class="text-input" name="expense" value="10000">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Months</label>
+              <select class="select-input" name="months">
+                <option value="1">Monthly</option>
+                <option value="6">Half-Yearly</option>
+                <option value="12">Yearly</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn treasury"><i class="fas fa-calculator"></i><span>Calculate</span></button>
+            <button type="button" class="btn secondary" onclick="closeModal()"><i class="fas fa-xmark"></i><span>Close</span></button>
+          </div>
+          <div id="treasuryCalcResult" style="margin-top:16px;"></div>
+        </form>
+      `);
+
+      document.getElementById('treasuryCalcForm').addEventListener('submit', function(e){
+        e.preventDefault();
+        const fd = new FormData(this);
+        const members = Number(fd.get('members')) || 0;
+        const fee = Number(fd.get('fee')) || 0;
+        const sponsor = Number(fd.get('sponsor')) || 0;
+        const expense = Number(fd.get('expense')) || 0;
+        const months = Number(fd.get('months')) || 1;
+
+        const dueCollection = members * fee * months;
+        const totalIncome = dueCollection + sponsor;
+        const balance = totalIncome - expense;
+
+        document.getElementById('treasuryCalcResult').innerHTML = `
+          <div class="permission-box">
+            <div class="permission-chip">Due Collection: ${formatINR(dueCollection)}</div>
+            <div class="permission-chip">Sponsor Support: ${formatINR(sponsor)}</div>
+            <div class="permission-chip">Total Income: ${formatINR(totalIncome)}</div>
+            <div class="permission-chip">Estimated Expense: ${formatINR(expense)}</div>
+            <div class="permission-chip">Estimated Balance: ${formatINR(balance)}</div>
+          </div>
+        `;
+      });
+    }
+
+    function downloadTreasuryStatement() {
+      const summary = calculateTreasurySummary();
+      const entries = summary.entries;
+      if (!entries.length) {
+        showToast('No Data', 'No treasury entries available for selected filters.', 'warning');
+        return;
+      }
+
+      const period = els.treasuryPeriodFilter.value || 'monthly';
+      const year = els.treasuryYearFilter.value || new Date().getFullYear();
+      const month = els.treasuryMonthFilter.value || 'all';
+      const monthLabel = month === 'all' ? 'AllMonths' : month;
+
+      let csv = 'Date,Type,Category,Source/Sponsor,Member/Contact,Purpose,Amount (INR),Reference,Notes\n';
+
+      entries.forEach(entry => {
+        const row = [
+          formatDate(entry.date),
+          entry.type,
+          entry.category,
+          entry.source || entry.sponsor_name || '',
+          entry.member_name || '',
+          (entry.purpose || '').replace(/,/g, ' '),
+          Number(entry.amount || 0),
+          (entry.reference_no || '').replace(/,/g, ' '),
+          (entry.notes || '').replace(/,/g, ' ')
+        ];
+        csv += row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',') + '\n';
+      });
+
+      csv += '\n';
+      csv += `"Total Income","${summary.totalIncome}"\n`;
+      csv += `"Total Expense","${summary.totalExpense}"\n`;
+      csv += `"Sponsor Amount","${summary.totalSponsor}"\n`;
+      csv += `"Due Collected","${summary.totalDue}"\n`;
+      csv += `"Balance","${summary.balance}"\n`;
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const fileName = `treasury_statement_${period}_${year}_${monthLabel}.csv`;
+
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast('Downloaded', 'Treasury statement exported successfully.', 'success');
+    }
+
+    async function saveSettings() {
+      if (!isRole('superadmin')) {
+        return showToast('Permission denied', 'Only superadmin can save settings.', 'error');
+      }
+
+      try {
+        const res = await postData({
+          action: 'updateSettings',
+          userRole: safeGet(state.user, 'role', ''),
+          settings: {
+            club_name: els.settingClubName.value.trim(),
+            district: els.settingDistrict.value.trim(),
+            admin_email: els.settingAdminEmail.value.trim(),
+            members_group_email: els.settingMembersGroupEmail.value.trim(),
+            chartered_date: els.settingCharteredDate.value.trim(),
+            theme_color: els.settingThemeColor.value.trim()
+          }
+        });
+
+        if (res.success) {
+          showToast('Saved', res.message || 'Settings updated successfully', 'success');
+          await refreshDashboard();
+        } else {
+          showToast('Failed', res.message || 'Unable to save settings', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Error', 'Unable to save settings.', 'error');
+      }
+    }
+
+    async function refreshDashboard() {
+      await loadAllData();
+      openSection(state.currentSection);
+    }
+
+    function logout() {
+      localStorage.removeItem('rotaractUser');
+      localStorage.removeItem('rotaractToken');
+      sessionStorage.removeItem('dashboardThemeIndex');
+      window.location.href = 'admin-login.html';
+    }
+
+    function bindNavigation() {
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+          if (item.classList.contains('hidden')) return;
+          openSection(item.dataset.section);
+        });
+      });
+
+      document.querySelectorAll('[data-open-section]').forEach(btn => {
+        btn.addEventListener('click', () => openSection(btn.dataset.openSection));
+      });
+    }
+
+    function openSurpriseGame() {
+      // 1) Random theme (different from current)
+      const next = Math.floor(Math.random() * THEMES.length);
+      applyThemeByIndex(next);
+
+      showToast('Surprise!', 'Theme changed + opening game...', 'info');
+
+      // 2) Open the game in a modal popup
+      openModal('Surprise Game', `
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="permission-chip">
+            Tip: Press ESC or click outside to close.
+          </div>
+          <iframe class="game-frame" src="${SURPRISE_GAME_URL}" title="Surprise Game"></iframe>
+        </div>
+      `);
+    }
+
+    function bindTopActions() {
+      els.menuToggle.addEventListener('click', openSidebarMobile);
+      els.sidebarOverlay.addEventListener('click', closeSidebarMobile);
+      els.surpriseBtn.addEventListener('click', openSurpriseGame);
+      els.themeSwitchBtn.addEventListener('click', cycleTheme);
+      els.siteBtn.addEventListener('click', () => window.open('index.html', '_blank'));
+      els.logoutBtn.addEventListener('click', () => {
+        if (confirm('Logout from dashboard?')) logout();
+      });
+      els.modeToggleBtn.addEventListener('click', toggleMode);
+      els.closeModalBtn.addEventListener('click', closeModal);
+      els.formModalOverlay.addEventListener('click', e => {
+        if (e.target === els.formModalOverlay) closeModal();
+      });
+      els.saveSettingsBtn.addEventListener('click', saveSettings);
+
+      els.saveTreasuryNotesBtn.addEventListener('click', () => {
+        localStorage.setItem('treasuryNotes', els.treasuryNotes.value || '');
+        showToast('Saved', 'Treasury notes saved locally on this device.', 'success');
+      });
+
+      els.clearTreasuryNotesBtn.addEventListener('click', () => {
+        if (!confirm('Clear treasury notes?')) return;
+        localStorage.removeItem('treasuryNotes');
+        els.treasuryNotes.value = '';
+        showToast('Cleared', 'Treasury notes removed.', 'warning');
+      });
+
+      els.refreshTreasurySummaryBtn.addEventListener('click', () => {
+        renderTreasury();
+        showToast('Refreshed', 'Treasury summary refreshed.', 'info');
+      });
+
+      els.downloadTreasuryStatementBtn.addEventListener('click', downloadTreasuryStatement);
+      els.openAddTreasuryEntryBtn.addEventListener('click', () => openAddTreasuryEntryModal());
+      els.openTreasuryCalculatorBtn.addEventListener('click', openTreasuryCalculator);
+
+      els.quickActionBtn.addEventListener('click', () => {
+        switch (state.currentSection) {
+          case 'events': return openAddEventModal();
+          case 'members': return openAddMemberModal();
+          case 'bulletins': return openAddBulletinModal();
+          case 'users': return openAddUserModal();
+          case 'settings': return saveSettings();
+          case 'joinRequests': return openSection('joinRequests');
+          case 'treasury': return openAddTreasuryEntryModal();
+          default:
+            if (canAccess('events')) openAddEventModal();
+            else if (canAccess('finance') || isRole('treasurer')) openSection('treasury');
+            else showToast('Quick action unavailable', 'No action available for your current permissions.', 'warning');
+        }
+      });
+
+      document.getElementById('openAddEventBtn')?.addEventListener('click', openAddEventModal);
+      document.getElementById('openAddMemberBtn')?.addEventListener('click', openAddMemberModal);
+      document.getElementById('openAddBulletinBtn')?.addEventListener('click', openAddBulletinModal);
+      document.getElementById('openAddUserBtn')?.addEventListener('click', openAddUserModal);
+
+      els.eventsSearch.addEventListener('input', renderEventsTable);
+      els.eventsStatusFilter.addEventListener('change', renderEventsTable);
+      els.membersSearch.addEventListener('input', renderMembersTable);
+      els.membersStatusFilter.addEventListener('change', renderMembersTable);
+      els.requestsSearch.addEventListener('input', renderRequestsTable);
+      els.requestsStatusFilter.addEventListener('change', renderRequestsTable);
+      els.bulletinsSearch.addEventListener('input', renderBulletinsTable);
+      els.usersSearch.addEventListener('input', renderUsersTable);
+      els.treasurySearch.addEventListener('input', renderTreasury);
+      els.treasuryTypeFilter.addEventListener('change', renderTreasury);
+      els.treasuryCategoryFilter.addEventListener('change', renderTreasury);
+      els.treasuryYearFilter.addEventListener('change', renderTreasury);
+      els.treasuryMonthFilter.addEventListener('change', renderTreasury);
+      els.treasuryPeriodFilter.addEventListener('change', renderTreasury);
+    }
+
+    async function init() {
+      restoreMode();
+      applyRandomTheme();
+
+      if (!loadSession()) return;
+
+      try {
+        await loadAllData();
+        applyRoleVisibility();
+        bindNavigation();
+        bindTopActions();
+        openSection('overview');
+        showToast('Welcome', `Logged in as ${safeGet(state.user, 'name', 'Admin')}`, 'success');
+      } catch (error) {
+        console.error(error);
+        showToast('Error', error.message || 'Failed to load data from API.', 'error');
+      }
+    }
+
+    function restoreMode() {
+      const saved = localStorage.getItem('dashboardThemeMode') || localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+      els.modeToggleBtn.innerHTML = saved === 'dark'
+        ? '<i class="fas fa-sun"></i>'
+        : '<i class="fas fa-moon"></i>';
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

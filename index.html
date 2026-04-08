@@ -1,0 +1,2510 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Rotaract Club of Coimbatore Unity - Building Leaders, Making Friends since 2014. District 3206.">
+  <meta name="theme-color" content="#2563eb">
+  <title>Rotaract Club of Coimbatore Unity | District 3206</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root{
+      --primary:#2563eb;
+      --primary-light:#3b82f6;
+      --primary-dark:#1d4ed8;
+      --primary-soft:rgba(37,99,235,.14);
+      --primary-glow:rgba(37,99,235,.35);
+
+      --secondary:#7c3aed;
+      --accent:#06b6d4;
+      --gold:#f59e0b;
+      --rose:#f43f5e;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --error:#ef4444;
+
+      --bg-primary:#030712;
+      --bg-secondary:#0a0f1a;
+      --bg-tertiary:#111827;
+
+      --glass:rgba(255,255,255,.04);
+      --glass-strong:rgba(255,255,255,.08);
+      --glass-hover:rgba(255,255,255,.12);
+      --glass-border:rgba(255,255,255,.10);
+      --glass-border-hover:rgba(255,255,255,.18);
+
+      --text-primary:#f8fafc;
+      --text-secondary:#94a3b8;
+      --text-muted:#64748b;
+
+      --gradient-primary:linear-gradient(135deg,#2563eb 0%, #7c3aed 100%);
+      --gradient-secondary:linear-gradient(135deg,#06b6d4 0%, #3b82f6 100%);
+      --gradient-gold:linear-gradient(135deg,#f59e0b 0%, #f43f5e 100%);
+      --gradient-mesh:
+        radial-gradient(circle at 10% 10%, rgba(37,99,235,.18), transparent 30%),
+        radial-gradient(circle at 88% 12%, rgba(124,58,237,.16), transparent 28%),
+        radial-gradient(circle at 20% 80%, rgba(6,182,212,.12), transparent 28%),
+        radial-gradient(circle at 85% 70%, rgba(245,158,11,.08), transparent 28%);
+
+      --shadow-sm:0 4px 14px rgba(0,0,0,.18);
+      --shadow-md:0 10px 30px rgba(0,0,0,.28);
+      --shadow-lg:0 18px 50px rgba(0,0,0,.35);
+      --shadow-xl:0 24px 80px rgba(0,0,0,.45);
+      --shadow-glow:0 0 40px var(--primary-glow);
+
+      --radius-sm:8px;
+      --radius-md:14px;
+      --radius-lg:22px;
+      --radius-xl:30px;
+      --radius-2xl:42px;
+      --radius-full:9999px;
+
+      --font:'Poppins',sans-serif;
+      --transition:.35s cubic-bezier(.16,1,.3,1);
+      --ease-bounce:cubic-bezier(.68,-0.55,.265,1.55);
+      --section-padding:105px;
+      --container:1400px;
+    }
+
+    [data-theme="light"]{
+      --bg-primary:#f4f8ff;
+      --bg-secondary:#ffffff;
+      --bg-tertiary:#edf3ff;
+      --glass:rgba(255,255,255,.68);
+      --glass-strong:rgba(255,255,255,.86);
+      --glass-hover:rgba(255,255,255,.96);
+      --glass-border:rgba(37,99,235,.14);
+      --glass-border-hover:rgba(37,99,235,.28);
+      --text-primary:#0f172a;
+      --text-secondary:#475569;
+      --text-muted:#64748b;
+      --shadow-sm:0 4px 14px rgba(37,99,235,.08);
+      --shadow-md:0 10px 30px rgba(37,99,235,.12);
+      --shadow-lg:0 18px 50px rgba(37,99,235,.16);
+      --shadow-xl:0 24px 80px rgba(37,99,235,.18);
+      --primary-glow:rgba(37,99,235,.22);
+      --gradient-mesh:
+        radial-gradient(circle at 10% 10%, rgba(37,99,235,.12), transparent 30%),
+        radial-gradient(circle at 88% 12%, rgba(124,58,237,.10), transparent 28%),
+        radial-gradient(circle at 20% 80%, rgba(6,182,212,.08), transparent 28%);
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:96px}
+    body{
+      font-family:var(--font);
+      background:var(--bg-primary);
+      color:var(--text-primary);
+      line-height:1.7;
+      overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+      transition:background-color .4s ease,color .4s ease;
+    }
+
+    a{text-decoration:none;color:inherit}
+    img{display:block;max-width:100%}
+    button{font-family:var(--font);border:none;background:none;cursor:pointer}
+    input,select,textarea{font-family:var(--font);outline:none}
+    ul{list-style:none}
+    ::selection{background:var(--primary);color:#fff}
+
+    ::-webkit-scrollbar{width:10px;height:10px}
+    ::-webkit-scrollbar-track{background:var(--bg-secondary)}
+    ::-webkit-scrollbar-thumb{
+      background:var(--gradient-primary);
+      border-radius:10px;
+      border:2px solid var(--bg-secondary);
+    }
+
+    .animated-bg{
+      position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden;
+      background:var(--gradient-mesh);
+    }
+    .animated-bg::before{
+      content:"";
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(var(--glass-border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--glass-border) 1px, transparent 1px);
+      background-size:70px 70px;
+      mask-image:radial-gradient(circle at center, rgba(0,0,0,.85) 10%, transparent 70%);
+      -webkit-mask-image:radial-gradient(circle at center, rgba(0,0,0,.85) 10%, transparent 70%);
+      opacity:.5;
+    }
+
+    .orb{
+      position:absolute;border-radius:50%;filter:blur(90px);animation:orbFloat 18s ease-in-out infinite;
+      opacity:.18;
+    }
+    .orb.one{width:420px;height:420px;background:var(--primary);top:-10%;left:-8%}
+    .orb.two{width:360px;height:360px;background:var(--secondary);right:-8%;bottom:-12%;animation-delay:-6s}
+    .orb.three{width:280px;height:280px;background:var(--accent);top:40%;left:45%;animation-delay:-12s}
+    @keyframes orbFloat{
+      0%,100%{transform:translate(0,0) scale(1)}
+      25%{transform:translate(30px,-35px) scale(1.05)}
+      50%{transform:translate(-20px,20px) scale(.95)}
+      75%{transform:translate(25px,30px) scale(1.02)}
+    }
+
+    .particles-container{position:absolute;inset:0;overflow:hidden}
+    .particle{
+      position:absolute;border-radius:50%;
+      animation:particleFly linear infinite;
+    }
+    @keyframes particleFly{
+      0%{transform:translateY(100vh) rotate(0deg);opacity:0}
+      10%{opacity:.5}
+      90%{opacity:.5}
+      100%{transform:translateY(-100vh) rotate(720deg);opacity:0}
+    }
+
+    .loading-screen{
+      position:fixed;inset:0;background:var(--bg-primary);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      z-index:9999;transition:.7s;
+    }
+    .loading-screen.hidden{opacity:0;visibility:hidden}
+    .loader-wrap{position:relative;width:120px;height:120px}
+    .loader-ring{
+      position:absolute;inset:0;border-radius:50%;border:3px solid transparent;
+    }
+    .loader-ring:nth-child(1){border-top-color:var(--primary);animation:spin 1.4s linear infinite}
+    .loader-ring:nth-child(2){inset:10px;border-right-color:var(--secondary);animation:spin 1.1s linear infinite reverse}
+    .loader-ring:nth-child(3){inset:22px;border-bottom-color:var(--accent);animation:spin .9s linear infinite}
+    .loader-logo{
+      position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:48px;height:48px;border-radius:50%;border:2px solid var(--glass-border);background:var(--bg-secondary)
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-text{margin-top:24px;font-size:.85rem;letter-spacing:3px;color:var(--text-secondary);text-transform:uppercase}
+
+    .toast-container{
+      position:fixed;top:95px;right:20px;z-index:9998;
+      width:min(380px,calc(100% - 40px));display:flex;flex-direction:column;gap:12px;
+    }
+    .toast{
+      display:flex;gap:12px;align-items:flex-start;padding:16px 18px;
+      background:var(--glass-strong);backdrop-filter:blur(22px);
+      border:1px solid var(--glass-border);border-radius:20px;
+      box-shadow:var(--shadow-lg);animation:toastIn .45s var(--ease-bounce);
+      position:relative;overflow:hidden;
+    }
+    .toast::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+    .toast.success::before{background:var(--success)}
+    .toast.error::before{background:var(--error)}
+    .toast.warning::before{background:var(--warning)}
+    .toast.info::before{background:var(--primary)}
+    .toast.removing{animation:toastOut .35s var(--transition) forwards}
+    @keyframes toastIn{from{opacity:0;transform:translateX(100%) scale(.8)}to{opacity:1;transform:translateX(0) scale(1)}}
+    @keyframes toastOut{to{opacity:0;transform:translateX(100%) scale(.8)}}
+    .toast-icon{font-size:1rem;margin-top:2px}
+    .toast-content{flex:1}
+    .toast-title{font-weight:700;font-size:.93rem;margin-bottom:2px}
+    .toast-message{font-size:.84rem;color:var(--text-secondary)}
+    .toast-close{
+      width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted)
+    }
+
+    .navbar{
+      position:fixed;top:0;left:0;right:0;z-index:1200;
+      padding:14px 5%;display:flex;align-items:center;justify-content:space-between;transition:var(--transition);
+    }
+    .navbar::before{
+      content:"";position:absolute;inset:0;background:transparent;backdrop-filter:blur(0);border-bottom:1px solid transparent;z-index:-1;transition:var(--transition);
+    }
+    .navbar.scrolled{padding:10px 5%}
+    .navbar.scrolled::before{
+      background:var(--glass);backdrop-filter:blur(18px);border-bottom-color:var(--glass-border);box-shadow:var(--shadow-md);
+    }
+
+    .nav-brand{display:flex;align-items:center;gap:12px}
+    .nav-logo-wrap{position:relative;width:52px;height:52px;flex-shrink:0}
+    .nav-logo{
+      width:100%;height:100%;border-radius:50%;object-fit:cover;background:var(--bg-secondary);
+      border:2px solid var(--primary);padding:2px;position:relative;z-index:2;
+      box-shadow:var(--shadow-glow);
+    }
+    .nav-logo-glow{
+      position:absolute;inset:-3px;border-radius:50%;background:var(--gradient-primary);
+      filter:blur(10px);opacity:.25;z-index:1;
+    }
+    .nav-brand-info{display:flex;flex-direction:column}
+    .nav-brand-title{
+      font-size:.93rem;font-weight:700;line-height:1.25;max-width:255px;
+      background:linear-gradient(135deg,var(--text-primary),var(--primary-light));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .nav-brand-subtitle{
+      font-size:.68rem;font-weight:600;color:var(--primary);letter-spacing:1px;display:flex;align-items:center;gap:6px;
+    }
+    .nav-brand-subtitle::before{
+      content:"";width:6px;height:6px;border-radius:50%;background:var(--success);
+      animation:statusBlink 2s ease-in-out infinite;
+    }
+    @keyframes statusBlink{0%,100%{opacity:1}50%{opacity:.35}}
+
+    .nav-menu{display:flex;align-items:center;gap:5px}
+    .nav-link{
+      padding:9px 15px;border-radius:999px;font-size:.86rem;font-weight:500;color:var(--text-secondary);
+      position:relative;transition:var(--transition);
+    }
+    .nav-link::before{
+      content:"";position:absolute;inset:0;background:var(--gradient-primary);border-radius:999px;
+      opacity:0;transform:scale(.88);transition:var(--transition);z-index:-1;
+    }
+    .nav-link:hover{color:var(--text-primary)}
+    .nav-link.active{color:#fff}
+    .nav-link.active::before{opacity:1;transform:scale(1)}
+
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .icon-btn{
+      width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(18px);
+      color:var(--text-secondary);transition:var(--transition);
+    }
+    .icon-btn:hover{transform:translateY(-2px);border-color:var(--primary);color:var(--primary)}
+    .icon-btn.theme-toggle:hover{transform:translateY(-2px) rotate(180deg)}
+
+    .admin-btn-main{
+      display:flex;align-items:center;gap:10px;padding:11px 22px;border-radius:999px;
+      background:var(--gradient-primary);color:#fff;font-size:.9rem;font-weight:700;
+      box-shadow:var(--shadow-glow);transition:var(--transition);
+    }
+    .admin-btn-main:hover{transform:translateY(-3px)}
+    .admin-btn-main.logged-in{background:var(--gradient-gold)}
+
+    .mobile-toggle{
+      display:none;width:44px;height:44px;border-radius:12px;align-items:center;justify-content:center;
+      flex-direction:column;gap:5px;background:var(--glass);border:1px solid var(--glass-border);
+    }
+    .mobile-toggle span{width:20px;height:2px;background:var(--text-primary);border-radius:2px;transition:var(--transition)}
+    .mobile-toggle.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+    .mobile-toggle.active span:nth-child(2){opacity:0}
+    .mobile-toggle.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+
+    .hero{
+      min-height:100vh;display:flex;align-items:center;justify-content:center;
+      padding:135px 5% 90px;position:relative;overflow:hidden;
+    }
+    .hero-shapes{position:absolute;inset:0;pointer-events:none}
+    .shape{
+      position:absolute;opacity:.12;animation:shapeFloat 18s ease-in-out infinite;
+    }
+    .shape.s1{top:14%;left:7%;width:70px;height:70px;border:3px solid var(--primary);border-radius:32% 68% 52% 48% / 45% 40% 60% 55%}
+    .shape.s2{top:30%;right:12%;width:42px;height:42px;background:var(--gradient-gold);clip-path:polygon(50% 0%,0% 100%,100% 100%)}
+    .shape.s3{bottom:20%;left:14%;width:80px;height:80px;border:3px solid var(--secondary);transform:rotate(45deg)}
+    .shape.s4{bottom:28%;right:20%;width:54px;height:54px;background:var(--gradient-secondary);border-radius:50%}
+    @keyframes shapeFloat{
+      0%,100%{transform:translate(0,0) rotate(0)}
+      25%{transform:translate(15px,-20px) rotate(80deg)}
+      50%{transform:translate(-10px,15px) rotate(160deg)}
+      75%{transform:translate(18px,10px) rotate(240deg)}
+    }
+
+    .hero-content{text-align:center;max-width:980px}
+    .hero-badge{
+      display:inline-flex;align-items:center;gap:10px;padding:10px 22px;border-radius:999px;
+      background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(18px);
+      color:var(--primary);font-size:.84rem;font-weight:600;margin-bottom:28px;box-shadow:var(--shadow-sm);
+    }
+    .hero-title{
+      font-size:clamp(2.4rem,6vw,4.6rem);font-weight:800;line-height:1.08;margin-bottom:20px;letter-spacing:-.03em;
+    }
+    .hero-title-line{display:block}
+    .gradient-text{
+      background:var(--gradient-primary);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .hero-subtitle{
+      max-width:760px;margin:0 auto 40px;color:var(--text-secondary);
+      font-size:clamp(1rem,1.9vw,1.18rem);
+    }
+
+    .hero-buttons{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:58px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      padding:15px 30px;border-radius:999px;font-weight:700;transition:var(--transition);
+    }
+    .btn-primary{background:var(--gradient-primary);color:#fff;box-shadow:var(--shadow-glow)}
+    .btn-primary:hover{transform:translateY(-4px)}
+    .btn-outline{
+      background:var(--glass);border:1px solid var(--glass-border);color:var(--text-primary);backdrop-filter:blur(18px);
+    }
+    .btn-outline:hover{transform:translateY(-4px);border-color:var(--primary)}
+
+    .hero-stats{display:flex;justify-content:center;gap:42px;flex-wrap:wrap}
+    .hero-stat{text-align:center;position:relative}
+    .hero-stat::after{
+      content:"";position:absolute;right:-21px;top:50%;transform:translateY(-50%);
+      width:1px;height:46px;background:linear-gradient(180deg,transparent,var(--glass-border),transparent);
+    }
+    .hero-stat:last-child::after{display:none}
+    .hero-stat-value{
+      display:flex;justify-content:center;align-items:flex-start;font-size:2.35rem;font-weight:800;
+      background:var(--gradient-primary);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .hero-stat-label{
+      margin-top:6px;font-size:.78rem;letter-spacing:1px;text-transform:uppercase;color:var(--text-secondary)
+    }
+
+    .scroll-indicator{
+      position:absolute;left:50%;bottom:36px;transform:translateX(-50%);
+      display:flex;flex-direction:column;align-items:center;gap:10px;
+    }
+    .scroll-indicator span{font-size:.68rem;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase}
+    .scroll-mouse{
+      width:24px;height:40px;border:2px solid var(--glass-border);border-radius:14px;position:relative;
+    }
+    .scroll-mouse::before{
+      content:"";position:absolute;left:50%;top:7px;transform:translateX(-50%);
+      width:4px;height:10px;background:var(--primary);border-radius:2px;animation:scrollWheel 1.8s ease-in-out infinite;
+    }
+    @keyframes scrollWheel{0%,100%{transform:translateX(-50%) translateY(0);opacity:1}50%{transform:translateX(-50%) translateY(10px);opacity:.3}}
+
+    .section{padding:var(--section-padding) 5%;position:relative}
+    .section-alt{background:var(--bg-secondary)}
+    .container{max-width:var(--container);margin:0 auto}
+    .section-header{text-align:center;max-width:760px;margin:0 auto 64px}
+    .section-badge{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;
+      background:var(--primary-soft);border:1px solid rgba(37,99,235,.42);color:var(--primary);
+      font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:18px;
+    }
+    .section-title{font-size:clamp(1.9rem,4vw,3rem);font-weight:800;line-height:1.2;margin-bottom:14px}
+    .section-subtitle{color:var(--text-secondary);font-size:1.02rem}
+
+    .glass-card{
+      background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(20px);
+      border-radius:var(--radius-xl);box-shadow:var(--shadow-md);
+    }
+
+    .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+    .about-image-wrap{position:relative}
+    .about-image{
+      width:100%;height:520px;object-fit:cover;border-radius:32px;border:1px solid var(--glass-border);
+    }
+    .about-frame{
+      position:absolute;top:-18px;left:-18px;right:18px;bottom:18px;border:3px solid var(--primary);border-radius:32px;z-index:-1;
+    }
+    .about-dots{
+      position:absolute;right:-34px;bottom:-34px;width:110px;height:110px;
+      background-image:radial-gradient(var(--primary) 2px, transparent 2px);background-size:14px 14px;opacity:.35;
+    }
+    .float-stat{
+      position:absolute;padding:18px 24px;border-radius:24px;color:#fff;
+      background:var(--gradient-primary);box-shadow:var(--shadow-glow);
+    }
+    .float-stat.bottom{right:-18px;bottom:-18px}
+    .float-stat.top{left:-18px;top:20px;background:var(--gradient-gold)}
+    .float-stat-value{font-size:1.9rem;font-weight:800;line-height:1}
+    .float-stat-label{font-size:.76rem;margin-top:4px;opacity:.92}
+    .about-content h3{font-size:2rem;margin-bottom:16px}
+    .about-content p{color:var(--text-secondary);margin-bottom:28px}
+    .about-features{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    .about-feature{
+      padding:24px;border-radius:22px;background:var(--glass);border:1px solid var(--glass-border);
+      backdrop-filter:blur(18px);transition:var(--transition);
+    }
+    .about-feature:hover{transform:translateY(-6px);border-color:var(--glass-border-hover)}
+    .about-feature-icon{
+      width:50px;height:50px;border-radius:14px;background:var(--gradient-primary);color:#fff;
+      display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+    }
+    .about-feature h4{font-size:1rem;margin-bottom:8px}
+    .about-feature p{font-size:.88rem;margin:0}
+
+    .stats-showcase{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:38px}
+    .stat-showcase-card{
+      padding:36px 28px;text-align:center;border-radius:30px;background:var(--glass);
+      border:1px solid var(--glass-border);backdrop-filter:blur(20px);box-shadow:var(--shadow-md);
+      transition:var(--transition);
+    }
+    .stat-showcase-card:hover{transform:translateY(-10px);box-shadow:var(--shadow-glow)}
+    .stat-showcase-icon{
+      width:78px;height:78px;border-radius:50%;margin:0 auto 18px;
+      display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.8rem;
+      background:var(--gradient-primary);box-shadow:var(--shadow-glow);
+    }
+    .stat-showcase-card:nth-child(2) .stat-showcase-icon{background:var(--gradient-secondary)}
+    .stat-showcase-card:nth-child(3) .stat-showcase-icon{background:var(--gradient-gold)}
+    .stat-showcase-value{
+      font-size:3.5rem;font-weight:800;line-height:1;margin-bottom:8px;
+      background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+    .stat-mini-card{
+      padding:24px 18px;text-align:center;border-radius:24px;background:var(--glass);
+      border:1px solid var(--glass-border);backdrop-filter:blur(18px);
+      transition:var(--transition);
+    }
+    .stat-mini-card:hover{transform:translateY(-8px);border-color:var(--glass-border-hover)}
+    .stat-mini-icon{font-size:1.8rem;display:block;margin-bottom:10px}
+    .stat-mini-value{font-size:1.8rem;font-weight:800;color:var(--primary)}
+    .stat-mini-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.7px;color:var(--text-secondary)}
+
+    .upcoming-section{
+      padding:70px 5%;
+      background:linear-gradient(135deg,var(--primary-soft),rgba(124,58,237,.08));
+      border-top:1px solid var(--glass-border);
+      border-bottom:1px solid var(--glass-border);
+    }
+    .upcoming-header{
+      display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:30px;
+    }
+    .upcoming-title-group{display:flex;align-items:center;gap:16px}
+    .upcoming-icon-wrapper{
+      width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:1.5rem;background:var(--gradient-gold);box-shadow:0 8px 25px rgba(245,158,11,.4);
+      animation:bellSwing 2s ease-in-out infinite;
+    }
+    @keyframes bellSwing{
+      0%,100%{transform:rotate(0)}15%{transform:rotate(15deg)}30%{transform:rotate(-12deg)}
+      45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}
+    }
+    .upcoming-title-text h2{font-size:1.6rem;display:flex;align-items:center;gap:10px}
+    .upcoming-count{
+      min-width:30px;height:30px;border-radius:999px;padding:0 10px;
+      display:inline-flex;align-items:center;justify-content:center;
+      background:var(--gradient-primary);color:#fff;font-size:.8rem;font-weight:700;
+    }
+    .upcoming-title-text p{color:var(--text-secondary)}
+    .upcoming-view-all{
+      padding:11px 20px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-border);
+      backdrop-filter:blur(18px);font-weight:700;
+    }
+    .upcoming-carousel{
+      display:flex;gap:20px;overflow-x:auto;padding-bottom:12px;scroll-snap-type:x mandatory;
+    }
+    .upcoming-card{
+      min-width:360px;scroll-snap-align:start;padding:24px;border-radius:28px;
+      background:var(--glass-strong);border:1px solid var(--glass-border);backdrop-filter:blur(22px);
+      position:relative;overflow:hidden;transition:var(--transition);box-shadow:var(--shadow-md);
+      cursor:pointer;
+    }
+    .upcoming-card:hover{transform:translateY(-8px) scale(1.01);box-shadow:var(--shadow-glow)}
+    .upcoming-card::before{
+      content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--gradient-primary);
+    }
+    .upcoming-card-title{font-size:1.08rem;font-weight:700;line-height:1.4}
+    .upcoming-card-header{display:flex;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .upcoming-avenue-tag{
+      padding:5px 12px;border-radius:999px;background:var(--gradient-primary);color:#fff;
+      font-size:.7rem;font-weight:700;white-space:nowrap;
+    }
+    .upcoming-card-meta{
+      display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px;color:var(--text-secondary);font-size:.84rem;
+    }
+    .upcoming-card-meta span{display:flex;align-items:center;gap:6px}
+    .countdown-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .countdown-item{
+      padding:12px 6px;border-radius:14px;background:var(--glass);border:1px solid var(--glass-border);text-align:center;
+    }
+    .countdown-value{font-size:1.35rem;font-weight:800;color:var(--primary)}
+    .countdown-label{font-size:.62rem;color:var(--text-muted);text-transform:uppercase}
+    .no-upcoming{
+      width:100%;padding:60px 20px;text-align:center;
+    }
+    .no-upcoming-icon{
+      width:90px;height:90px;border-radius:50%;margin:0 auto 18px;background:var(--glass);
+      border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;
+      font-size:2.4rem;color:var(--text-muted);
+    }
+
+    .events-filter{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:40px}
+    .filter-btn{
+      padding:10px 18px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-border);
+      color:var(--text-secondary);display:flex;align-items:center;gap:8px;font-weight:600;transition:var(--transition);
+    }
+    .filter-btn:hover{transform:translateY(-3px);border-color:var(--primary);color:var(--primary)}
+    .filter-btn.active{background:var(--gradient-primary);border-color:transparent;color:#fff}
+    .events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:26px}
+    .event-card{
+      border-radius:28px;overflow:hidden;background:var(--glass);border:1px solid var(--glass-border);
+      backdrop-filter:blur(18px);box-shadow:var(--shadow-md);transition:var(--transition);
+    }
+    .event-card:hover{transform:translateY(-10px);box-shadow:var(--shadow-glow)}
+    .event-card-image{height:210px;position:relative;overflow:hidden}
+    .event-card-image img{width:100%;height:100%;object-fit:cover;transition:var(--transition)}
+    .event-card:hover .event-card-image img{transform:scale(1.08)}
+    .event-card-image-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.82))}
+    .event-avenue-badge{
+      position:absolute;top:14px;left:14px;padding:6px 14px;border-radius:999px;background:var(--gradient-primary);color:#fff;font-size:.72rem;font-weight:700;
+    }
+    .event-date-badge{
+      position:absolute;top:14px;right:14px;padding:10px 14px;border-radius:14px;background:rgba(0,0,0,.62);
+      backdrop-filter:blur(12px);color:#fff;text-align:center;
+    }
+    .event-date-day{font-size:1.4rem;font-weight:800;line-height:1}
+    .event-date-month{font-size:.65rem;color:#93c5fd;margin-top:4px}
+    .event-card-content{padding:22px}
+    .event-card-title{font-size:1.1rem;font-weight:700;margin-bottom:12px;line-height:1.4}
+    .event-card-meta{display:flex;flex-direction:column;gap:8px}
+    .event-meta-item{display:flex;align-items:center;gap:10px;color:var(--text-secondary);font-size:.86rem}
+    .event-meta-item i{color:var(--primary)}
+    .event-card-actions{
+      display:flex;gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid var(--glass-border);
+    }
+    .event-btn{
+      flex:1;padding:11px 12px;border-radius:14px;font-size:.82rem;font-weight:700;
+      display:flex;align-items:center;justify-content:center;gap:6px;transition:var(--transition);
+    }
+    .event-btn-primary{background:var(--gradient-primary);color:#fff}
+    .event-btn-calendar{background:var(--gradient-gold);color:#fff}
+    .event-btn:hover{transform:translateY(-2px)}
+
+    .members-search{max-width:520px;margin:0 auto 45px;position:relative}
+    .members-search-input{
+      width:100%;padding:15px 20px 15px 48px;border-radius:999px;
+      background:var(--glass);border:1px solid var(--glass-border);color:var(--text-primary);backdrop-filter:blur(18px);
+    }
+    .members-search i{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+    .members-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:28px}
+    .member-flip-container{perspective:1400px;height:430px}
+    .member-flip-card{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:.8s var(--transition)}
+    .member-flip-container:hover .member-flip-card{transform:rotateY(180deg)}
+    .member-flip-face{position:absolute;inset:0;border-radius:28px;backface-visibility:hidden;overflow:hidden}
+    .member-flip-front{
+      background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(20px);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 22px;text-align:center;
+    }
+    .member-photo-wrapper{position:relative;margin-bottom:18px}
+    .member-photo-ring{
+      position:absolute;inset:-8px;border-radius:50%;
+      border:2px solid var(--primary);opacity:.28;
+      animation:ringSpin 9s linear infinite;
+    }
+    @keyframes ringSpin{to{transform:rotate(360deg)}}
+    .member-photo{
+      width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid var(--bg-primary);position:relative;z-index:1;
+    }
+    .member-role-tag{
+      position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);
+      padding:5px 14px;border-radius:999px;background:var(--gradient-primary);color:#fff;font-size:.68rem;font-weight:700;white-space:nowrap;
+    }
+    .member-name{font-size:1.15rem;font-weight:700;margin-bottom:4px}
+    .member-title{color:var(--primary);font-size:.9rem;margin-bottom:14px}
+    .member-quick-contact{display:flex;gap:10px}
+    .member-contact-btn{
+      width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      background:var(--glass-strong);border:1px solid var(--glass-border);color:var(--text-secondary);transition:var(--transition);
+    }
+    .member-contact-btn:hover{background:var(--gradient-primary);color:#fff}
+    .member-flip-hint{
+      position:absolute;bottom:18px;font-size:.75rem;color:var(--text-muted);display:flex;align-items:center;gap:8px;
+    }
+
+    .member-flip-back{
+      transform:rotateY(180deg);
+      background:var(--gradient-primary);
+      color:#fff;
+      padding:24px 20px 22px;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+    }
+    .member-back-header{
+      text-align:center;
+      padding-bottom:14px;
+      margin-bottom:14px;
+      border-bottom:1px solid rgba(255,255,255,.18);
+      flex-shrink:0;
+    }
+    .member-back-photo{
+      width:58px;height:58px;border-radius:50%;object-fit:cover;border:3px solid #fff;margin:0 auto 10px;
+    }
+    .member-back-header h4{font-size:1.05rem;margin-bottom:3px}
+    .member-back-header span{font-size:.8rem;color:rgba(255,255,255,.82)}
+    .member-details{display:flex;flex-direction:column;gap:10px;flex:1}
+    .member-detail{
+      padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.13);
+      display:flex;align-items:center;gap:10px;color:#fff;min-height:42px;
+    }
+    .member-detail i{flex-shrink:0}
+    .member-detail span{
+      font-size:.82rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .member-bio{
+      margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.18);
+      font-size:.8rem;line-height:1.55;color:rgba(255,255,255,.92);text-align:center;flex-shrink:0;min-height:56px;
+    }
+
+    .leaders-timeline{
+      position:relative;padding-left:46px;max-width:980px;margin:0 auto;
+    }
+    .leaders-timeline::before{
+      content:"";position:absolute;left:18px;top:0;bottom:0;width:3px;border-radius:3px;
+      background:linear-gradient(180deg,var(--primary),var(--secondary),var(--accent));
+    }
+    .leader-year-group{position:relative;margin-bottom:34px}
+    .leader-year-marker{
+      position:absolute;left:-46px;top:2px;width:40px;height:40px;border-radius:50%;
+      background:var(--gradient-gold);color:#fff;display:flex;align-items:center;justify-content:center;
+      box-shadow:0 8px 24px rgba(245,158,11,.4);
+    }
+    .leader-year-label{
+      font-size:1.2rem;font-weight:700;color:var(--gold);margin-bottom:16px;padding-left:8px;
+    }
+    .leaders-compact-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+    .leader-compact-card{
+      background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(18px);
+      border-radius:20px;padding:16px;display:flex;align-items:center;gap:14px;transition:var(--transition);
+    }
+    .leader-compact-card:hover{transform:translateX(8px);border-color:rgba(245,158,11,.35)}
+    .leader-compact-photo{
+      width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);flex-shrink:0;
+    }
+    .leader-compact-info{flex:1;min-width:0}
+    .leader-compact-name{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .leader-compact-role{font-size:.77rem;color:var(--text-muted)}
+    .leader-compact-linkedin{
+      width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      background:var(--glass-strong);border:1px solid var(--glass-border);color:var(--text-muted);transition:var(--transition);
+    }
+    .leader-compact-linkedin:hover{background:#0077b5;color:#fff;border-color:#0077b5}
+
+    .bulletins-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:26px}
+    .bulletin-card{
+      overflow:hidden;border-radius:28px;background:var(--glass);border:1px solid var(--glass-border);
+      backdrop-filter:blur(18px);box-shadow:var(--shadow-md);transition:var(--transition);
+    }
+    .bulletin-card:hover{transform:translateY(-10px)}
+    .bulletin-cover{
+      height:180px;background:var(--gradient-primary);display:flex;align-items:center;justify-content:center;overflow:hidden;
+    }
+    .bulletin-cover img{width:100%;height:100%;object-fit:cover}
+    .bulletin-cover-icon{font-size:3rem;color:rgba(255,255,255,.3)}
+    .bulletin-content{padding:22px}
+    .bulletin-title{font-size:1.08rem;font-weight:700;margin-bottom:8px}
+    .bulletin-date{display:flex;align-items:center;gap:8px;color:var(--text-secondary);font-size:.84rem;margin-bottom:18px}
+    .bulletin-date i{color:var(--primary)}
+    .bulletin-actions{display:flex;gap:10px}
+    .bulletin-btn{
+      flex:1;padding:11px 12px;border-radius:14px;font-size:.82rem;font-weight:700;
+      display:flex;align-items:center;justify-content:center;gap:6px;
+    }
+    .bulletin-btn-view{background:var(--gradient-primary);color:#fff}
+    .bulletin-btn-download{background:var(--glass-strong);border:1px solid var(--glass-border);color:var(--text-primary)}
+
+    .join-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+    .join-info h3{font-size:2rem;margin-bottom:18px}
+    .join-info p{color:var(--text-secondary);margin-bottom:28px}
+    .join-benefits{display:flex;flex-direction:column;gap:14px}
+    .benefit-card{
+      display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:22px;
+      background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(18px);transition:var(--transition);
+    }
+    .benefit-card:hover{transform:translateX(8px);border-color:var(--glass-border-hover)}
+    .benefit-icon{
+      width:48px;height:48px;border-radius:14px;background:var(--gradient-primary);color:#fff;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+
+    .join-form-card{
+      padding:38px;border-radius:32px;background:var(--glass);border:1px solid var(--glass-border);
+      backdrop-filter:blur(24px);box-shadow:var(--shadow-lg);
+      position:relative;overflow:hidden;
+    }
+    .join-form-card::before{
+      content:"";position:absolute;top:-60px;right:-60px;width:180px;height:180px;border-radius:50%;
+      background:radial-gradient(circle,var(--primary-soft),transparent 70%);
+      pointer-events:none;
+    }
+    .join-form-title{text-align:center;font-size:1.45rem;font-weight:700;margin-bottom:28px}
+    .form-group{margin-bottom:18px}
+    .form-label{display:block;margin-bottom:8px;font-size:.84rem;font-weight:700;color:var(--text-secondary)}
+    .form-input,.form-select{
+      width:100%;padding:14px 16px;border-radius:14px;background:var(--glass-strong);
+      border:1px solid var(--glass-border);color:var(--text-primary);transition:var(--transition);
+    }
+    .form-input:focus,.form-select:focus{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-soft)}
+    .form-select{appearance:none}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .image-upload{
+      padding:28px;border-radius:18px;border:2px dashed var(--glass-border);
+      text-align:center;background:var(--glass);transition:var(--transition);
+    }
+    .image-upload:hover,.image-upload.dragover{border-color:var(--primary);background:var(--primary-soft)}
+    .image-upload-icon{font-size:2.1rem;color:var(--text-muted);margin-bottom:10px}
+    .image-upload input{display:none}
+    .image-preview{
+      width:90px;height:90px;border-radius:50%;object-fit:cover;margin:0 auto;display:none;border:3px solid var(--primary)
+    }
+    .image-preview.visible{display:block}
+    .btn-submit{
+      width:100%;padding:15px;border-radius:14px;background:var(--gradient-primary);color:#fff;
+      font-weight:700;font-size:.98rem;display:flex;align-items:center;justify-content:center;gap:10px;
+      box-shadow:var(--shadow-glow);
+    }
+
+    .footer{
+      padding:90px 5% 35px;background:var(--bg-secondary);position:relative;
+    }
+    .footer::before{
+      content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--gradient-primary);
+    }
+    .footer-grid{
+      max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1.4fr;gap:40px;
+    }
+    .footer-logo-wrap{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+    .footer-logo{width:56px;height:56px;border-radius:50%;border:2px solid var(--primary);padding:2px}
+    .footer-logo-text h3{font-size:1rem;font-weight:700;line-height:1.3}
+    .footer-logo-text span{font-size:.75rem;color:var(--primary)}
+    .footer-brand p{color:var(--text-secondary);margin-bottom:20px}
+    .footer-social{display:flex;gap:10px}
+    .social-link{
+      width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      background:var(--glass);border:1px solid var(--glass-border);color:var(--text-secondary);transition:var(--transition);
+    }
+    .social-link:hover{background:var(--gradient-primary);color:#fff}
+    .footer-section h4{font-size:1rem;font-weight:700;margin-bottom:18px}
+    .footer-links li{margin-bottom:10px}
+    .footer-links a{font-size:.9rem;color:var(--text-secondary);display:flex;align-items:center;gap:8px}
+    .footer-links a:hover{color:var(--primary)}
+    .footer-contact-item{display:flex;gap:12px;margin-bottom:14px}
+    .footer-contact-icon{
+      width:38px;height:38px;border-radius:12px;background:var(--glass-strong);display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0;
+    }
+    .footer-contact-text{font-size:.9rem;color:var(--text-secondary)}
+    .footer-map{
+      max-width:var(--container);margin:45px auto 0;height:180px;border-radius:24px;overflow:hidden;border:1px solid var(--glass-border);
+    }
+    .footer-map iframe{width:100%;height:100%;border:0;filter:grayscale(100%) brightness(.85)}
+    .footer-bottom{
+      max-width:var(--container);margin:40px auto 0;padding-top:22px;border-top:1px solid var(--glass-border);
+      display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
+    }
+    .footer-bottom p,.footer-bottom a{font-size:.84rem;color:var(--text-muted)}
+
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.86);backdrop-filter:blur(10px);
+      display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:var(--transition);z-index:2000;
+    }
+    .modal-overlay.active{opacity:1;visibility:visible}
+    .modal{
+      width:100%;max-width:760px;max-height:88vh;overflow:auto;border-radius:30px;
+      background:var(--bg-secondary);border:1px solid var(--glass-border);transform:translateY(30px) scale(.95);transition:var(--transition);
+    }
+    .modal-overlay.active .modal{transform:translateY(0) scale(1)}
+    .modal-header{height:260px;position:relative;overflow:hidden}
+    .modal-header img{width:100%;height:100%;object-fit:cover}
+    .modal-header-gradient{position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,var(--bg-secondary))}
+    .modal-header-content{position:absolute;left:0;right:0;bottom:0;padding:24px}
+    .modal-header-content h2{font-size:1.45rem;margin-top:10px}
+    .modal-close{
+      position:absolute;top:16px;right:16px;width:42px;height:42px;border-radius:50%;
+      background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;
+    }
+    .modal-body{padding:26px}
+    .modal-meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+    .modal-meta-item{
+      padding:14px;border-radius:14px;background:var(--glass);border:1px solid var(--glass-border);
+      display:flex;align-items:center;gap:10px;
+    }
+    .modal-meta-item i{color:var(--primary)}
+    .modal-description{color:var(--text-secondary);margin-bottom:22px}
+    .modal-actions{display:flex;gap:12px;flex-wrap:wrap}
+    .modal-btn{
+      padding:12px 22px;border-radius:14px;font-weight:700;display:flex;align-items:center;gap:8px;
+    }
+    .modal-btn-primary{background:var(--gradient-primary);color:#fff}
+    .modal-btn-secondary{background:var(--glass);border:1px solid var(--glass-border);color:var(--text-primary)}
+    .modal-btn-calendar{background:var(--gradient-gold);color:#fff}
+
+    .login-modal{
+      position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;z-index:2100;
+    }
+    .login-modal.active{display:flex}
+    .login-modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(12px)}
+    .login-modal-content{
+      position:relative;width:100%;max-width:430px;padding:38px;border-radius:30px;
+      background:var(--bg-secondary);border:1px solid var(--glass-border);
+    }
+    .login-modal-close{
+      position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;
+      background:var(--glass);border:1px solid var(--glass-border);color:var(--text-secondary);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .login-header{text-align:center;margin-bottom:28px}
+    .login-header img{
+      width:76px;height:76px;border-radius:50%;margin:0 auto 14px;border:3px solid var(--primary);
+    }
+    .login-header h2{font-size:1.4rem;margin-bottom:4px}
+    .login-header p{color:var(--text-secondary)}
+    .login-error{
+      display:none;margin-bottom:14px;padding:12px;border-radius:14px;
+      background:rgba(239,68,68,.12);border:1px solid var(--error);color:var(--error);font-size:.88rem;
+    }
+    .login-error.visible{display:block}
+
+    .back-to-top{
+      position:fixed;right:24px;bottom:24px;width:52px;height:52px;border-radius:50%;
+      background:var(--gradient-primary);color:#fff;display:flex;align-items:center;justify-content:center;
+      box-shadow:var(--shadow-glow);opacity:0;visibility:hidden;transform:translateY(20px);transition:var(--transition);z-index:1200;
+    }
+    .back-to-top.visible{opacity:1;visibility:visible;transform:translateY(0)}
+    .floating-cta{
+      position:fixed;right:24px;bottom:90px;opacity:0;visibility:hidden;transform:translateY(20px);transition:var(--transition);z-index:1200;
+    }
+    .floating-cta.visible{opacity:1;visibility:visible;transform:translateY(0)}
+    .floating-cta-btn{
+      display:flex;align-items:center;gap:10px;padding:14px 20px;border-radius:999px;
+      background:var(--gradient-gold);color:#fff;font-weight:700;
+      box-shadow:0 12px 30px rgba(245,158,11,.35);
+    }
+
+    .empty-state{grid-column:1/-1;text-align:center;padding:60px 20px}
+    .empty-state-icon{
+      width:90px;height:90px;border-radius:50%;margin:0 auto 18px;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--glass);border:1px solid var(--glass-border);font-size:2.5rem;color:var(--text-muted);
+    }
+
+    @media (max-width:1200px){
+      .footer-grid{grid-template-columns:1fr 1fr}
+      .stats-grid{grid-template-columns:repeat(3,1fr)}
+    }
+    @media (max-width:992px){
+      .about-grid,.join-wrapper{grid-template-columns:1fr}
+      .stats-showcase{grid-template-columns:1fr}
+      .stats-grid{grid-template-columns:repeat(3,1fr)}
+      .nav-brand-title{max-width:180px;font-size:.84rem}
+    }
+    @media (max-width:768px){
+      .navbar{padding:12px 4%}
+      .nav-menu{
+        position:fixed;top:74px;left:-100%;width:290px;height:calc(100vh - 74px);
+        background:var(--glass-strong);border-right:1px solid var(--glass-border);
+        backdrop-filter:blur(22px);display:flex;flex-direction:column;padding:24px 0;gap:0;transition:var(--transition);
+      }
+      .nav-menu.active{left:0}
+      .nav-link{width:100%;padding:14px 24px;border-radius:0}
+      .nav-actions{width:100%;padding:18px 24px;flex-direction:column}
+      .icon-btn,.admin-btn-main{width:100%;border-radius:14px}
+      .mobile-toggle{display:flex}
+      .hero{padding:120px 4% 80px}
+      .hero-stats{gap:24px}
+      .hero-stat::after{display:none}
+      .section{padding:80px 4%}
+      .about-features{grid-template-columns:1fr}
+      .events-grid,.members-grid,.bulletins-grid{grid-template-columns:1fr}
+      .stats-grid{grid-template-columns:repeat(2,1fr)}
+      .footer-grid{grid-template-columns:1fr}
+      .footer-bottom{flex-direction:column;text-align:center}
+      .modal-meta-grid{grid-template-columns:1fr}
+    }
+    @media (max-width:480px){
+      .hero-buttons{flex-direction:column}
+      .btn{width:100%}
+      .stats-grid{grid-template-columns:1fr}
+      .form-row{grid-template-columns:1fr}
+      .countdown-grid{grid-template-columns:repeat(2,1fr)}
+      .upcoming-card{min-width:100%}
+      .member-flip-container{height:455px}
+      .nav-brand-title{max-width:145px;font-size:.76rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="animated-bg">
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+    <div class="orb three"></div>
+    <div class="particles-container" id="particles"></div>
+  </div>
+
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loader-wrap">
+      <div class="loader-ring"></div>
+      <div class="loader-ring"></div>
+      <div class="loader-ring"></div>
+      <img src="https://via.placeholder.com/100/2563eb/ffffff?text=RC" alt="Logo" class="loader-logo" id="loaderLogo">
+    </div>
+    <div class="loading-text">Loading Rotaract Club of Coimbatore Unity</div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <nav class="navbar" id="navbar">
+    <a href="#home" class="nav-brand">
+      <div class="nav-logo-wrap">
+        <img src="https://via.placeholder.com/100/2563eb/ffffff?text=RC" class="nav-logo" id="navLogo" alt="Logo">
+        <div class="nav-logo-glow"></div>
+      </div>
+      <div class="nav-brand-info">
+        <div class="nav-brand-title" id="navTitle">Rotaract Club of Coimbatore Unity</div>
+        <div class="nav-brand-subtitle" id="navSubtitle">DISTRICT 3206</div>
+      </div>
+    </a>
+
+    <ul class="nav-menu" id="navMenu">
+      <li><a href="#home" class="nav-link active">Home</a></li>
+      <li><a href="#about" class="nav-link">About</a></li>
+      <li><a href="#events" class="nav-link">Events</a></li>
+      <li><a href="#members" class="nav-link">Members</a></li>
+      <li><a href="#leaders" class="nav-link">Leaders</a></li>
+      <li><a href="#bulletins" class="nav-link">Bulletins</a></li>
+      <li><a href="#join" class="nav-link">Join Us</a></li>
+
+      <div class="nav-actions">
+        <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="admin-btn-main" id="adminLoginBtn" type="button">
+          <i class="fas fa-user-shield"></i>
+          <span id="adminLoginText">Admin Login</span>
+        </button>
+      </div>
+    </ul>
+
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <section class="hero" id="home">
+    <div class="hero-shapes">
+      <div class="shape s1"></div>
+      <div class="shape s2"></div>
+      <div class="shape s3"></div>
+      <div class="shape s4"></div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fas fa-star"></i>
+        <span id="heroBadgeText">Established 21.04.2014 • District 3206</span>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="hero-title-line">Building Leaders,</span>
+        <span class="hero-title-line">Making <span class="gradient-text">Friends</span></span>
+      </h1>
+
+      <p class="hero-subtitle" id="heroSubtitle">Building Leaders, Making Friends</p>
+
+      <div class="hero-buttons">
+        <a href="#join" class="btn btn-primary">
+          <span>Join Our Club</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+        <a href="#events" class="btn btn-outline">
+          <i class="fas fa-play"></i>
+          <span>Explore Events</span>
+        </a>
+      </div>
+
+      <div class="hero-stats" id="heroStats"></div>
+    </div>
+
+    <div class="scroll-indicator">
+      <span>Scroll</span>
+      <div class="scroll-mouse"></div>
+    </div>
+  </section>
+
+  <section class="section" id="about">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">
+          <i class="fas fa-info-circle"></i>
+          <span>Who We Are</span>
+        </div>
+        <h2 class="section-title">About <span class="gradient-text">Rotaract Club of Coimbatore Unity</span></h2>
+        <p class="section-subtitle" id="aboutDescription"></p>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-image-wrap">
+          <img class="about-image" id="aboutImage" src="https://res.cloudinary.com/daofzdwgu/image/upload/v1775210459/17740678894882968567937429758624_lo02ky.jpg?w=600&h=700&fit=crop" alt="Rotaract Club of Coimbatore Unity Team">
+          <div class="about-frame"></div>
+          <div class="about-dots"></div>
+
+          <div class="float-stat top">
+            <div class="float-stat-value" id="districtsServed">3206</div>
+            <div class="float-stat-label">District</div>
+          </div>
+
+          <div class="float-stat bottom">
+            <div class="float-stat-value"><span id="yearsOfService">11</span>+</div>
+            <div class="float-stat-label">Years of Service</div>
+          </div>
+        </div>
+
+        <div class="about-content">
+          <h3>Transforming Communities Since 2014</h3>
+          <p id="aboutMission"></p>
+
+          <div class="about-features">
+            <div class="about-feature">
+              <div class="about-feature-icon"><i class="fas fa-hands-helping"></i></div>
+              <h4>Community Service</h4>
+              <p>Meaningful projects with lasting impact.</p>
+            </div>
+            <div class="about-feature">
+              <div class="about-feature-icon"><i class="fas fa-user-graduate"></i></div>
+              <h4>Leadership</h4>
+              <p>Practical opportunities to lead and grow.</p>
+            </div>
+            <div class="about-feature">
+              <div class="about-feature-icon"><i class="fas fa-users"></i></div>
+              <h4>Fellowship</h4>
+              <p>Strong friendships and professional connections.</p>
+            </div>
+            <div class="about-feature">
+              <div class="about-feature-icon"><i class="fas fa-globe"></i></div>
+              <h4>Global Network</h4>
+              <p>Part of Rotary’s worldwide family.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="statistics">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">
+          <i class="fas fa-chart-line"></i>
+          <span>Our Impact</span>
+        </div>
+        <h2 class="section-title">Making a <span class="gradient-text">Difference</span></h2>
+        <p class="section-subtitle">Every number reflects service, growth, and meaningful impact.</p>
+      </div>
+
+      <div class="stats-showcase" id="statsShowcase"></div>
+      <div class="stats-grid" id="statsGrid"></div>
+    </div>
+  </section>
+
+  <section class="upcoming-section" id="upcoming">
+    <div class="container">
+      <div class="upcoming-header">
+        <div class="upcoming-title-group">
+          <div class="upcoming-icon-wrapper"><i class="fas fa-bell"></i></div>
+          <div class="upcoming-title-text">
+            <h2>Upcoming Events <span class="upcoming-count" id="upcomingCount">0</span></h2>
+            <p>Events happening in the next 7 days</p>
+          </div>
+        </div>
+
+        <a href="#events" class="upcoming-view-all">
+          <span>View All Events</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="upcoming-carousel" id="upcomingEvents"></div>
+    </div>
+  </section>
+
+  <section class="section" id="events">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Our Activities</span>
+        </div>
+        <h2 class="section-title">Events & <span class="gradient-text">Projects</span></h2>
+        <p class="section-subtitle">Explore the service journey of Rotaract Club of Coimbatore Unity.</p>
+      </div>
+
+      <div class="events-filter" id="eventsFilter">
+        <button class="filter-btn active" data-filter="all"><i class="fas fa-border-all"></i><span>All Events</span></button>
+        <button class="filter-btn" data-filter="club service"><i class="fas fa-home"></i><span>Club Service</span></button>
+        <button class="filter-btn" data-filter="community service"><i class="fas fa-hands-helping"></i><span>Community</span></button>
+        <button class="filter-btn" data-filter="professional service"><i class="fas fa-briefcase"></i><span>Professional</span></button>
+        <button class="filter-btn" data-filter="international service"><i class="fas fa-globe"></i><span>International</span></button>
+        <button class="filter-btn" data-filter="dpp"><i class="fas fa-bullseye"></i><span>DPP</span></button>
+      </div>
+
+      <div class="events-grid" id="eventsGrid"></div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="members">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">
+          <i class="fas fa-users"></i>
+          <span>Our Team</span>
+        </div>
+        <h2 class="section-title">Meet Our <span class="gradient-text">Members</span></h2>
+        <p class="section-subtitle">The passionate individuals behind Rotaract Club of Coimbatore Unity.</p>
+      </div>
+
+      <div class="members-search">
+        <input type="text" class="members-search-input" id="memberSearch" placeholder="Search members by name or role">
+        <i class="fas fa-search"></i>
+      </div>
+
+      <div class="members-grid" id="membersGrid"></div>
+    </div>
+  </section>
+
+  <section class="section" id="leaders">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">
+          <i class="fas fa-crown"></i>
+          <span>Leadership Legacy</span>
+        </div>
+        <h2 class="section-title">Past <span class="gradient-text">Leaders</span></h2>
+        <p class="section-subtitle">Honoring the leaders who shaped Rotaract Club of Coimbatore Unity.</p>
+      </div>
+
+      <div class="leaders-timeline" id="leadersTimeline"></div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="bulletins">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">
+          <i class="fas fa-book-open"></i>
+          <span>Publications</span>
+        </div>
+        <h2 class="section-title">Club <span class="gradient-text">Bulletins</span></h2>
+        <p class="section-subtitle">Stay updated with newsletters, bulletins, and reports.</p>
+      </div>
+
+      <div class="bulletins-grid" id="bulletinsGrid"></div>
+    </div>
+  </section>
+
+  <section class="section" id="join">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">
+          <i class="fas fa-user-plus"></i>
+          <span>Become a Member</span>
+        </div>
+        <h2 class="section-title">Join <span class="gradient-text">Rotaract Club of Coimbatore Unity</span></h2>
+        <p class="section-subtitle">Take the first step toward service, leadership, and fellowship.</p>
+      </div>
+
+      <div class="join-wrapper">
+        <div class="join-info">
+          <h3>Why Join Rotaract Club of Coimbatore Unity?</h3>
+          <p>Joining our club means becoming part of a network of young leaders committed to service and growth.</p>
+
+          <div class="join-benefits">
+            <div class="benefit-card"><div class="benefit-icon"><i class="fas fa-user-graduate"></i></div><span>Develop leadership and professional skills</span></div>
+            <div class="benefit-card"><div class="benefit-icon"><i class="fas fa-network-wired"></i></div><span>Build strong personal and professional networks</span></div>
+            <div class="benefit-card"><div class="benefit-icon"><i class="fas fa-hands-helping"></i></div><span>Create meaningful impact through service</span></div>
+            <div class="benefit-card"><div class="benefit-icon"><i class="fas fa-globe-americas"></i></div><span>Access district and international opportunities</span></div>
+            <div class="benefit-card"><div class="benefit-icon"><i class="fas fa-trophy"></i></div><span>Receive recognition for contributions</span></div>
+            <div class="benefit-card"><div class="benefit-icon"><i class="fas fa-heart"></i></div><span>Create lifelong friendships and memories</span></div>
+          </div>
+        </div>
+
+        <div class="join-form-card">
+          <h3 class="join-form-title">Membership Application</h3>
+
+          <form id="joinForm">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" class="form-input" name="name" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Email Address *</label>
+                <input type="email" class="form-input" name="email" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number *</label>
+                <input type="tel" class="form-input" name="phone" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Date of Birth *</label>
+                <input type="date" class="form-input" name="dob" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Blood Group</label>
+                <select class="form-select" name="blood">
+                  <option value="">Select</option>
+                  <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                  <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Upload Photo</label>
+              <div class="image-upload" id="imageUpload">
+                <i class="fas fa-cloud-upload-alt image-upload-icon"></i>
+                <p>Click or drag to upload</p>
+                <small>PNG, JPG up to 5MB</small>
+                <input type="file" id="photoInput" accept="image/*">
+                <img id="imagePreview" class="image-preview" alt="Preview">
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">
+              <span>Submit Application</span>
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer" id="footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo-wrap">
+          <img src="https://via.placeholder.com/100/2563eb/ffffff?text=RC" class="footer-logo" id="footerLogo" alt="Logo">
+          <div class="footer-logo-text">
+            <h3 id="footerTitle">Rotaract Club of Coimbatore Unity</h3>
+            <span id="footerSubtitle">District 3206</span>
+          </div>
+        </div>
+        <p id="footerDescription">Building leaders, making friends since 2014. Join Rotaract Club of Coimbatore Unity in creating positive change.</p>
+        <div class="footer-social" id="footerSocial"></div>
+      </div>
+
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="#about"><i class="fas fa-chevron-right"></i> About Us</a></li>
+          <li><a href="#events"><i class="fas fa-chevron-right"></i> Events</a></li>
+          <li><a href="#members"><i class="fas fa-chevron-right"></i> Members</a></li>
+          <li><a href="#leaders"><i class="fas fa-chevron-right"></i> Leaders</a></li>
+          <li><a href="#bulletins"><i class="fas fa-chevron-right"></i> Bulletins</a></li>
+          <li><a href="#join"><i class="fas fa-chevron-right"></i> Join Us</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Service Avenues</h4>
+        <ul class="footer-links">
+          <li><a href="#events"><i class="fas fa-chevron-right"></i> Club Service</a></li>
+          <li><a href="#events"><i class="fas fa-chevron-right"></i> Community Service</a></li>
+          <li><a href="#events"><i class="fas fa-chevron-right"></i> Professional Development</a></li>
+          <li><a href="#events"><i class="fas fa-chevron-right"></i> International Service</a></li>
+          <li><a href="#events"><i class="fas fa-chevron-right"></i> DPP</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Contact Us</h4>
+        <div id="footerContact"></div>
+      </div>
+    </div>
+
+    <div class="footer-map" id="footerMap">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d125388.4832341469!2d76.9558321!3d11.0168445!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba859af2f971cb5%3A0x2fc1c81e183ed282!2sCoimbatore%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1234567890" allowfullscreen="" loading="lazy"></iframe>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; <span id="currentYear"></span> Rotaract Club of Coimbatore Unity. All rights reserved.</p>
+      <div><a href="#">Privacy Policy</a></div>
+    </div>
+  </footer>
+
+  <button class="back-to-top" id="backToTop" aria-label="Back to top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <div class="floating-cta" id="floatingCta">
+    <a href="#join" class="floating-cta-btn">
+      <i class="fas fa-user-plus"></i>
+      <span>Join Now</span>
+    </a>
+  </div>
+
+  <div class="modal-overlay" id="eventModal">
+    <div class="modal">
+      <div class="modal-header">
+        <img src="" id="modalEventImage" alt="Event">
+        <div class="modal-header-gradient"></div>
+        <div class="modal-header-content">
+          <span class="upcoming-avenue-tag" id="modalEventAvenue"></span>
+          <h2 id="modalEventTitle"></h2>
+        </div>
+        <button class="modal-close" onclick="closeEventModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-meta-grid">
+          <div class="modal-meta-item"><i class="far fa-calendar"></i><span id="modalEventDate"></span></div>
+          <div class="modal-meta-item"><i class="far fa-clock"></i><span id="modalEventTime"></span></div>
+          <div class="modal-meta-item"><i class="fas fa-map-marker-alt"></i><span id="modalEventLocation"></span></div>
+          <div class="modal-meta-item"><i class="fas fa-user"></i><span id="modalEventChair"></span></div>
+        </div>
+        <div class="modal-description" id="modalEventDescription"></div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-calendar" onclick="addToCalendar()">
+            <i class="fas fa-calendar-plus"></i><span>Add to Calendar</span>
+          </button>
+          <button class="modal-btn modal-btn-primary" onclick="shareEvent()">
+            <i class="fas fa-share-alt"></i><span>Share Event</span>
+          </button>
+          <button class="modal-btn modal-btn-secondary" onclick="closeEventModal()">
+            <i class="fas fa-times"></i><span>Close</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-modal" id="loginModal">
+    <div class="login-modal-overlay" onclick="closeLoginModal()"></div>
+    <div class="login-modal-content">
+      <button class="login-modal-close" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
+      <div class="login-header">
+        <img src="https://via.placeholder.com/100/2563eb/ffffff?text=RC" id="loginLogo" alt="Logo">
+        <h2>Admin Login</h2>
+        <p>Access Rotaract Club of Coimbatore Unity dashboard</p>
+      </div>
+      <div class="login-error" id="loginError"><span id="loginErrorText">Invalid credentials</span></div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" name="email" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" name="password" required>
+        </div>
+        <button type="submit" class="btn-submit" id="loginBtn">
+          <span>Sign In</span>
+          <i class="fas fa-sign-in-alt"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwffBUW47Tc-pJZqTXEI2yxBAOvTuGcpo70U28z-EUP0EbPx0tMkihR6vxV5RXAzo95/exec';
+
+    let appData = {
+      header: {},
+      navbar: [],
+      about: {},
+      statistics: {},
+      events: [],
+      upcomingEvents: [],
+      members: [],
+      leaders: [],
+      bulletins: [],
+      footer: {},
+      settings: {}
+    };
+
+    let currentUser = null;
+    let currentEventData = null;
+    let uploadedImageData = null;
+    let currentFilter = 'all';
+
+    function safeGet(obj, key, fallback = '') {
+      if (!obj || typeof obj !== 'object') return fallback;
+      const v = obj[key];
+      return v === undefined || v === null || v === '' ? fallback : v;
+    }
+
+    function showToast(title, message = '', type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+      };
+      toast.innerHTML = `
+        <div class="toast-icon"><i class="fas ${icons[type] || icons.info}"></i></div>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          ${message ? `<div class="toast-message">${message}</div>` : ''}
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 350);
+      }, 4200);
+    }
+
+    async function fetchData(action = 'getData', params = {}) {
+      let url = `${API_URL}?action=${action}`;
+      Object.keys(params).forEach(key => {
+        url += `&${key}=${encodeURIComponent(params[key])}`;
+      });
+
+      const response = await fetch(url, { method: 'GET', redirect: 'follow' });
+      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        console.error('Invalid JSON response:', text);
+        throw new Error('API did not return valid JSON');
+      }
+    }
+
+    async function postData(data) {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+      const text = await response.text();
+      return JSON.parse(text);
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return 'TBD';
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return dateString;
+      return d.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function formatShortDate(dateString) {
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return { day: '--', month: '---' };
+      return {
+        day: d.getDate(),
+        month: d.toLocaleDateString('en-IN', { month: 'short' }).toUpperCase()
+      };
+    }
+
+    function getCountdown(dateString) {
+      if (!dateString) return { days: 0, hours: 0, mins: 0, secs: 0 };
+
+      const eventDate = new Date(dateString);
+      if (isNaN(eventDate.getTime())) return { days: 0, hours: 0, mins: 0, secs: 0 };
+
+      const now = new Date();
+      const diff = eventDate.getTime() - now.getTime();
+
+      if (diff <= 0) return { days: 0, hours: 0, mins: 0, secs: 0 };
+
+      return {
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        mins: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        secs: Math.floor((diff % (1000 * 60)) / 1000)
+      };
+    }
+
+    function getDriveImageUrl(url) {
+      if (!url) return null;
+      if (url.includes('drive.google.com')) {
+        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+        if (match) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      }
+      return url;
+    }
+
+    function getDefaultImage(type = 'event') {
+      const defaults = {
+        event: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
+        member: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop',
+        bulletin: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=300&fit=crop'
+      };
+      return defaults[type] || defaults.event;
+    }
+
+    function createParticles() {
+      const container = document.getElementById('particles');
+      if (!container) return;
+      const colors = ['var(--primary)', 'var(--secondary)', 'var(--accent)', 'var(--gold)'];
+
+      for (let i = 0; i < 34; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 5 + 2;
+        p.style.cssText = `
+          left:${Math.random() * 100}%;
+          width:${size}px;
+          height:${size}px;
+          background:${colors[Math.floor(Math.random() * colors.length)]};
+          opacity:${Math.random() * .45 + .15};
+          animation-duration:${Math.random() * 15 + 10}s;
+          animation-delay:${Math.random() * 10}s;
+        `;
+        container.appendChild(p);
+      }
+    }
+
+    async function initializeApp() {
+      try {
+        const test = await fetchData('test');
+        if (!test.success) throw new Error('API test failed');
+
+        const data = await fetchData('getData');
+        if (!data.success) throw new Error(data.message || 'Failed to load data');
+
+        appData = {
+          header: data.header || {},
+          navbar: data.navbar || [],
+          about: data.about || {},
+          statistics: data.statistics || {},
+          events: data.events || [],
+          upcomingEvents: data.upcomingEvents || [],
+          members: data.members || [],
+          leaders: data.leaders || [],
+          bulletins: data.bulletins || [],
+          footer: data.footer || {},
+          settings: data.settings || {}
+        };
+
+        renderHeader();
+        renderNavbarFromSheet();
+        renderAbout();
+        renderHeroStats();
+        renderStatistics();
+        renderUpcomingEvents();
+        renderEvents();
+        renderMembers();
+        renderLeaders();
+        renderBulletins();
+        renderFooter();
+
+        createParticles();
+        startCountdownTimers();
+        checkSavedLogin();
+
+        setTimeout(() => {
+          document.getElementById('loadingScreen').classList.add('hidden');
+        }, 700);
+
+      } catch (error) {
+        console.error(error);
+        renderFallbackContent();
+        setTimeout(() => {
+          document.getElementById('loadingScreen').classList.add('hidden');
+          showToast('Offline Mode', 'Live content unavailable. Showing fallback content.', 'warning');
+        }, 700);
+      }
+    }
+
+    function renderFallbackContent() {
+      appData = {
+        header: {
+          title: 'Rotaract Club of Coimbatore Unity',
+          subtitle: 'Building Leaders, Making Friends',
+          district: '3206',
+          chartered_date: '21.04.2014'
+        },
+        about: {
+          description: 'Rotaract Club of Coimbatore Unity is a vibrant youth-led service organization.',
+          mission: 'To develop leadership and professional skills through service and fellowship.'
+        },
+        statistics: {
+          members: 0,
+          events: 0,
+          beneficiaries: 500,
+          club_service: 0,
+          community_service: 0,
+          professional_service: 0,
+          international_service: 0,
+          dpp: 0,
+          bulletins: 0,
+          years_of_service: 11
+        },
+        events: [],
+        upcomingEvents: [],
+        members: [],
+        leaders: [],
+        bulletins: [],
+        footer: {}
+      };
+
+      renderHeader();
+      renderHeroStats();
+      renderAbout();
+      renderStatistics();
+      renderUpcomingEvents();
+      renderEvents();
+      renderMembers();
+      renderLeaders();
+      renderBulletins();
+      renderFooter();
+    }
+
+    function renderNavbarFromSheet() {
+      if (!appData.navbar || !appData.navbar.length) return;
+      const navMenu = document.getElementById('navMenu');
+      const actions = navMenu.querySelector('.nav-actions');
+      navMenu.innerHTML = '';
+
+      appData.navbar.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="${safeGet(item, 'link', '#')}" class="nav-link ${index === 0 ? 'active' : ''}">${safeGet(item, 'name', 'Link')}</a>`;
+        navMenu.appendChild(li);
+      });
+
+      navMenu.appendChild(actions);
+    }
+
+    function renderHeader() {
+      const header = appData.header || {};
+      const logo = getDriveImageUrl(safeGet(header, 'logo', ''));
+      if (logo) {
+        ['navLogo', 'loaderLogo', 'loginLogo', 'footerLogo'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.src = logo;
+        });
+      }
+
+      const title = safeGet(header, 'title', 'Rotaract Club of Coimbatore Unity');
+      const subtitle = safeGet(header, 'subtitle', 'Building Leaders, Making Friends');
+      const district = safeGet(header, 'district', '3206');
+      const chartered = safeGet(header, 'chartered_date', '21.04.2014');
+
+      document.getElementById('navTitle').textContent = title;
+      document.getElementById('navSubtitle').textContent = `DISTRICT ${district}`;
+      document.getElementById('heroBadgeText').textContent = `Established ${chartered} • District ${district}`;
+      document.getElementById('heroSubtitle').textContent = subtitle;
+
+      document.getElementById('footerTitle').textContent = title;
+      document.getElementById('footerSubtitle').textContent = `District ${district}`;
+      document.getElementById('districtsServed').textContent = district;
+    }
+
+    function renderAbout() {
+      const about = appData.about || {};
+      const stats = appData.statistics || {};
+      document.getElementById('aboutDescription').textContent = safeGet(
+        about,
+        'description',
+        'Rotaract Club of Coimbatore Unity is a vibrant youth-led service organization.'
+      );
+      document.getElementById('aboutMission').textContent = safeGet(
+        about,
+        'mission',
+        safeGet(about, 'description', 'To develop leadership and professional skills through service and fellowship.')
+      );
+      document.getElementById('yearsOfService').textContent = safeGet(stats, 'years_of_service', 11);
+    }
+
+    function renderHeroStats() {
+      const stats = appData.statistics || {};
+      document.getElementById('heroStats').innerHTML = `
+        <div class="hero-stat">
+          <div class="hero-stat-value"><span class="counter" data-target="${safeGet(stats,'members',0)}">0</span><span class="suffix">+</span></div>
+          <div class="hero-stat-label">Active Members</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value"><span class="counter" data-target="${safeGet(stats,'events',0)}">0</span><span class="suffix">+</span></div>
+          <div class="hero-stat-label">Events Organized</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value"><span class="counter" data-target="${safeGet(stats,'beneficiaries',0)}">0</span><span class="suffix">+</span></div>
+          <div class="hero-stat-label">Lives Impacted</div>
+        </div>
+      `;
+      animateCounters();
+    }
+
+    function renderStatistics() {
+      const stats = appData.statistics || {};
+
+      document.getElementById('statsShowcase').innerHTML = `
+        <div class="stat-showcase-card">
+          <div class="stat-showcase-icon"><i class="fas fa-users"></i></div>
+          <div class="stat-showcase-value"><span class="counter" data-target="${safeGet(stats,'members',0)}">0</span></div>
+          <div style="font-weight:700;margin-bottom:6px">Active Members</div>
+          <div style="color:var(--text-secondary);font-size:.88rem">Young leaders united in service</div>
+        </div>
+        <div class="stat-showcase-card">
+          <div class="stat-showcase-icon"><i class="fas fa-calendar-check"></i></div>
+          <div class="stat-showcase-value"><span class="counter" data-target="${safeGet(stats,'events',0)}">0</span></div>
+          <div style="font-weight:700;margin-bottom:6px">Events Organized</div>
+          <div style="color:var(--text-secondary);font-size:.88rem">Impactful projects completed</div>
+        </div>
+        <div class="stat-showcase-card">
+          <div class="stat-showcase-icon"><i class="fas fa-heart"></i></div>
+          <div class="stat-showcase-value"><span class="counter" data-target="${safeGet(stats,'beneficiaries',0)}">0</span></div>
+          <div style="font-weight:700;margin-bottom:6px">Beneficiaries</div>
+          <div style="color:var(--text-secondary);font-size:.88rem">Lives touched and transformed</div>
+        </div>
+      `;
+
+      document.getElementById('statsGrid').innerHTML = `
+        <div class="stat-mini-card"><span class="stat-mini-icon">${safeGet(stats,'club_service_icon','🏠')}</span><div class="stat-mini-value counter" data-target="${safeGet(stats,'club_service',0)}">0</div><div class="stat-mini-label">Club Service</div></div>
+        <div class="stat-mini-card"><span class="stat-mini-icon">${safeGet(stats,'community_service_icon','🤝')}</span><div class="stat-mini-value counter" data-target="${safeGet(stats,'community_service',0)}">0</div><div class="stat-mini-label">Community</div></div>
+        <div class="stat-mini-card"><span class="stat-mini-icon">${safeGet(stats,'professional_service_icon','💼')}</span><div class="stat-mini-value counter" data-target="${safeGet(stats,'professional_service',0)}">0</div><div class="stat-mini-label">Professional</div></div>
+        <div class="stat-mini-card"><span class="stat-mini-icon">${safeGet(stats,'international_service_icon','🌍')}</span><div class="stat-mini-value counter" data-target="${safeGet(stats,'international_service',0)}">0</div><div class="stat-mini-label">International</div></div>
+        <div class="stat-mini-card"><span class="stat-mini-icon">${safeGet(stats,'dpp_icon','🎯')}</span><div class="stat-mini-value counter" data-target="${safeGet(stats,'dpp',0)}">0</div><div class="stat-mini-label">DPP</div></div>
+        <div class="stat-mini-card"><span class="stat-mini-icon">${safeGet(stats,'bulletins_icon','📰')}</span><div class="stat-mini-value counter" data-target="${safeGet(stats,'bulletins',0)}">0</div><div class="stat-mini-label">Bulletins</div></div>
+      `;
+      animateCounters();
+    }
+
+    function renderUpcomingEvents() {
+      const container = document.getElementById('upcomingEvents');
+      const countBadge = document.getElementById('upcomingCount');
+      const events = appData.upcomingEvents || [];
+
+      countBadge.textContent = events.length;
+
+      if (!events.length) {
+        container.innerHTML = `
+          <div class="no-upcoming">
+            <div class="no-upcoming-icon"><i class="far fa-calendar-times"></i></div>
+            <h3>No Events in Next 7 Days</h3>
+            <p style="color:var(--text-secondary)">Check back soon for upcoming activities.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = events.map(event => {
+        const countdown = getCountdown(safeGet(event, 'date', ''));
+        return `
+          <div class="upcoming-card" onclick="openEventModal('${safeGet(event,'id','')}')">
+            <div class="upcoming-card-header">
+              <h3 class="upcoming-card-title">${safeGet(event,'name','Untitled Event')}</h3>
+              <span class="upcoming-avenue-tag">${safeGet(event,'avenue','Event')}</span>
+            </div>
+            <div class="upcoming-card-meta">
+              <span><i class="far fa-calendar"></i> ${formatDate(safeGet(event,'date',''))}</span>
+              <span><i class="far fa-clock"></i> ${safeGet(event,'time','TBD')}</span>
+              <span><i class="fas fa-map-marker-alt"></i> ${safeGet(event,'venue','TBD')}</span>
+            </div>
+            <div class="countdown-grid" data-event-date="${safeGet(event,'date','')}">
+              <div class="countdown-item"><div class="countdown-value countdown-days">${countdown.days}</div><div class="countdown-label">Days</div></div>
+              <div class="countdown-item"><div class="countdown-value countdown-hours">${countdown.hours}</div><div class="countdown-label">Hours</div></div>
+              <div class="countdown-item"><div class="countdown-value countdown-mins">${countdown.mins}</div><div class="countdown-label">Mins</div></div>
+              <div class="countdown-item"><div class="countdown-value countdown-secs">${countdown.secs}</div><div class="countdown-label">Secs</div></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderEvents(filter = 'all') {
+      currentFilter = filter;
+      const container = document.getElementById('eventsGrid');
+      let events = appData.events || [];
+
+      if (filter !== 'all') {
+        events = events.filter(e => String(safeGet(e, 'avenue', '')).toLowerCase() === filter.toLowerCase());
+      }
+
+      if (!events.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon"><i class="far fa-calendar-times"></i></div>
+            <h3>No Events Found</h3>
+            <p style="color:var(--text-secondary)">No events match the selected filter.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = events.map(event => {
+        const dateInfo = formatShortDate(safeGet(event, 'date', ''));
+        const image = getDriveImageUrl(safeGet(event, 'image', '') || safeGet(event, 'poster', '')) || getDefaultImage('event');
+
+        return `
+          <div class="event-card">
+            <div class="event-card-image">
+              <img src="${image}" alt="${safeGet(event,'name','Event')}" onerror="this.src='${getDefaultImage('event')}'">
+              <div class="event-card-image-overlay"></div>
+              <span class="event-avenue-badge">${safeGet(event,'avenue','Event')}</span>
+              <div class="event-date-badge">
+                <div class="event-date-day">${dateInfo.day}</div>
+                <div class="event-date-month">${dateInfo.month}</div>
+              </div>
+            </div>
+            <div class="event-card-content">
+              <h3 class="event-card-title">${safeGet(event,'name','Untitled Event')}</h3>
+              <div class="event-card-meta">
+                <div class="event-meta-item"><i class="far fa-calendar"></i><span>${formatDate(safeGet(event,'date',''))}</span></div>
+                <div class="event-meta-item"><i class="far fa-clock"></i><span>${safeGet(event,'time','TBD')}</span></div>
+                <div class="event-meta-item"><i class="fas fa-map-marker-alt"></i><span>${safeGet(event,'venue','TBD')}</span></div>
+              </div>
+              <div class="event-card-actions">
+                <button class="event-btn event-btn-primary" onclick="openEventModal('${safeGet(event,'id','')}')">
+                  <i class="fas fa-info-circle"></i><span>Details</span>
+                </button>
+                <button class="event-btn event-btn-calendar" onclick="event.stopPropagation(); addEventToCalendar('${safeGet(event,'id','')}')">
+                  <i class="fas fa-calendar-plus"></i><span>Add</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderMembers(term = '') {
+      const container = document.getElementById('membersGrid');
+      let members = appData.members || [];
+
+      if (term) {
+        const q = term.toLowerCase();
+        members = members.filter(m =>
+          safeGet(m, 'name', '').toLowerCase().includes(q) ||
+          safeGet(m, 'role', '').toLowerCase().includes(q)
+        );
+      }
+
+      if (!members.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-user-slash"></i></div>
+            <h3>No Members Found</h3>
+            <p style="color:var(--text-secondary)">No members match your search.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = members.map(member => {
+        const photo = getDriveImageUrl(safeGet(member, 'photo', '')) || getDefaultImage('member');
+        const name = safeGet(member, 'name', 'Member');
+        const role = safeGet(member, 'role', 'Member');
+        const email = safeGet(member, 'email', '');
+        const phone = safeGet(member, 'phone', '');
+        const blood = safeGet(member, 'blood', 'N/A');
+        const bio = safeGet(member, 'bio', 'Passionate about service and making a difference.');
+
+        return `
+          <div class="member-flip-container">
+            <div class="member-flip-card">
+              <div class="member-flip-face member-flip-front">
+                <div class="member-photo-wrapper">
+                  <div class="member-photo-ring"></div>
+                  <img src="${photo}" alt="${name}" class="member-photo" onerror="this.src='${getDefaultImage('member')}'">
+                </div>
+                <h4 class="member-name">${name}</h4>
+                <p class="member-title">${role}</p>
+                <div class="member-quick-contact">
+                  ${email ? `<a href="mailto:${email}" class="member-contact-btn"><i class="far fa-envelope"></i></a>` : ''}
+                  ${phone ? `<a href="tel:${phone}" class="member-contact-btn"><i class="fas fa-phone"></i></a>` : ''}
+                </div>
+                <div class="member-flip-hint">
+                  <i class="fas fa-sync-alt"></i><span>Hover to flip</span>
+                </div>
+              </div>
+
+              <div class="member-flip-face member-flip-back">
+                <div class="member-back-header">
+                  <img src="${photo}" alt="${name}" class="member-back-photo" onerror="this.src='${getDefaultImage('member')}'">
+                  <h4>${name}</h4>
+                  <span>${role}</span>
+                </div>
+
+                <div class="member-details">
+                  ${email ? `<a href="mailto:${email}" class="member-detail"><i class="far fa-envelope"></i><span>${email}</span></a>` : ''}
+                  ${phone ? `<a href="tel:${phone}" class="member-detail"><i class="fas fa-phone"></i><span>${phone}</span></a>` : ''}
+                  <div class="member-detail"><i class="fas fa-tint"></i><span>Blood: ${blood}</span></div>
+                </div>
+
+                <p class="member-bio">${bio}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderLeaders() {
+      const container = document.getElementById('leadersTimeline');
+      const leaders = appData.leaders || [];
+
+      if (!leaders.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-crown"></i></div>
+            <h3>No Leaders Data</h3>
+            <p style="color:var(--text-secondary)">Leadership information will appear here soon.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const grouped = {};
+      leaders.forEach(leader => {
+        const yearStart = safeGet(leader, 'year_start', 'Unknown');
+        const yearEnd = safeGet(leader, 'year_end', '');
+        const yearKey = yearEnd ? `${yearStart}-${yearEnd}` : yearStart;
+        if (!grouped[yearKey]) grouped[yearKey] = [];
+        grouped[yearKey].push(leader);
+      });
+
+      const years = Object.keys(grouped).sort((a, b) => {
+        const ya = parseInt(a.split('-')[0]) || 0;
+        const yb = parseInt(b.split('-')[0]) || 0;
+        return yb - ya;
+      });
+
+      container.innerHTML = years.map(year => `
+        <div class="leader-year-group">
+          <div class="leader-year-marker"><i class="fas fa-star"></i></div>
+          <div class="leader-year-label">${year}</div>
+          <div class="leaders-compact-grid">
+            ${grouped[year].map(leader => {
+              const photo = getDriveImageUrl(safeGet(leader, 'photo', '')) || getDefaultImage('member');
+              const linkedin = safeGet(leader, 'linkedin', '');
+              return `
+                <div class="leader-compact-card">
+                  <img src="${photo}" alt="${safeGet(leader,'name','Leader')}" class="leader-compact-photo" onerror="this.src='${getDefaultImage('member')}'">
+                  <div class="leader-compact-info">
+                    <div class="leader-compact-name">${safeGet(leader,'name','Leader')}</div>
+                    <div class="leader-compact-role">${safeGet(leader,'role','President')}</div>
+                  </div>
+                  ${linkedin ? `<a href="${linkedin}" target="_blank" rel="noopener" class="leader-compact-linkedin"><i class="fab fa-linkedin-in"></i></a>` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderBulletins() {
+      const container = document.getElementById('bulletinsGrid');
+      const bulletins = appData.bulletins || [];
+
+      if (!bulletins.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-newspaper"></i></div>
+            <h3>No Bulletins Yet</h3>
+            <p style="color:var(--text-secondary)">Club bulletins will appear here soon.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = bulletins.map(b => {
+        const cover = getDriveImageUrl(safeGet(b, 'cover_image', ''));
+        const pdf = safeGet(b, 'pdf_link', '#');
+        return `
+          <div class="bulletin-card">
+            <div class="bulletin-cover">
+              ${cover ? `<img src="${cover}" alt="${safeGet(b,'title','Bulletin')}" onerror="this.style.display='none';this.nextElementSibling.style.display='block';"><i class="fas fa-book bulletin-cover-icon" style="display:none"></i>` : `<i class="fas fa-book bulletin-cover-icon"></i>`}
+            </div>
+            <div class="bulletin-content">
+              <h3 class="bulletin-title">${safeGet(b,'title','Bulletin')}</h3>
+              <div class="bulletin-date"><i class="far fa-calendar"></i><span>${formatDate(safeGet(b,'date',''))}</span></div>
+              <div class="bulletin-actions">
+                <a href="${pdf}" target="_blank" rel="noopener" class="bulletin-btn bulletin-btn-view"><i class="far fa-eye"></i><span>View</span></a>
+                <a href="${pdf}" download class="bulletin-btn bulletin-btn-download"><i class="fas fa-download"></i><span>Download</span></a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderFooter() {
+      const footer = appData.footer || {};
+      const contact = footer.contact || [];
+      const social = footer.social || [];
+      const map = footer.map || {};
+
+      const socialContainer = document.getElementById('footerSocial');
+      const socialIcons = {
+        instagram: 'fab fa-instagram',
+        facebook: 'fab fa-facebook-f',
+        linkedin: 'fab fa-linkedin-in',
+        youtube: 'fab fa-youtube',
+        twitter: 'fab fa-twitter'
+      };
+
+      if (social.length) {
+        socialContainer.innerHTML = social.map(item => {
+          const key = safeGet(item, 'key', '').toLowerCase();
+          const icon = socialIcons[key] || 'fas fa-link';
+          return `<a href="${safeGet(item,'link','#')}" class="social-link" target="_blank" rel="noopener"><i class="${icon}"></i></a>`;
+        }).join('');
+      } else {
+        socialContainer.innerHTML = `
+          <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+        `;
+      }
+
+      const contactContainer = document.getElementById('footerContact');
+      if (contact.length) {
+        contactContainer.innerHTML = contact.map(item => {
+          const key = safeGet(item, 'key', '');
+          const value = safeGet(item, 'value', '');
+          const link = safeGet(item, 'link', '');
+          let icon = 'fas fa-info-circle';
+          if (key.toLowerCase().includes('email')) icon = 'fas fa-envelope';
+          else if (key.toLowerCase().includes('phone')) icon = 'fas fa-phone';
+          else if (key.toLowerCase().includes('address')) icon = 'fas fa-map-marker-alt';
+
+          return `
+            <div class="footer-contact-item">
+              <div class="footer-contact-icon"><i class="${icon}"></i></div>
+              <div class="footer-contact-text">${link ? `<a href="${link}">${value}</a>` : value}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        contactContainer.innerHTML = `
+          <div class="footer-contact-item">
+            <div class="footer-contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="footer-contact-text">Coimbatore, Tamil Nadu</div>
+          </div>
+          <div class="footer-contact-item">
+            <div class="footer-contact-icon"><i class="fas fa-envelope"></i></div>
+            <div class="footer-contact-text"><a href="mailto:rc.cbeunity@gmail.com">rc.cbeunity@gmail.com</a></div>
+          </div>
+        `;
+      }
+
+      if (safeGet(map, 'link', '')) {
+        document.getElementById('footerMap').innerHTML = `<iframe src="${safeGet(map,'link','')}" allowfullscreen loading="lazy"></iframe>`;
+      }
+
+      document.getElementById('currentYear').textContent = new Date().getFullYear();
+    }
+
+    function animateCounters() {
+      const counters = document.querySelectorAll('.counter');
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !entry.target.dataset.counted) {
+            const target = parseInt(entry.target.dataset.target || '0', 10);
+            let current = 0;
+            const step = target / 80;
+            const timer = setInterval(() => {
+              current += step;
+              if (current >= target) {
+                entry.target.textContent = target.toLocaleString();
+                clearInterval(timer);
+              } else {
+                entry.target.textContent = Math.floor(current).toLocaleString();
+              }
+            }, 16);
+            entry.target.dataset.counted = '1';
+          }
+        });
+      }, { threshold: 0.5 });
+
+      counters.forEach(c => observer.observe(c));
+    }
+
+    function openEventModal(eventId) {
+      const event = (appData.events || []).find(e => safeGet(e, 'id') === eventId);
+      if (!event) return;
+      currentEventData = event;
+
+      document.getElementById('modalEventImage').src =
+        getDriveImageUrl(safeGet(event, 'image', '') || safeGet(event, 'poster', '')) || getDefaultImage('event');
+      document.getElementById('modalEventAvenue').textContent = safeGet(event, 'avenue', 'Event');
+      document.getElementById('modalEventTitle').textContent = safeGet(event, 'name', 'Event');
+      document.getElementById('modalEventDate').textContent = formatDate(safeGet(event, 'date', ''));
+      document.getElementById('modalEventTime').textContent = safeGet(event, 'time', 'TBD');
+      document.getElementById('modalEventLocation').textContent = safeGet(event, 'venue', 'TBD');
+      document.getElementById('modalEventChair').textContent = safeGet(event, 'chair', 'TBD');
+      document.getElementById('modalEventDescription').textContent = safeGet(event, 'description', 'No description available.');
+      document.getElementById('eventModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeEventModal() {
+      document.getElementById('eventModal').classList.remove('active');
+      document.body.style.overflow = '';
+      currentEventData = null;
+    }
+
+    function generateCalendarUrl(event) {
+      const title = encodeURIComponent(safeGet(event, 'name', 'Event'));
+      const description = encodeURIComponent(safeGet(event, 'description', ''));
+      const location = encodeURIComponent(safeGet(event, 'venue', ''));
+      const dateStr = safeGet(event, 'date', '');
+      const timeStr = safeGet(event, 'time', '10:00');
+
+      let start = new Date(dateStr);
+      if (isNaN(start.getTime())) return null;
+
+      const match = timeStr.match(/(\d+):(\d+)/);
+      if (match) start.setHours(parseInt(match[1], 10), parseInt(match[2], 10), 0, 0);
+
+      const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+      const format = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+      return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${format(start)}/${format(end)}&details=${description}&location=${location}&sf=true&output=xml`;
+    }
+
+    function addToCalendar() {
+      if (!currentEventData) return;
+      const url = generateCalendarUrl(currentEventData);
+      if (url) window.open(url, '_blank');
+    }
+
+    function addEventToCalendar(eventId) {
+      const event = (appData.events || []).find(e => safeGet(e, 'id') === eventId);
+      if (!event) return;
+      const url = generateCalendarUrl(event);
+      if (url) window.open(url, '_blank');
+    }
+
+    function shareEvent() {
+      if (!currentEventData) return;
+      const text = `Check out "${safeGet(currentEventData,'name','Event')}" by Rotaract Club of Coimbatore Unity.`;
+      if (navigator.share) {
+        navigator.share({ title: safeGet(currentEventData,'name','Event'), text, url: window.location.href }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(text + ' ' + window.location.href);
+        showToast('Copied', 'Event link copied to clipboard', 'success');
+      }
+    }
+
+    function openLoginModal() {
+      document.getElementById('loginModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.remove('active');
+      document.body.style.overflow = '';
+      document.getElementById('loginError').classList.remove('visible');
+      document.getElementById('loginForm').reset();
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const form = e.target;
+      const btn = document.getElementById('loginBtn');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>Signing in...</span>';
+
+      try {
+        const result = await postData({
+          action: 'login',
+          email: form.email.value.trim(),
+          password: form.password.value.trim()
+        });
+
+        if (result.success) {
+          currentUser = result.user;
+          localStorage.setItem('rotaractUser', JSON.stringify(result.user));
+          localStorage.setItem('rotaractToken', result.token);
+          updateAdminButton();
+          closeLoginModal();
+          showToast('Welcome!', `Logged in as ${currentUser.name}`, 'success');
+        } else {
+          document.getElementById('loginErrorText').textContent = result.message || 'Invalid credentials';
+          document.getElementById('loginError').classList.add('visible');
+        }
+      } catch (error) {
+        document.getElementById('loginErrorText').textContent = 'Unable to login right now.';
+        document.getElementById('loginError').classList.add('visible');
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<span>Sign In</span><i class="fas fa-sign-in-alt"></i>';
+    }
+
+    function updateAdminButton() {
+      const btn = document.getElementById('adminLoginBtn');
+      const text = document.getElementById('adminLoginText');
+      if (currentUser) {
+        btn.classList.add('logged-in');
+        text.textContent = currentUser.name || 'Logout';
+      } else {
+        btn.classList.remove('logged-in');
+        text.textContent = 'Admin Login';
+      }
+    }
+
+    function checkSavedLogin() {
+      const savedUser = localStorage.getItem('rotaractUser');
+      if (!savedUser) return;
+      try {
+        currentUser = JSON.parse(savedUser);
+        updateAdminButton();
+      } catch (e) {
+        localStorage.removeItem('rotaractUser');
+        localStorage.removeItem('rotaractToken');
+      }
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      localStorage.removeItem('rotaractUser');
+      localStorage.removeItem('rotaractToken');
+      updateAdminButton();
+      showToast('Logged Out', 'You have been signed out', 'info');
+    }
+
+    async function handleJoinSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const btn = document.getElementById('submitBtn');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>Submitting...</span>';
+
+      try {
+        const result = await postData({
+          action: 'submitJoinRequest',
+          name: form.name.value.trim(),
+          email: form.email.value.trim(),
+          phone: form.phone.value.trim(),
+          dob: form.dob.value,
+          blood: form.blood.value,
+          photo: uploadedImageData || ''
+        });
+
+        if (result.success) {
+          showToast('Application Submitted!', 'Thank you for your interest in Rotaract Club of Coimbatore Unity.', 'success');
+          form.reset();
+          resetImageUpload();
+          uploadedImageData = null;
+        } else {
+          showToast('Submission Failed', result.message || 'Please try again later.', 'error');
+        }
+      } catch (error) {
+        showToast('Error', 'Unable to submit application right now.', 'error');
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<span>Submit Application</span><i class="fas fa-paper-plane"></i>';
+    }
+
+    function setupImageUpload() {
+      const imageUpload = document.getElementById('imageUpload');
+      const photoInput = document.getElementById('photoInput');
+
+      imageUpload.addEventListener('click', () => photoInput.click());
+
+      imageUpload.addEventListener('dragover', e => {
+        e.preventDefault();
+        imageUpload.classList.add('dragover');
+      });
+
+      imageUpload.addEventListener('dragleave', () => {
+        imageUpload.classList.remove('dragover');
+      });
+
+      imageUpload.addEventListener('drop', e => {
+        e.preventDefault();
+        imageUpload.classList.remove('dragover');
+        handleImageFile(e.dataTransfer.files[0]);
+      });
+
+      photoInput.addEventListener('change', e => {
+        handleImageFile(e.target.files[0]);
+      });
+    }
+
+    function handleImageFile(file) {
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('Invalid File', 'Please upload an image file.', 'error');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Too Large', 'Image must be under 5MB.', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        uploadedImageData = e.target.result;
+        const preview = document.getElementById('imagePreview');
+        preview.src = uploadedImageData;
+        preview.classList.add('visible');
+        document.querySelector('.image-upload-icon').style.display = 'none';
+        document.querySelector('.image-upload p').style.display = 'none';
+        document.querySelector('.image-upload small').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resetImageUpload() {
+      const preview = document.getElementById('imagePreview');
+      preview.classList.remove('visible');
+      preview.src = '';
+      document.querySelector('.image-upload-icon').style.display = 'block';
+      document.querySelector('.image-upload p').style.display = 'block';
+      document.querySelector('.image-upload small').style.display = 'block';
+    }
+
+    function setupThemeToggle() {
+      const root = document.documentElement;
+      const btn = document.getElementById('themeToggle');
+      const icon = btn.querySelector('i');
+
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      root.setAttribute('data-theme', savedTheme);
+      icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+
+      btn.addEventListener('click', () => {
+        const current = root.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+      });
+    }
+
+    function setupMobileMenu() {
+      const toggle = document.getElementById('mobileToggle');
+      const menu = document.getElementById('navMenu');
+
+      toggle.addEventListener('click', () => {
+        toggle.classList.toggle('active');
+        menu.classList.toggle('active');
+      });
+
+      document.addEventListener('click', e => {
+        if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+          toggle.classList.remove('active');
+          menu.classList.remove('active');
+        }
+      });
+
+      document.addEventListener('click', e => {
+        const link = e.target.closest('.nav-link');
+        if (link) {
+          toggle.classList.remove('active');
+          menu.classList.remove('active');
+        }
+      });
+    }
+
+    function setupNavbarScroll() {
+      window.addEventListener('scroll', () => {
+        const navbar = document.getElementById('navbar');
+        const topBtn = document.getElementById('backToTop');
+        const cta = document.getElementById('floatingCta');
+        const y = window.pageYOffset;
+
+        if (y > 80) navbar.classList.add('scrolled');
+        else navbar.classList.remove('scrolled');
+
+        if (y > 500) {
+          topBtn.classList.add('visible');
+          cta.classList.add('visible');
+        } else {
+          topBtn.classList.remove('visible');
+          cta.classList.remove('visible');
+        }
+      });
+    }
+
+    function setupActiveNavLink() {
+      const sections = document.querySelectorAll('section[id]');
+      const links = document.querySelectorAll('.nav-link');
+
+      window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+          if (window.scrollY >= section.offsetTop - 180) current = section.id;
+        });
+
+        links.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+        });
+      });
+    }
+
+    function setupBackToTop() {
+      document.getElementById('backToTop').addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
+    function setupEventsFilter() {
+      document.getElementById('eventsFilter').addEventListener('click', e => {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderEvents(btn.dataset.filter);
+      });
+    }
+
+    function setupMemberSearch() {
+      const input = document.getElementById('memberSearch');
+      let timer;
+      input.addEventListener('input', e => {
+        clearTimeout(timer);
+        timer = setTimeout(() => renderMembers(e.target.value), 250);
+      });
+    }
+
+    function setupModalClicks() {
+      document.getElementById('eventModal').addEventListener('click', e => {
+        if (e.target.id === 'eventModal') closeEventModal();
+      });
+    }
+
+    function setupKeyboardNav() {
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+          closeEventModal();
+          closeLoginModal();
+        }
+      });
+    }
+
+    function startCountdownTimers() {
+      setInterval(() => {
+        document.querySelectorAll('.countdown-grid[data-event-date]').forEach(grid => {
+          const countdown = getCountdown(grid.dataset.eventDate);
+          const days = grid.querySelector('.countdown-days');
+          const hours = grid.querySelector('.countdown-hours');
+          const mins = grid.querySelector('.countdown-mins');
+          const secs = grid.querySelector('.countdown-secs');
+          if (days) days.textContent = countdown.days;
+          if (hours) hours.textContent = countdown.hours;
+          if (mins) mins.textContent = countdown.mins;
+          if (secs) secs.textContent = countdown.secs;
+        });
+      }, 1000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupThemeToggle();
+      setupMobileMenu();
+      setupNavbarScroll();
+      setupActiveNavLink();
+      setupBackToTop();
+      setupEventsFilter();
+      setupMemberSearch();
+      setupImageUpload();
+      setupModalClicks();
+      setupKeyboardNav();
+
+      document.getElementById('loginForm').addEventListener('submit', handleLogin);
+      document.getElementById('joinForm').addEventListener('submit', handleJoinSubmit);
+
+      document.getElementById('adminLoginBtn').addEventListener('click', () => {
+        if (currentUser) {
+          if (confirm('Do you want to logout?')) handleLogout();
+        } else {
+          window.location.href = 'admin-login.html';
+        }
+      });
+
+      document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+      initializeApp();
+    });
+  </script>
+</body>
+</html>

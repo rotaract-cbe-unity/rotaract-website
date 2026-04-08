@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-state="neutral">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login | Rotaract Club of Coimbatore Unity</title>
+  <meta name="theme-color" content="#2563eb" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root{
+      --font:'Poppins',sans-serif;
+
+      --bg-primary:#030712;
+      --bg-secondary:#0b1220;
+      --text-primary:#f8fafc;
+      --text-secondary:#94a3b8;
+      --text-muted:#64748b;
+
+      --primary:#2563eb;
+      --primary-light:#3b82f6;
+      --secondary:#7c3aed;
+      --accent:#06b6d4;
+
+      --glass:rgba(255,255,255,.05);
+      --glass-strong:rgba(255,255,255,.1);
+      --glass-border:rgba(255,255,255,.12);
+      --glass-border-hover:rgba(255,255,255,.22);
+
+      --shadow-md:0 12px 34px rgba(0,0,0,.28);
+      --shadow-lg:0 24px 70px rgba(0,0,0,.38);
+      --glow:0 0 40px rgba(37,99,235,.35);
+
+      --gradient-main:linear-gradient(135deg,#2563eb 0%, #7c3aed 100%);
+      --gradient-soft:
+        radial-gradient(circle at 10% 10%, rgba(37,99,235,.18), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(124,58,237,.15), transparent 28%),
+        radial-gradient(circle at 20% 85%, rgba(6,182,212,.12), transparent 28%);
+
+      --radius-sm:10px;
+      --radius-md:16px;
+      --radius-lg:24px;
+      --radius-xl:34px;
+      --radius-full:9999px;
+
+      --transition:.4s cubic-bezier(.16,1,.3,1);
+    }
+
+    html[data-theme="light"]{
+      --bg-primary:#f4f8ff;
+      --bg-secondary:#ffffff;
+      --text-primary:#0f172a;
+      --text-secondary:#475569;
+      --text-muted:#64748b;
+      --glass:rgba(255,255,255,.72);
+      --glass-strong:rgba(255,255,255,.9);
+      --glass-border:rgba(37,99,235,.14);
+      --glass-border-hover:rgba(37,99,235,.28);
+      --shadow-md:0 10px 28px rgba(37,99,235,.12);
+      --shadow-lg:0 24px 60px rgba(37,99,235,.18);
+      --glow:0 0 40px rgba(37,99,235,.22);
+      --gradient-soft:
+        radial-gradient(circle at 10% 10%, rgba(37,99,235,.12), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(124,58,237,.10), transparent 28%),
+        radial-gradient(circle at 20% 85%, rgba(6,182,212,.08), transparent 28%);
+    }
+
+    html[data-state="error"]{
+      --bg-primary:#170607;
+      --bg-secondary:#24090b;
+      --text-primary:#fff0f0;
+      --text-secondary:#ffb4b4;
+      --text-muted:#d68f8f;
+      --primary:#ef4444;
+      --primary-light:#f87171;
+      --secondary:#991b1b;
+      --accent:#f97316;
+      --glass:rgba(255,80,80,.06);
+      --glass-strong:rgba(255,80,80,.12);
+      --glass-border:rgba(255,90,90,.18);
+      --glass-border-hover:rgba(255,90,90,.28);
+      --glow:0 0 50px rgba(239,68,68,.35);
+      --gradient-main:linear-gradient(135deg,#7f1d1d 0%, #ef4444 100%);
+      --gradient-soft:
+        radial-gradient(circle at 10% 10%, rgba(239,68,68,.20), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(127,29,29,.24), transparent 28%),
+        radial-gradient(circle at 20% 85%, rgba(249,115,22,.12), transparent 28%);
+    }
+
+    html[data-state="success"]{
+      --bg-primary:#180811;
+      --bg-secondary:#26111f;
+      --text-primary:#fff3f8;
+      --text-secondary:#ffc7dc;
+      --text-muted:#e6a4c0;
+      --primary:#ec4899;
+      --primary-light:#f472b6;
+      --secondary:#fb7185;
+      --accent:#f9a8d4;
+      --glass:rgba(255,150,210,.08);
+      --glass-strong:rgba(255,170,220,.14);
+      --glass-border:rgba(255,170,220,.2);
+      --glass-border-hover:rgba(255,190,230,.32);
+      --glow:0 0 50px rgba(236,72,153,.35);
+      --gradient-main:linear-gradient(135deg,#ec4899 0%, #f472b6 50%, #fb7185 100%);
+      --gradient-soft:
+        radial-gradient(circle at 10% 10%, rgba(236,72,153,.18), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(244,114,182,.18), transparent 28%),
+        radial-gradient(circle at 20% 85%, rgba(251,113,133,.12), transparent 28%);
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      font-family:var(--font);
+      background:var(--bg-primary);
+      color:var(--text-primary);
+      transition:background-color .45s ease,color .45s ease;
+      overflow-x:hidden;
+    }
+
+    a{text-decoration:none;color:inherit}
+    button{font-family:var(--font);border:none;background:none;cursor:pointer}
+    input{font-family:var(--font);outline:none}
+
+    .bg{
+      position:fixed;inset:0;z-index:-3;background:var(--gradient-soft);transition:.45s ease;
+    }
+
+    .grid{
+      position:fixed;inset:0;z-index:-2;pointer-events:none;
+      background-image:
+        linear-gradient(var(--glass-border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--glass-border) 1px, transparent 1px);
+      background-size:56px 56px;
+      mask-image:radial-gradient(circle at center, rgba(0,0,0,.9) 18%, transparent 74%);
+      -webkit-mask-image:radial-gradient(circle at center, rgba(0,0,0,.9) 18%, transparent 74%);
+      transition:.45s ease;
+    }
+
+    .orb{
+      position:fixed;border-radius:50%;filter:blur(100px);opacity:.2;z-index:-1;
+      animation:orbFloat 16s ease-in-out infinite;
+    }
+    .orb.one{width:340px;height:340px;background:var(--primary);top:-80px;left:-70px}
+    .orb.two{width:300px;height:300px;background:var(--secondary);right:-80px;bottom:-70px;animation-delay:-5s}
+    .orb.three{width:220px;height:220px;background:#ffffff18;top:42%;left:46%;animation-delay:-9s}
+    @keyframes orbFloat{
+      0%,100%{transform:translate(0,0) scale(1)}
+      25%{transform:translate(24px,-30px) scale(1.06)}
+      50%{transform:translate(-16px,18px) scale(.96)}
+      75%{transform:translate(14px,22px) scale(1.03)}
+    }
+
+    .heart-layer{
+      position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5;
+    }
+    .heart{
+      position:absolute;
+      opacity:0;
+      animation:heartFloat 3s ease-out forwards;
+    }
+    @keyframes heartFloat{
+      0%{transform:translateY(0) scale(.4);opacity:0}
+      15%{opacity:1}
+      100%{transform:translateY(-220px) scale(1.18) rotate(18deg);opacity:0}
+    }
+
+    .page{
+      min-height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:32px 18px;
+    }
+
+    .top-actions{
+      position:fixed;
+      top:18px;
+      left:18px;
+      right:18px;
+      z-index:20;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      pointer-events:none;
+    }
+
+    .top-actions > *{
+      pointer-events:auto;
+    }
+
+    .back-link{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:12px 18px;
+      border-radius:999px;
+      background:var(--glass);
+      border:1px solid var(--glass-border);
+      backdrop-filter:blur(18px);
+      color:var(--text-primary);
+      font-weight:700;
+      transition:var(--transition);
+      box-shadow:var(--shadow-md);
+    }
+
+    .back-link:hover{
+      transform:translateY(-2px);
+      border-color:var(--glass-border-hover);
+    }
+
+    .theme-toggle{
+      width:48px;height:48px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--glass);
+      border:1px solid var(--glass-border);
+      backdrop-filter:blur(18px);
+      color:var(--text-primary);
+      box-shadow:var(--shadow-md);
+      transition:var(--transition);
+    }
+
+    .theme-toggle:hover{
+      transform:translateY(-2px) rotate(180deg);
+      border-color:var(--glass-border-hover);
+    }
+
+    .login-shell{
+      width:100%;
+      max-width:480px;
+      position:relative;
+    }
+
+    .login-card{
+      width:100%;
+      padding:38px 24px 26px;
+      border-radius:34px;
+      background:var(--glass-strong);
+      border:1px solid var(--glass-border);
+      backdrop-filter:blur(24px);
+      -webkit-backdrop-filter:blur(24px);
+      box-shadow:var(--shadow-lg);
+      position:relative;
+      overflow:hidden;
+      transition:var(--transition);
+    }
+
+    .login-card::before{
+      content:"";
+      position:absolute;
+      top:-90px;
+      right:-70px;
+      width:220px;height:220px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.12), transparent 68%);
+      pointer-events:none;
+    }
+
+    .login-card::after{
+      content:"";
+      position:absolute;
+      left:-70px;
+      bottom:-90px;
+      width:220px;height:220px;
+      border-radius:50%;
+      background:radial-gradient(circle, var(--primary-soft, rgba(255,255,255,.08)), transparent 68%);
+      pointer-events:none;
+    }
+
+    .shake{
+      animation:shake .45s ease;
+    }
+    @keyframes shake{
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-10px)}
+      40%{transform:translateX(10px)}
+      60%{transform:translateX(-8px)}
+      80%{transform:translateX(8px)}
+    }
+
+    .love-pop{
+      animation:lovePop .6s cubic-bezier(.16,1,.3,1);
+    }
+    @keyframes lovePop{
+      0%{transform:scale(.96)}
+      60%{transform:scale(1.02)}
+      100%{transform:scale(1)}
+    }
+
+    .brand{
+      text-align:center;
+      margin-bottom:26px;
+      position:relative;
+      z-index:1;
+    }
+
+    .brand-logo-wrap{
+      width:88px;height:88px;margin:0 auto 16px;position:relative;
+    }
+
+    .brand-logo{
+      width:100%;height:100%;
+      border-radius:50%;
+      object-fit:cover;
+      border:3px solid var(--primary);
+      background:#fff;
+      padding:3px;
+      position:relative;
+      z-index:2;
+      box-shadow:var(--glow);
+    }
+
+    .brand-logo-glow{
+      position:absolute;inset:-8px;border-radius:50%;
+      background:var(--gradient-main);
+      filter:blur(16px);
+      opacity:.28;
+      z-index:1;
+    }
+
+    .brand-title{
+      font-size:1.12rem;
+      font-weight:800;
+      line-height:1.4;
+      letter-spacing:-.01em;
+      max-width:320px;
+      margin:0 auto 6px;
+      background:var(--gradient-main);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    .brand-subtitle{
+      color:var(--text-secondary);
+      font-size:.82rem;
+      font-weight:700;
+      letter-spacing:1px;
+      text-transform:uppercase;
+    }
+
+    .status-label{
+      margin-top:12px;
+      min-height:18px;
+      font-size:.78rem;
+      font-weight:700;
+      letter-spacing:.8px;
+      text-transform:uppercase;
+      color:var(--primary);
+    }
+
+    .login-title{
+      text-align:center;
+      font-size:1.55rem;
+      font-weight:800;
+      margin-bottom:6px;
+      position:relative;
+      z-index:1;
+    }
+
+    .login-subtitle{
+      text-align:center;
+      color:var(--text-secondary);
+      font-size:.92rem;
+      margin-bottom:22px;
+      position:relative;
+      z-index:1;
+    }
+
+    .login-error,
+    .login-success{
+      display:none;
+      padding:14px 16px;
+      border-radius:16px;
+      margin-bottom:16px;
+      font-size:.88rem;
+      font-weight:700;
+      position:relative;
+      z-index:1;
+    }
+
+    .login-error{
+      background:rgba(239,68,68,.12);
+      border:1px solid rgba(239,68,68,.35);
+      color:#ffd0d0;
+    }
+
+    .login-success{
+      background:rgba(236,72,153,.12);
+      border:1px solid rgba(236,72,153,.35);
+      color:#ffd8ea;
+    }
+
+    .login-error.visible,
+    .login-success.visible{
+      display:block;
+    }
+
+    .form{
+      position:relative;
+      z-index:1;
+    }
+
+    .form-group{
+      margin-bottom:18px;
+    }
+
+    .form-label{
+      display:block;
+      margin-bottom:8px;
+      font-size:.84rem;
+      font-weight:700;
+      color:var(--text-secondary);
+    }
+
+    .input-wrap{
+      position:relative;
+    }
+
+    .input-icon{
+      position:absolute;
+      left:16px;
+      top:50%;
+      transform:translateY(-50%);
+      color:var(--text-muted);
+      transition:var(--transition);
+      font-size:1rem;
+      z-index:2;
+    }
+
+    .form-input{
+      width:100%;
+      padding:15px 16px 15px 46px;
+      border-radius:16px;
+      border:1px solid var(--glass-border);
+      background:rgba(255,255,255,.04);
+      color:var(--text-primary);
+      font-size:.96rem;
+      transition:var(--transition);
+      backdrop-filter:blur(12px);
+    }
+
+    .form-input::placeholder{
+      color:var(--text-muted);
+    }
+
+    .form-input:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 4px rgba(255,255,255,.06), 0 0 0 1px var(--primary);
+      background:rgba(255,255,255,.07);
+    }
+
+    .input-wrap:focus-within .input-icon{
+      color:var(--primary);
+    }
+
+    .password-toggle{
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      width:38px;height:38px;
+      border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      color:var(--text-muted);
+      transition:var(--transition);
+      z-index:2;
+    }
+
+    .password-toggle:hover{
+      background:var(--glass);
+      color:var(--primary);
+    }
+
+    .login-actions{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin:8px 0 22px;
+      position:relative;
+      z-index:1;
+    }
+
+    .remember{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--text-secondary);
+      font-size:.85rem;
+      font-weight:500;
+      user-select:none;
+    }
+
+    .remember input{
+      width:16px;height:16px;
+      accent-color:var(--primary);
+    }
+
+    .forgot-link{
+      color:var(--primary);
+      font-weight:700;
+      font-size:.85rem;
+    }
+
+    .btn-login{
+      width:100%;
+      padding:15px 18px;
+      border-radius:16px;
+      background:var(--gradient-main);
+      color:#fff;
+      font-weight:800;
+      font-size:1rem;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      box-shadow:var(--glow);
+      transition:var(--transition);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .btn-login::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg,rgba(255,255,255,.2),transparent 50%);
+      opacity:0;
+      transition:var(--transition);
+    }
+
+    .btn-login:hover{
+      transform:translateY(-3px);
+    }
+
+    .btn-login:hover::before{
+      opacity:1;
+    }
+
+    .btn-login:disabled{
+      opacity:.7;
+      cursor:not-allowed;
+      transform:none;
+    }
+
+    .spinner{
+      width:18px;height:18px;border-radius:50%;
+      border:2px solid rgba(255,255,255,.35);
+      border-top-color:#fff;
+      animation:spin 1s linear infinite;
+    }
+
+    .security-line{
+      margin-top:18px;
+      text-align:center;
+      color:var(--text-muted);
+      font-size:.8rem;
+      font-weight:600;
+      position:relative;
+      z-index:1;
+    }
+
+    .security-line i{
+      color:var(--primary);
+      margin-right:6px;
+    }
+
+    @media (max-width:640px){
+      .page{
+        padding:82px 14px 24px;
+      }
+
+      .top-actions{
+        top:12px;
+        left:12px;
+        right:12px;
+      }
+
+      .back-link{
+        padding:10px 14px;
+        font-size:.84rem;
+      }
+
+      .theme-toggle{
+        width:44px;height:44px;
+      }
+
+      .login-card{
+        padding:34px 18px 22px;
+        border-radius:28px;
+      }
+
+      .brand-title{
+        font-size:1rem;
+        max-width:260px;
+      }
+
+      .login-title{
+        font-size:1.4rem;
+      }
+
+      .login-actions{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid"></div>
+  <div class="orb one"></div>
+  <div class="orb two"></div>
+  <div class="orb three"></div>
+  <div class="heart-layer" id="heartLayer"></div>
+
+  <div class="top-actions">
+    <a href="index.html" class="back-link">
+      <i class="fas fa-arrow-left"></i>
+      <span>Back</span>
+    </a>
+
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <i class="fas fa-moon"></i>
+    </button>
+  </div>
+
+  <main class="page">
+    <div class="login-shell">
+      <div class="login-card" id="loginCard">
+        <div class="brand">
+          <div class="brand-logo-wrap">
+            <img src="https://via.placeholder.com/120/2563eb/ffffff?text=RC" id="clubLogo" class="brand-logo" alt="Club Logo">
+            <div class="brand-logo-glow"></div>
+          </div>
+          <div class="brand-title" id="clubName">Rotaract Club of Coimbatore Unity</div>
+          <div class="brand-subtitle" id="clubDistrict">District 3206</div>
+          <div class="status-label" id="statusLabel">Secure admin access</div>
+        </div>
+
+        <h1 class="login-title">Admin Login</h1>
+        <p class="login-subtitle">Enter your credentials to continue</p>
+
+        <div class="login-error" id="loginError">
+          <i class="fas fa-triangle-exclamation"></i>
+          <span id="loginErrorText">Invalid credentials</span>
+        </div>
+
+        <div class="login-success" id="loginSuccess">
+          <i class="fas fa-heart"></i>
+          <span id="loginSuccessText">Login successful</span>
+        </div>
+
+        <form class="form" id="loginForm">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <div class="input-wrap">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" class="form-input" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-wrap">
+              <i class="fas fa-key input-icon"></i>
+              <input type="password" class="form-input" id="password" name="password" placeholder="Enter your password" required>
+              <button type="button" class="password-toggle" id="togglePassword" aria-label="Toggle password">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="login-actions">
+            <label class="remember">
+              <input type="checkbox" id="rememberMe">
+              <span>Remember me</span>
+            </label>
+
+            <a href="#" class="forgot-link">Need help?</a>
+          </div>
+
+          <button type="submit" class="btn-login" id="loginBtn">
+            <span>Sign In</span>
+            <i class="fas fa-right-to-bracket"></i>
+          </button>
+        </form>
+
+        <div class="security-line" id="securityLine">
+          <i class="fas fa-shield-halved"></i>
+          Protected access for authorized users only
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwffBUW47Tc-pJZqTXEI2yxBAOvTuGcpo70U28z-EUP0EbPx0tMkihR6vxV5RXAzo95/exec';
+
+    const html = document.documentElement;
+    const body = document.body;
+    const loginCard = document.getElementById('loginCard');
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginError = document.getElementById('loginError');
+    const loginErrorText = document.getElementById('loginErrorText');
+    const loginSuccess = document.getElementById('loginSuccess');
+    const loginSuccessText = document.getElementById('loginSuccessText');
+    const statusLabel = document.getElementById('statusLabel');
+    const securityLine = document.getElementById('securityLine');
+    const clubLogo = document.getElementById('clubLogo');
+    const clubName = document.getElementById('clubName');
+    const clubDistrict = document.getElementById('clubDistrict');
+    const heartLayer = document.getElementById('heartLayer');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const themeToggle = document.getElementById('themeToggle');
+
+    function setNeutralState() {
+      html.setAttribute('data-state', 'neutral');
+      loginError.classList.remove('visible');
+      loginSuccess.classList.remove('visible');
+      statusLabel.textContent = 'Secure admin access';
+      securityLine.innerHTML = '<i class="fas fa-shield-halved"></i> Protected access for authorized users only';
+      loginCard.classList.remove('shake', 'love-pop');
+    }
+
+    function setErrorState(message) {
+      html.setAttribute('data-state', 'error');
+      loginSuccess.classList.remove('visible');
+      loginError.classList.add('visible');
+      loginErrorText.textContent = message || 'Invalid credentials';
+      statusLabel.textContent = 'Horrified red security mode';
+      securityLine.innerHTML = '<i class="fas fa-skull"></i> Access denied. Unauthorized credentials detected';
+      loginCard.classList.remove('love-pop');
+      void loginCard.offsetWidth;
+      loginCard.classList.add('shake');
+    }
+
+    function setSuccessState(message) {
+      html.setAttribute('data-state', 'success');
+      loginError.classList.remove('visible');
+      loginSuccess.classList.add('visible');
+      loginSuccessText.textContent = message || 'Login successful';
+      statusLabel.textContent = 'Pink love access mode';
+      securityLine.innerHTML = '<i class="fas fa-heart"></i> Access granted. Welcome to the dashboard';
+      loginCard.classList.remove('shake');
+      void loginCard.offsetWidth;
+      loginCard.classList.add('love-pop');
+      createHeartBurst();
+    }
+
+    function createHeartBurst() {
+      for (let i = 0; i < 18; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.innerHTML = '<i class="fas fa-heart"></i>';
+        heart.style.left = `${45 + Math.random() * 12}%`;
+        heart.style.bottom = `${18 + Math.random() * 8}%`;
+        heart.style.fontSize = `${14 + Math.random() * 18}px`;
+        heart.style.color = ['#ffc1dd', '#ff93c2', '#ffd4e6', '#ffb6d3'][Math.floor(Math.random() * 4)];
+        heart.style.animationDelay = `${Math.random() * .2}s`;
+        heartLayer.appendChild(heart);
+        setTimeout(() => heart.remove(), 3200);
+      }
+    }
+
+    function showLoading() {
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = `<div class="spinner"></div><span>Signing in...</span>`;
+    }
+
+    function hideLoading() {
+      loginBtn.disabled = false;
+      loginBtn.innerHTML = `<span>Sign In</span><i class="fas fa-right-to-bracket"></i>`;
+    }
+
+    function convertDriveUrl(url) {
+      if (!url) return '';
+      if (url.includes('drive.google.com')) {
+        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+        if (match) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      }
+      return url;
+    }
+
+    async function fetchData(action = 'getData', params = {}) {
+      let url = `${API_URL}?action=${action}`;
+      Object.keys(params).forEach(key => {
+        url += `&${key}=${encodeURIComponent(params[key])}`;
+      });
+
+      const response = await fetch(url, {
+        method: 'GET',
+        redirect: 'follow'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+
+      const text = await response.text();
+      return JSON.parse(text);
+    }
+
+    async function postData(data) {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+
+      const text = await response.text();
+      return JSON.parse(text);
+    }
+
+    async function loadBrandData() {
+      try {
+        const data = await fetchData('getData');
+        if (!data.success) return;
+
+        const header = data.header || {};
+        const title = header.title || 'Rotaract Club of Coimbatore Unity';
+        const district = header.district || '3206';
+        const logo = header.logo || '';
+
+        clubName.textContent = title;
+        clubDistrict.textContent = `District ${district}`;
+
+        if (logo) {
+          clubLogo.src = convertDriveUrl(logo);
+        }
+      } catch (error) {
+        console.error('Brand load failed', error);
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const remember = document.getElementById('rememberMe').checked;
+
+      setNeutralState();
+      showLoading();
+
+      try {
+        const result = await postData({
+          action: 'login',
+          email,
+          password
+        });
+
+        if (result.success) {
+          setSuccessState(`Welcome ${result.user?.name || 'Admin'}!`);
+
+          localStorage.setItem('rotaractUser', JSON.stringify(result.user || {}));
+          localStorage.setItem('rotaractToken', result.token || '');
+
+          if (remember) {
+            localStorage.setItem('rotaractRememberEmail', email);
+          } else {
+            localStorage.removeItem('rotaractRememberEmail');
+          }
+
+          setTimeout(() => {
+            window.location.href = 'admin-dashboard.html';
+          }, 1600);
+        } else {
+          setErrorState(result.message || 'Invalid credentials');
+        }
+      } catch (error) {
+        console.error(error);
+        setErrorState('Connection error or invalid API response');
+      }
+
+      hideLoading();
+    }
+
+    function restoreRememberedEmail() {
+      const saved = localStorage.getItem('rotaractRememberEmail');
+      if (saved) {
+        document.getElementById('email').value = saved;
+        document.getElementById('rememberMe').checked = true;
+      }
+    }
+
+    function restoreTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      html.setAttribute('data-theme', savedTheme);
+      themeToggle.innerHTML = savedTheme === 'dark'
+        ? '<i class="fas fa-sun"></i>'
+        : '<i class="fas fa-moon"></i>';
+    }
+
+    function setupThemeToggle() {
+      themeToggle.addEventListener('click', () => {
+        const current = html.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        themeToggle.innerHTML = next === 'dark'
+          ? '<i class="fas fa-sun"></i>'
+          : '<i class="fas fa-moon"></i>';
+      });
+    }
+
+    togglePassword.addEventListener('click', () => {
+      const hidden = passwordInput.type === 'password';
+      passwordInput.type = hidden ? 'text' : 'password';
+      togglePassword.innerHTML = `<i class="fas fa-${hidden ? 'eye-slash' : 'eye'}"></i>`;
+    });
+
+    ['email', 'password'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        if (html.getAttribute('data-state') === 'error') {
+          setNeutralState();
+        }
+      });
+    });
+
+    loginForm.addEventListener('submit', handleLogin);
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      restoreTheme();
+      setupThemeToggle();
+      setNeutralState();
+      restoreRememberedEmail();
+      await loadBrandData();
+    });
+  </script>
+</body>
+</html>
