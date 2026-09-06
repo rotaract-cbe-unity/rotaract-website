@@ -1,7 +1,7 @@
 /* ============================================================
    ROTARACT CLUB OF COIMBATORE UNITY
    Admin Panel Core - js/admin.js
-   Version: 5.0 - Complete, Secretary mode, all fixes
+   Version: 5.1 - Complete, Secretary mode, all fixes, Settings Persistence Fix
    ============================================================ */
 
 (function () {
@@ -60,6 +60,9 @@
         </td></tr>`;
     }
 
+    // ============================================================
+    // BADGES & RENDERS
+    // ============================================================
     function avenueBadge(avenue) {
         const labels = window.UnityConfig ? window.UnityConfig.avenues : {};
         return `<span class="avenue-tag ${avenue}">${labels[avenue] || avenue}</span>`;
@@ -138,9 +141,7 @@
     }
 
     // ============================================================
-    // ============================================================
     // DASHBOARD
-    // ============================================================
     // ============================================================
     window.AdminDashboard = {
         async load() {
@@ -735,7 +736,7 @@
     });
 
     // ============================================================
-    // SETTINGS MANAGEMENT - WITH SECRETARY MODE SUPPORT
+    // SETTINGS MANAGEMENT - FIXED UPSERT PERSISTENCE
     // ============================================================
     window.AdminSettings = {
         data: {},
@@ -782,19 +783,36 @@
             });
         },
 
-        // SECRETARY MODE INIT
+        // Dynamic interface toggles on radio clicks
         initSecretaryMode() {
             const mode = this.data.secretary_mode || 'dual';
             const radios = document.querySelectorAll('input[name="secretary_mode"]');
-            radios.forEach(function (r) { r.checked = r.value === mode; });
+            
+            radios.forEach(function (r) { 
+                r.checked = r.value === mode; 
+                // Add click listener so settings switch dynamically without refresh
+                r.addEventListener('change', function() {
+                    const singleFields = document.getElementById('sec-single-fields');
+                    const dualFields = document.getElementById('sec-dual-fields');
+                    if (singleFields) singleFields.style.display = this.value === 'single' ? '' : 'none';
+                    if (dualFields) dualFields.style.display = this.value === 'dual' ? '' : 'none';
+                });
+            });
+
             const singleFields = document.getElementById('sec-single-fields');
             const dualFields = document.getElementById('sec-dual-fields');
             if (singleFields) singleFields.style.display = mode === 'single' ? '' : 'none';
             if (dualFields) dualFields.style.display = mode === 'dual' ? '' : 'none';
 
-            // Secretary name for single mode
+            // Secretary names for single / dual modes
             const secInput = document.getElementById('s-secretary');
             if (secInput) secInput.value = this.data.secretary_name || '';
+
+            const secAdminInput = document.getElementById('s-sec-admin');
+            if (secAdminInput) secAdminInput.value = this.data.secretary_admin_name || '';
+
+            const secCommInput = document.getElementById('s-sec-comm');
+            if (secCommInput) secCommInput.value = this.data.secretary_comm_name || '';
         },
 
         initTabs() {
@@ -857,7 +875,7 @@
                 const updates = [];
                 const seen = new Set();
 
-                // Regular settings inputs
+                // Gather regular settings inputs
                 document.querySelectorAll('.settings-input[data-setting]').forEach(function (input) {
                     if (input.type === 'color') return;
                     const key = input.dataset.setting;
@@ -867,7 +885,16 @@
                     }
                 });
 
-                // Secretary mode radio
+                // Gather color pickers
+                document.querySelectorAll('.settings-color-input[data-setting]').forEach(function (picker) {
+                    const key = picker.dataset.setting;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        updates.push({ key: key, value: picker.value });
+                    }
+                });
+
+                // Secretary mode settings
                 const secMode = document.querySelector('input[name="secretary_mode"]:checked');
                 if (secMode) {
                     const modeKey = 'secretary_mode';
@@ -883,16 +910,36 @@
                             seen.add('secretary_name');
                             updates.push({ key: 'secretary_name', value: secInput.value.trim() });
                         }
+                    } else if (secMode.value === 'dual') {
+                        // Secretary Admin & Comm fields
+                        const secAdminInput = document.getElementById('s-sec-admin');
+                        const secCommInput = document.getElementById('s-sec-comm');
+                        if (secAdminInput && !seen.has('secretary_admin_name')) {
+                            seen.add('secretary_admin_name');
+                            updates.push({ key: 'secretary_admin_name', value: secAdminInput.value.trim() });
+                        }
+                        if (secCommInput && !seen.has('secretary_comm_name')) {
+                            seen.add('secretary_comm_name');
+                            updates.push({ key: 'secretary_comm_name', value: secCommInput.value.trim() });
+                        }
                     }
                 }
 
-                // Save all in sequence
+                // POST TO API: Modified with `?on_conflict=key` and strict response checks to ensure Supabase upserts properly
                 for (const update of updates) {
-                    await fetch(`${API}/site_settings`, {
+                    const res = await fetch(`${API}/site_settings?on_conflict=key`, {
                         method: 'POST',
                         headers: Object.assign({}, H, { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
                         body: JSON.stringify({ key: update.key, value: update.value, updated_at: new Date().toISOString() })
                     });
+                    
+                    if (!res.ok) {
+                        const errorMsg = await res.text();
+                        throw new Error(`Failed to save ${update.key}: ${errorMsg || res.statusText}`);
+                    }
+
+                    // Locally persist into runtime object state
+                    this.data[update.key] = update.value;
                 }
 
                 // Apply theme colors live
@@ -901,13 +948,18 @@
                     document.documentElement.style.setProperty('--a-primary', primaryColor.value);
                 }
 
-                // Invalidate settings cache
-                if (window.UnitySettings) window.UnitySettings.clearCache();
+                // Invalidate local runtime settings cache
+                if (window.UnitySettings && typeof window.UnitySettings.clearCache === 'function') {
+                    window.UnitySettings.clearCache();
+                } else {
+                    localStorage.removeItem('unity_settings_cache');
+                }
 
-                toast('All settings saved!', 'success');
+                toast('All settings saved successfully!', 'success');
 
             } catch (e) {
-                toast('Failed to save: ' + e.message, 'error');
+                console.error('[Admin] Error saving settings:', e);
+                toast('Failed to save settings: ' + e.message, 'error');
             } finally {
                 if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save All Settings'; }
             }
@@ -1593,7 +1645,7 @@
     // INIT
     // ============================================================
     waitForAuth(function () {
-        console.log('%c [Admin.js] v5.0 loaded ', 'background:#10b981;color:#fff;font-weight:700;padding:2px 8px;border-radius:4px;');
+        console.log('%c [Admin.js] v5.1 loaded - Settings Persistence Patched ', 'background:#10b981;color:#fff;font-weight:700;padding:2px 8px;border-radius:4px;');
     });
 
 })();
