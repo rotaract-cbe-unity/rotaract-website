@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="Rotaract Club of Coimbatore Unity - Family of Rotary Club of Coimbatore East | Rotary International District 3206 | Service Above Self">
+    <meta name="keywords" content="Rotaract, Coimbatore Unity, Rotary, District 3206, Community Service, Youth Leadership">
+    <meta name="author" content="Rotaract Club of Coimbatore Unity">
+    <meta name="theme-color" content="#1a56db">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:title" content="Rotaract Club of Coimbatore Unity">
+    <meta property="og:description" content="Family of Rotary Club of Coimbatore East | Rotary International District 3206">
+    <meta property="og:image" content="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="en_IN">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <title>Rotaract Club of Coimbatore Unity | Service Above Self</title>
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://res.cloudinary.com">
+    <link rel="preconnect" href="https://dledwtepuvzzztfypbgn.supabase.co">
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+    <!-- Poppins Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons@4.29.1/dist/feather.min.js"></script>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+    <!-- EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+    <!-- Leaflet Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/games.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="64x64" href="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png">
+    <link rel="apple-touch-icon" href="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png">
+
+    <!-- Critical Theme Detection -->
+    <script>
+        (function(){
+            try {
+                var saved = localStorage.getItem('rotaract_unity_theme');
+                var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch(e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- LOADING SCREEN -->
+    <!-- ============================================================ -->
+    <div id="loadingScreen" class="loading-screen" aria-label="Loading">
+        <div class="loading-content">
+            <img id="loadingLogo"
+                 src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png"
+                 alt="Rotaract Club of Coimbatore Unity"
+                 class="loading-logo"
+                 data-theme-logo="adaptive">
+            <div class="loading-line-container">
+                <div class="loading-line"></div>
+            </div>
+            <p class="loading-text">Rotaract Club of Coimbatore Unity</p>
+            <p class="loading-subtext">Family of Rotary Club of Coimbatore East</p>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- NAVIGATION -->
+    <!-- ============================================================ -->
+    <nav id="mainNav" class="nav-glass" role="navigation" aria-label="Main navigation">
+        <div class="nav-container">
+            <a href="#hero" class="nav-brand" aria-label="Home">
+                <img id="navLogo"
+                     src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png"
+                     alt="Rotaract Club of Coimbatore Unity"
+                     class="nav-logo"
+                     data-theme-logo="adaptive"
+                     width="44" height="44">
+                <span class="nav-brand-text">Rotaract Club of Coimbatore Unity</span>
+            </a>
+
+            <div class="nav-links" id="navLinks" role="menubar">
+                <a href="#hero" class="nav-link active" data-section="hero" data-tooltip="Home" role="menuitem" aria-label="Home">
+                    <i data-feather="home"></i>
+                </a>
+                <a href="#about" class="nav-link" data-section="about" data-tooltip="About Us" role="menuitem" aria-label="About Us">
+                    <i data-feather="info"></i>
+                </a>
+                <a href="#events" class="nav-link" data-section="events" data-tooltip="Projects" role="menuitem" aria-label="Projects">
+                    <i data-feather="calendar"></i>
+                </a>
+                <a href="#past-leaders" class="nav-link" data-section="past-leaders" data-tooltip="Legacy" role="menuitem" aria-label="Legacy">
+                    <i data-feather="award"></i>
+                </a>
+                <a href="#members" class="nav-link" data-section="members" data-tooltip="Members" role="menuitem" aria-label="Members">
+                    <i data-feather="users"></i>
+                </a>
+                <a href="#trainers" class="nav-link" data-section="trainers" data-tooltip="Trainers" role="menuitem" aria-label="Trainers">
+                    <i data-feather="book-open"></i>
+                </a>
+                <a href="#newsletter" class="nav-link" data-section="newsletter" data-tooltip="Bulletin" role="menuitem" aria-label="Bulletin">
+                    <i data-feather="file-text"></i>
+                </a>
+                <a href="#blood" class="nav-link" data-section="blood" data-tooltip="Blood Request" role="menuitem" aria-label="Blood Request">
+                    <i data-feather="droplet"></i>
+                </a>
+                <a href="#contact" class="nav-link" data-section="contact" data-tooltip="Contact" role="menuitem" aria-label="Contact">
+                    <i data-feather="map-pin"></i>
+                </a>
+                <a href="games.html" class="nav-link nav-link-games" data-tooltip="Games Zone" role="menuitem" aria-label="Games Zone">
+                    <i data-feather="play"></i>
+                </a>
+                <a href="#join" class="nav-link nav-link-join" data-tooltip="Join Us" role="menuitem" aria-label="Join Us">
+                    <i data-feather="user-plus"></i>
+                </a>
+            </div>
+
+            <div class="nav-actions">
+                <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme" data-tooltip="Toggle Theme">
+                    <span class="theme-icon-wrapper">
+                        <i data-feather="sun" class="theme-icon-light"></i>
+                        <i data-feather="moon" class="theme-icon-dark"></i>
+                    </span>
+                </button>
+                <button id="adminLoginBtn" class="btn-admin-login" aria-label="Admin login" data-tooltip="Admin Login">
+                    <i data-feather="lock"></i>
+                </button>
+                <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!-- MAIN CONTENT -->
+    <!-- ============================================================ -->
+    <main id="mainContent" role="main">
+
+        <!-- HERO -->
+        <section id="hero" class="hero-section" aria-label="Welcome">
+            <div class="hero-bg-animation" aria-hidden="true">
+                <div class="hero-particle"></div>
+                <div class="hero-particle"></div>
+                <div class="hero-particle"></div>
+                <div class="hero-particle"></div>
+                <div class="hero-particle"></div>
+                <div class="hero-particle"></div>
+                <div class="hero-particle"></div>
+                <div class="hero-particle"></div>
+            </div>
+            <div class="hero-content">
+                <div class="hero-logo-wrap">
+                    <img id="heroLogo"
+                         src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png"
+                         alt="Rotaract Club of Coimbatore Unity"
+                         class="hero-logo"
+                         data-theme-logo="adaptive"
+                         width="180" height="180">
+                </div>
+                <h1 class="hero-title" id="heroTitle">Rotaract Club of Coimbatore Unity</h1>
+                <p class="hero-subtitle" id="heroSubtitle">Family of Rotary Club of Coimbatore East</p>
+                <div class="hero-meta">
+                    <span id="heroClubId">Club ID: 91594</span>
+                    <span class="hero-meta-sep">|</span>
+                    <span id="heroCharterDate">Charter Date: 21.4.2014</span>
+                    <span class="hero-meta-sep">|</span>
+                    <span id="heroDistrict">Rotary International District 3206 (Coimbatore | Pallakkad)</span>
+                </div>
+                <p class="hero-tagline">"Service Above Self"</p>
+                <div class="hero-actions">
+                    <a href="#events" class="btn btn-primary btn-lg">
+                        <i data-feather="calendar"></i>Our Projects
+                    </a>
+                    <a href="#join" class="btn btn-outline btn-lg">
+                        <i data-feather="user-plus"></i>Join Us
+                    </a>
+                </div>
+                <div class="hero-scroll-indicator" aria-hidden="true">
+                    <i data-feather="chevrons-down"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section id="about" class="section" aria-label="About Us">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">About Us</span>
+                    <h2 class="section-title">Who We Are</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div class="about-grid">
+                    <div class="about-card glass-card">
+                        <div class="about-icon"><i data-feather="target"></i></div>
+                        <h3>Our Mission</h3>
+                        <p id="aboutMission">To develop young leaders through community and international service, professional development, and leadership opportunities while having fun and building lifelong friendships.</p>
+                    </div>
+                    <div class="about-card glass-card">
+                        <div class="about-icon"><i data-feather="eye"></i></div>
+                        <h3>Our Vision</h3>
+                        <p id="aboutVision">To create a world where young professionals unite to take action and create lasting change in communities across the globe, embodying the Rotary motto of "Service Above Self".</p>
+                    </div>
+                    <div class="about-card glass-card">
+                        <div class="about-icon"><i data-feather="heart"></i></div>
+                        <h3>Our Values</h3>
+                        <p id="aboutValues">Leadership, Fellowship, Service, Integrity, and Diversity. We believe in the power of young people to transform communities through dedicated service and ethical leadership.</p>
+                    </div>
+                </div>
+
+                <div class="club-info-strip">
+                    <div class="info-chip glass-card">
+                        <i data-feather="hash"></i>
+                        <div>
+                            <span class="info-label">Club ID</span>
+                            <span class="info-value" id="infoClubId">91594</span>
+                        </div>
+                    </div>
+                    <div class="info-chip glass-card">
+                        <i data-feather="calendar"></i>
+                        <div>
+                            <span class="info-label">Charter Date</span>
+                            <span class="info-value" id="infoCharter">21.4.2014</span>
+                        </div>
+                    </div>
+                    <div class="info-chip glass-card">
+                        <i data-feather="map"></i>
+                        <div>
+                            <span class="info-label">District</span>
+                            <span class="info-value" id="infoDistrict">Rotary International District 3206</span>
+                        </div>
+                    </div>
+                    <div class="info-chip glass-card">
+                        <i data-feather="globe"></i>
+                        <div>
+                            <span class="info-label">Region</span>
+                            <span class="info-value" id="infoRegion">Coimbatore | Pallakkad</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATISTICS -->
+        <section id="statistics" class="section section-dark" aria-label="Club Statistics">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Impact</span>
+                    <h2 class="section-title">Our Statistics</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div class="stats-grid" id="statsGrid"></div>
+            </div>
+        </section>
+
+        <!-- UPCOMING EVENTS -->
+        <section id="events" class="section" aria-label="Upcoming Projects">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Upcoming</span>
+                    <h2 class="section-title">Projects in Next 7 Days</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div class="events-grid" id="upcomingEventsGrid">
+                    <div class="empty-state glass-card">
+                        <i data-feather="calendar"></i>
+                        <p>No upcoming projects in the next 7 days</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COMPLETED EVENTS -->
+        <section id="completed-events" class="section section-alt" aria-label="Completed Projects">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Completed</span>
+                    <h2 class="section-title">Completed Projects</h2>
+                    <div class="section-line"></div>
+                </div>
+
+                <div class="avenue-tabs" id="avenueTabs" role="tablist" aria-label="Filter by avenue">
+                    <button class="avenue-tab active" data-avenue="all" role="tab" aria-selected="true">
+                        <i data-feather="grid"></i><span>All</span>
+                    </button>
+                    <button class="avenue-tab" data-avenue="club_service" role="tab">
+                        <i data-feather="users"></i><span>Club Service</span>
+                    </button>
+                    <button class="avenue-tab" data-avenue="community_service" role="tab">
+                        <i data-feather="heart"></i><span>Community Service</span>
+                    </button>
+                    <button class="avenue-tab" data-avenue="professional_service" role="tab">
+                        <i data-feather="briefcase"></i><span>Professional Service</span>
+                    </button>
+                    <button class="avenue-tab" data-avenue="international_service" role="tab">
+                        <i data-feather="globe"></i><span>International Service</span>
+                    </button>
+                    <button class="avenue-tab" data-avenue="dpp" role="tab">
+                        <i data-feather="star"></i><span>District Priority Projects</span>
+                    </button>
+                </div>
+
+                <div class="events-grid" id="completedEventsGrid" role="tabpanel"></div>
+            </div>
+        </section>
+
+        <!-- PAST LEADERS -->
+        <section id="past-leaders" class="section" aria-label="Past Presidents and Secretaries">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Legacy</span>
+                    <h2 class="section-title">Past Presidents & Secretaries</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div class="timeline-container" id="pastLeadersTimeline"></div>
+            </div>
+        </section>
+
+        <!-- MEMBERS -->
+        <section id="members" class="section section-alt" aria-label="Our Members">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Team</span>
+                    <h2 class="section-title">Our Members</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div class="members-filter" role="group" aria-label="Filter members">
+                    <button class="filter-btn active" data-filter="all">
+                        <i data-feather="users"></i>All Members
+                    </button>
+                    <button class="filter-btn" data-filter="board">
+                        <i data-feather="star"></i>Board Members
+                    </button>
+                </div>
+                <div class="members-grid" id="membersGrid"></div>
+            </div>
+        </section>
+
+        <!-- TRAINERS -->
+        <section id="trainers" class="section" aria-label="Club Trainers">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Experts</span>
+                    <h2 class="section-title">Club Trainers</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div class="trainers-grid" id="trainersGrid"></div>
+            </div>
+        </section>
+
+        <!-- NEWSLETTER -->
+        <section id="newsletter" class="section section-alt" aria-label="Monthly Bulletin">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Publications</span>
+                    <h2 class="section-title">Monthly Bulletin</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div class="newsletter-grid" id="newsletterGrid"></div>
+            </div>
+        </section>
+
+        <!-- BENEFITS -->
+        <section id="benefits" class="section" aria-label="Benefits of Joining">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Why Rotaract</span>
+                    <h2 class="section-title">Benefits of Joining Rotaract</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div class="benefits-grid" id="benefitsGrid"></div>
+            </div>
+        </section>
+
+        <!-- BLOOD REQUEST -->
+        <section id="blood" class="section section-alt" aria-label="Blood Request">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Save Lives</span>
+                    <h2 class="section-title">Blood Request</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div class="blood-content">
+                    <div class="blood-info glass-card">
+                        <i data-feather="droplet" class="blood-icon"></i>
+                        <h3>Emergency Blood Request</h3>
+                        <p>Need blood urgently? Submit your request and we will immediately alert our donor network via WhatsApp.</p>
+                        <div class="blood-groups-display">
+                            <span class="blood-badge">A+</span>
+                            <span class="blood-badge">A-</span>
+                            <span class="blood-badge">B+</span>
+                            <span class="blood-badge">B-</span>
+                            <span class="blood-badge">AB+</span>
+                            <span class="blood-badge">AB-</span>
+                            <span class="blood-badge">O+</span>
+                            <span class="blood-badge">O-</span>
+                        </div>
+                    </div>
+                    <div class="blood-form-wrap glass-card">
+                        <form id="bloodRequestForm" class="form-modern" novalidate>
+                            <div class="form-group">
+                                <label for="blood_patient_name">Patient Name</label>
+                                <input type="text" id="blood_patient_name" name="patient_name" required placeholder="Enter patient name" autocomplete="name">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="blood_group_select">Blood Group</label>
+                                    <select id="blood_group_select" name="blood_group" required>
+                                        <option value="">Select Blood Group</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="blood_units">Units Needed</label>
+                                    <input type="number" id="blood_units" name="units_needed" min="1" value="1" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="blood_hospital">Hospital Name</label>
+                                <input type="text" id="blood_hospital" name="hospital" required placeholder="Enter hospital name">
+                            </div>
+                            <div class="form-group">
+                                <label for="blood_location">Location</label>
+                                <input type="text" id="blood_location" name="location" placeholder="Enter location / area">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="blood_contact_name">Contact Person</label>
+                                    <input type="text" id="blood_contact_name" name="contact_name" required placeholder="Your name" autocomplete="name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="blood_contact_phone">Contact Phone</label>
+                                    <input type="tel" id="blood_contact_phone" name="contact_phone" required placeholder="Phone number" autocomplete="tel">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="blood_urgency">Urgency</label>
+                                <select id="blood_urgency" name="urgency">
+                                    <option value="urgent">Urgent</option>
+                                    <option value="within_24hrs">Within 24 Hours</option>
+                                    <option value="within_48hrs">Within 48 Hours</option>
+                                    <option value="scheduled">Scheduled</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="blood_notes">Additional Notes</label>
+                                <textarea id="blood_notes" name="additional_notes" rows="3" placeholder="Any additional information..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-danger btn-block">
+                                <i data-feather="alert-circle"></i>Submit Blood Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT -->
+        <section id="contact" class="section" aria-label="Contact Us">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Reach Us</span>
+                    <h2 class="section-title">Contact Us</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div class="contact-grid">
+                    <div class="contact-info glass-card">
+                        <div class="contact-item">
+                            <i data-feather="mail"></i>
+                            <div>
+                                <h4>Email</h4>
+                                <a href="mailto:rc.cbeunity@gmail.com" id="contactEmail">rc.cbeunity@gmail.com</a>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <i data-feather="map-pin"></i>
+                            <div>
+                                <h4>Address</h4>
+                                <p id="contactAddress">Coimbatore, Tamil Nadu</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <i data-feather="globe"></i>
+                            <div>
+                                <h4>District</h4>
+                                <p>Rotary International District 3206 (Coimbatore | Pallakkad)</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <i data-feather="layers"></i>
+                            <div>
+                                <h4>Parent Club</h4>
+                                <p>Family of Rotary Club of Coimbatore East</p>
+                            </div>
+                        </div>
+                        <div class="social-links" aria-label="Social media">
+                            <a href="https://instagram.com/rotaractunity" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram" data-tooltip="Instagram">
+                                <i data-feather="instagram"></i>
+                            </a>
+                            <a href="https://facebook.com/rotaractunity" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Facebook" data-tooltip="Facebook">
+                                <i data-feather="facebook"></i>
+                            </a>
+                            <a href="https://linkedin.com/company/rotaractunity" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="LinkedIn" data-tooltip="LinkedIn">
+                                <i data-feather="linkedin"></i>
+                            </a>
+                            <a href="https://twitter.com/rotaractunity" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Twitter" data-tooltip="Twitter">
+                                <i data-feather="twitter"></i>
+                            </a>
+                            <a href="https://youtube.com/@rotaractunity" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="YouTube" data-tooltip="YouTube">
+                                <i data-feather="youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="contact-map glass-card">
+                        <div id="contactMap" class="map-container" aria-label="Location map"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- JOIN US -->
+        <section id="join" class="section section-alt" aria-label="Join Rotaract">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Be Part of Us</span>
+                    <h2 class="section-title">Join Rotaract Club of Coimbatore Unity</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div class="join-content">
+                    <div class="join-info glass-card">
+                        <h3>Why Join Us?</h3>
+                        <ul class="join-reasons" id="joinReasons">
+                            <li><i data-feather="check-circle"></i>Develop leadership and professional skills</li>
+                            <li><i data-feather="check-circle"></i>Make a positive impact in your community</li>
+                            <li><i data-feather="check-circle"></i>Network with professionals worldwide</li>
+                            <li><i data-feather="check-circle"></i>Build lifelong friendships through fellowship</li>
+                            <li><i data-feather="check-circle"></i>Access to Rotary International resources</li>
+                            <li><i data-feather="check-circle"></i>Personal and professional growth</li>
+                            <li><i data-feather="check-circle"></i>International exposure through global projects</li>
+                            <li><i data-feather="check-circle"></i>Be part of something greater than yourself</li>
+                        </ul>
+                    </div>
+                    <div class="join-form-wrap glass-card">
+                        <h3>Membership Application</h3>
+                        <form id="membershipForm" class="form-modern" novalidate>
+                            <div class="form-group">
+                                <label for="join_name">Full Name</label>
+                                <input type="text" id="join_name" name="full_name" required placeholder="Enter your full name" autocomplete="name">
+                            </div>
+                            <div class="form-group">
+                                <label for="join_email">Email Address</label>
+                                <input type="email" id="join_email" name="email" required placeholder="Enter your email" autocomplete="email">
+                            </div>
+                            <div class="form-group">
+                                <label for="join_phone">Phone Number</label>
+                                <input type="tel" id="join_phone" name="phone" required placeholder="Enter your phone number" autocomplete="tel">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="join_dob">Date of Birth</label>
+                                    <input type="date" id="join_dob" name="date_of_birth" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="join_blood">Blood Group</label>
+                                    <select id="join_blood" name="blood_group" required>
+                                        <option value="">Select Blood Group</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="join_photo">Professional Photo</label>
+                                <div class="file-upload-area" id="memberPhotoUpload">
+                                    <i data-feather="camera"></i>
+                                    <p>Click or drag to upload your photo</p>
+                                    <input type="file" id="memberPhotoInput" name="photo" accept="image/jpeg,image/png,image/webp">
+                                    <img id="memberPhotoPreview" class="photo-preview hidden" alt="Photo preview">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i data-feather="send"></i>Submit Application
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- FOOTER -->
+    <!-- ============================================================ -->
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <img id="footerLogo"
+                         src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png"
+                         alt="Rotaract Unity"
+                         class="footer-logo"
+                         data-theme-logo="white"
+                         width="90" height="90"
+                         loading="lazy">
+                    <h3>Rotaract Club of Coimbatore Unity</h3>
+                    <p>Family of Rotary Club of Coimbatore East</p>
+                    <p>Rotary International District 3206 (Coimbatore | Pallakkad)</p>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Quick Links</h4>
+                    <a href="#about"><i data-feather="chevron-right"></i>About Us</a>
+                    <a href="#events"><i data-feather="chevron-right"></i>Projects</a>
+                    <a href="#past-leaders"><i data-feather="chevron-right"></i>Past Leaders</a>
+                    <a href="#members"><i data-feather="chevron-right"></i>Members</a>
+                    <a href="#newsletter"><i data-feather="chevron-right"></i>Bulletin</a>
+                    <a href="#contact"><i data-feather="chevron-right"></i>Contact</a>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Avenues of Service</h4>
+                    <a href="#completed-events"><i data-feather="chevron-right"></i>Club Service</a>
+                    <a href="#completed-events"><i data-feather="chevron-right"></i>Community Service</a>
+                    <a href="#completed-events"><i data-feather="chevron-right"></i>Professional Service</a>
+                    <a href="#completed-events"><i data-feather="chevron-right"></i>International Service</a>
+                    <a href="#completed-events"><i data-feather="chevron-right"></i>District Priority Projects</a>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Resources</h4>
+                    <a href="https://www.rotary.org" target="_blank" rel="noopener noreferrer"><i data-feather="external-link"></i>Rotary International</a>
+                    <a href="https://my.rotary.org" target="_blank" rel="noopener noreferrer"><i data-feather="external-link"></i>My Rotary</a>
+                    <a href="#join"><i data-feather="chevron-right"></i>Join Rotaract</a>
+                    <a href="#blood"><i data-feather="chevron-right"></i>Blood Request</a>
+                    <a href="games.html"><i data-feather="chevron-right"></i>Games Zone</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="footerYear"></span> Rotaract Club of Coimbatore Unity. All Rights Reserved.</p>
+                <p>Club ID: 91594 | Charter Date: 21.4.2014 | Rotary International District 3206</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============================================================ -->
+    <!-- EVENT MODAL -->
+    <!-- ============================================================ -->
+    <div id="eventModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+        <div class="modal-container glass-card">
+            <button class="modal-close" id="eventModalClose" aria-label="Close">
+                <i data-feather="x"></i>
+            </button>
+            <div class="modal-body" id="eventModalBody"></div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ADMIN LOGIN MODAL -->
+    <!-- ============================================================ -->
+    <div id="adminLoginModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+        <div class="modal-container modal-sm glass-card">
+            <button class="modal-close" id="adminLoginClose" aria-label="Close">
+                <i data-feather="x"></i>
+            </button>
+            <div class="modal-body">
+                <div class="login-header">
+                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png"
+                         alt="Logo" class="login-logo" data-theme-logo="adaptive" width="80" height="80">
+                    <h2>Admin Login</h2>
+                    <p>Rotaract Club of Coimbatore Unity</p>
+                </div>
+                <form id="adminLoginForm" class="form-modern" novalidate>
+                    <div class="form-group">
+                        <label for="login_email">Email</label>
+                        <div class="input-icon-wrap">
+                            <i data-feather="mail"></i>
+                            <input type="email" id="login_email" name="email" required placeholder="Enter your email" autocomplete="email">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="login_password">Password</label>
+                        <div class="input-icon-wrap">
+                            <i data-feather="lock"></i>
+                            <input type="password" id="login_password" name="password" required placeholder="Enter password" autocomplete="current-password">
+                            <button type="button" class="password-toggle" id="passwordToggle" aria-label="Toggle password visibility">
+                                <i data-feather="eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="loginError" class="form-error hidden" role="alert"></div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i data-feather="log-in"></i>Login
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ADMIN PANEL -->
+    <!-- ============================================================ -->
+    <div id="adminPanel" class="admin-panel hidden" role="application">
+        <div class="admin-sidebar" id="adminSidebar">
+            <div class="admin-sidebar-header">
+                <div class="admin-header-glow"></div>
+                <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png"
+                     alt="Logo" class="admin-logo" data-theme-logo="white" width="60" height="60" loading="lazy">
+                <div class="admin-header-content">
+                    <h3 class="admin-panel-brand">Admin Portal</h3>
+                    <div class="admin-user-info">
+                        <div class="admin-user-avatar" id="adminUserAvatar">
+                            <span id="adminUserInitial">A</span>
+                        </div>
+                        <div class="admin-user-details">
+                            <p id="adminUserName" class="admin-user-name">Administrator</p>
+                            <span id="adminUserRole" class="admin-role-badge">Super Admin</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="admin-nav" id="adminNav">
+                <a href="#" class="admin-nav-link active" data-panel="dashboard">
+                    <i data-feather="home"></i><span>Dashboard</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="events-manage">
+                    <i data-feather="calendar"></i><span>Projects</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="meetings-manage">
+                    <i data-feather="video"></i><span>Meetings</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="reports-manage">
+                    <i data-feather="file-text"></i><span>Reports</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="members-manage">
+                    <i data-feather="users"></i><span>Members</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="treasury-manage">
+                    <i data-feather="dollar-sign"></i><span>Treasury</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="newsletter-manage">
+                    <i data-feather="book-open"></i><span>Bulletin</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="trainers-manage">
+                    <i data-feather="award"></i><span>Trainers</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="leaders-manage">
+                    <i data-feather="star"></i><span>Past Leaders</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="membership-apps">
+                    <i data-feather="user-plus"></i><span>Applications</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="blood-manage">
+                    <i data-feather="droplet"></i><span>Blood Requests</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="mail-manage">
+                    <i data-feather="send"></i><span>Mail Queue</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="settings-manage">
+                    <i data-feather="settings"></i><span>Site Settings</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="roles-manage">
+                    <i data-feather="shield"></i><span>Roles & Access</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="statistics-manage">
+                    <i data-feather="bar-chart"></i><span>Statistics</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="benefits-manage">
+                    <i data-feather="gift"></i><span>Benefits</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="chatbot-manage">
+                    <i data-feather="message-circle"></i><span>Chatbot Data</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-panel="activity-log">
+                    <i data-feather="activity"></i><span>Activity Log</span>
+                </a>
+            </nav>
+
+            <div class="admin-sidebar-footer">
+                <button id="adminBackToSite" class="btn btn-outline btn-sm btn-block">
+                    <i data-feather="arrow-left"></i>Back to Site
+                </button>
+                <button id="adminLogout" class="btn btn-danger btn-sm btn-block">
+                    <i data-feather="log-out"></i>Logout
+                </button>
+            </div>
+        </div>
+
+        <div class="admin-main" id="adminMain">
+            <div class="admin-topbar">
+                <button class="admin-sidebar-toggle" id="adminSidebarToggle" aria-label="Toggle sidebar">
+                    <i data-feather="menu"></i>
+                </button>
+                <h2 id="adminPanelTitle">Dashboard</h2>
+                <div class="admin-topbar-actions">
+                    <button id="adminThemeToggle" class="theme-toggle" aria-label="Toggle theme">
+                        <span class="theme-icon-wrapper">
+                            <i data-feather="sun" class="theme-icon-light"></i>
+                            <i data-feather="moon" class="theme-icon-dark"></i>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="admin-content" id="adminContent">
+                <!-- Dashboard -->
+                <div class="admin-panel-content active" id="panel-dashboard">
+                    <div class="dashboard-stats" id="dashboardStats"></div>
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card glass-card">
+                            <h3><i data-feather="calendar"></i>Recent Projects</h3>
+                            <div id="dashRecentEvents" class="dash-list"></div>
+                        </div>
+                        <div class="dashboard-card glass-card">
+                            <h3><i data-feather="user-plus"></i>Pending Applications</h3>
+                            <div id="dashPendingApps" class="dash-list"></div>
+                        </div>
+                        <div class="dashboard-card glass-card">
+                            <h3><i data-feather="gift"></i>Upcoming Birthdays</h3>
+                            <div id="dashBirthdays" class="dash-list"></div>
+                        </div>
+                        <div class="dashboard-card glass-card">
+                            <h3><i data-feather="alert-circle"></i>Pending Approvals</h3>
+                            <div id="dashPendingApprovals" class="dash-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Events -->
+                <div class="admin-panel-content" id="panel-events-manage">
+                    <div class="panel-header">
+                        <h3>Projects Management</h3>
+                        <button class="btn btn-primary" id="addEventBtn"><i data-feather="plus"></i>Add Project</button>
+                    </div>
+                    <div class="panel-filters">
+                        <select id="eventFilterAvenue" class="form-select">
+                            <option value="">All Avenues</option>
+                            <option value="club_service">Club Service</option>
+                            <option value="community_service">Community Service</option>
+                            <option value="professional_service">Professional Service</option>
+                            <option value="international_service">International Service</option>
+                            <option value="dpp">District Priority Projects</option>
+                        </select>
+                        <select id="eventFilterStatus" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending Approval</option>
+                            <option value="approved">Approved</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <input type="text" id="eventSearch" class="form-input" placeholder="Search projects...">
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="eventsTable">
+                            <thead><tr><th>Project Name</th><th>Avenue</th><th>Date</th><th>Time</th><th>Status</th><th>Report</th><th>Actions</th></tr></thead>
+                            <tbody id="eventsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Meetings -->
+                <div class="admin-panel-content" id="panel-meetings-manage">
+                    <div class="panel-header">
+                        <h3>Meetings Management</h3>
+                        <button class="btn btn-primary" id="addMeetingBtn"><i data-feather="plus"></i>Schedule Meeting</button>
+                    </div>
+                    <div class="panel-filters">
+                        <select id="meetingFilterType" class="form-select">
+                            <option value="">All Types</option>
+                            <option value="general">General Body Meeting</option>
+                            <option value="board">Board Members Meeting</option>
+                        </select>
+                        <select id="meetingFilterStatus" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="scheduled">Scheduled</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="meetingsTable">
+                            <thead><tr><th>Meeting Name</th><th>Type</th><th>Date</th><th>Time</th><th>Status</th><th>Attendance</th><th>Actions</th></tr></thead>
+                            <tbody id="meetingsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reports -->
+                <div class="admin-panel-content" id="panel-reports-manage">
+                    <div class="panel-header">
+                        <h3>Reports Management</h3>
+                        <div class="panel-header-actions">
+                            <button class="btn btn-outline" id="downloadMonthlyReport"><i data-feather="download"></i>Monthly Report</button>
+                            <button class="btn btn-outline" id="downloadDPPReport"><i data-feather="download"></i>DPP Report</button>
+                        </div>
+                    </div>
+                    <div class="panel-filters">
+                        <div class="form-group">
+                            <label for="reportMonth">Month</label>
+                            <input type="month" id="reportMonth" class="form-input">
+                        </div>
+                        <select id="reportFilterAvenue" class="form-select">
+                            <option value="">All Avenues</option>
+                            <option value="club_service">Club Service</option>
+                            <option value="community_service">Community Service</option>
+                            <option value="professional_service">Professional Service</option>
+                            <option value="international_service">International Service</option>
+                            <option value="dpp">District Priority Projects</option>
+                        </select>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="reportsTable">
+                            <thead><tr><th>Project</th><th>Avenue</th><th>Date</th><th>Report</th><th>Approved</th><th>Actions</th></tr></thead>
+                            <tbody id="reportsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Members -->
+                <div class="admin-panel-content" id="panel-members-manage">
+                    <div class="panel-header">
+                        <h3>Members Management</h3>
+                        <button class="btn btn-primary" id="addMemberBtn"><i data-feather="user-plus"></i>Add Member</button>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="membersTable">
+                            <thead><tr><th>Photo</th><th>Name</th><th>Portfolio</th><th>RI ID</th><th>Email</th><th>Phone</th><th>Blood</th><th>Role</th><th>Actions</th></tr></thead>
+                            <tbody id="membersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Treasury -->
+                <div class="admin-panel-content" id="panel-treasury-manage">
+                    <div class="panel-header">
+                        <h3>Treasury Management</h3>
+                        <div class="panel-header-actions">
+                            <button class="btn btn-primary" id="addTreasuryBtn"><i data-feather="plus"></i>Add Transaction</button>
+                            <button class="btn btn-outline" id="downloadTreasuryBtn"><i data-feather="download"></i>Statement</button>
+                        </div>
+                    </div>
+                    <div class="treasury-summary-cards" id="treasurySummaryCards">
+                        <div class="treasury-sum-card glass-card income">
+                            <i data-feather="trending-up"></i>
+                            <div>
+                                <span>Total Income</span>
+                                <h3 id="treasuryTotalIncome">0.00</h3>
+                            </div>
+                        </div>
+                        <div class="treasury-sum-card glass-card expense">
+                            <i data-feather="trending-down"></i>
+                            <div>
+                                <span>Total Expenses</span>
+                                <h3 id="treasuryTotalExpense">0.00</h3>
+                            </div>
+                        </div>
+                        <div class="treasury-sum-card glass-card balance">
+                            <i data-feather="dollar-sign"></i>
+                            <div>
+                                <span>Current Balance</span>
+                                <h3 id="treasuryBalance">0.00</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-filters">
+                        <div class="form-group"><label for="treasuryFromDate">From</label><input type="date" id="treasuryFromDate" class="form-input"></div>
+                        <div class="form-group"><label for="treasuryToDate">To</label><input type="date" id="treasuryToDate" class="form-input"></div>
+                        <button class="btn btn-outline" id="treasuryFilterBtn"><i data-feather="filter"></i>Filter</button>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="treasuryTable">
+                            <thead><tr><th>S.No</th><th>Date</th><th>Particular</th><th>Category</th><th>Income</th><th>Expense</th><th>Balance</th><th>Actions</th></tr></thead>
+                            <tbody id="treasuryTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Newsletter -->
+                <div class="admin-panel-content" id="panel-newsletter-manage">
+                    <div class="panel-header">
+                        <h3>Bulletin Management</h3>
+                        <button class="btn btn-primary" id="addNewsletterBtn"><i data-feather="plus"></i>Add Bulletin</button>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="newsletterTable">
+                            <thead><tr><th>Cover</th><th>Name</th><th>Edition</th><th>Date</th><th>Actions</th></tr></thead>
+                            <tbody id="newsletterTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Trainers -->
+                <div class="admin-panel-content" id="panel-trainers-manage">
+                    <div class="panel-header">
+                        <h3>Club Trainers</h3>
+                        <button class="btn btn-primary" id="addTrainerBtn"><i data-feather="plus"></i>Add Trainer</button>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="trainersTable">
+                            <thead><tr><th>Photo</th><th>Name</th><th>RI ID</th><th>Email</th><th>Expertise</th><th>Year</th><th>Actions</th></tr></thead>
+                            <tbody id="trainersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Past Leaders -->
+                <div class="admin-panel-content" id="panel-leaders-manage">
+                    <div class="panel-header">
+                        <h3>Past Presidents & Secretaries</h3>
+                        <button class="btn btn-primary" id="addLeaderBtn"><i data-feather="plus"></i>Add Leader</button>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="leadersTable">
+                            <thead><tr><th>Photo</th><th>Name</th><th>Position</th><th>Year</th><th>Actions</th></tr></thead>
+                            <tbody id="leadersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Applications -->
+                <div class="admin-panel-content" id="panel-membership-apps">
+                    <div class="panel-header"><h3>Membership Applications</h3></div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="applicationsTable">
+                            <thead><tr><th>Photo</th><th>Name</th><th>Email</th><th>Phone</th><th>Blood</th><th>Applied</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="applicationsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Blood -->
+                <div class="admin-panel-content" id="panel-blood-manage">
+                    <div class="panel-header"><h3>Blood Requests</h3></div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="bloodTable">
+                            <thead><tr><th>Patient</th><th>Blood</th><th>Units</th><th>Hospital</th><th>Contact</th><th>Urgency</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="bloodTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Mail -->
+                <div class="admin-panel-content" id="panel-mail-manage">
+                    <div class="panel-header">
+                        <h3>Mail Queue & History</h3>
+                        <button class="btn btn-primary" id="composeMail"><i data-feather="edit"></i>Compose Mail</button>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="mailTable">
+                            <thead><tr><th>Type</th><th>Subject</th><th>Recipients</th><th>Status</th><th>Scheduled</th><th>Sent</th></tr></thead>
+                            <tbody id="mailTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="admin-panel-content" id="panel-settings-manage">
+                    <div class="panel-header">
+                        <h3>Site Settings</h3>
+                        <button class="btn btn-primary" id="saveAllSettings"><i data-feather="save"></i>Save All</button>
+                    </div>
+                    <div class="settings-grid" id="settingsGrid"></div>
+                </div>
+
+                <!-- Roles & Access -->
+                <div class="admin-panel-content" id="panel-roles-manage">
+                    <div class="panel-header">
+                        <h3>Roles & Access Control</h3>
+                        <button class="btn btn-primary" id="addAdminUserBtn" style="display:none;">
+                            <i data-feather="user-plus"></i>Add Admin User
+                        </button>
+                    </div>
+
+                    <div style="padding:1rem 1.25rem;background:linear-gradient(135deg,rgba(26,86,219,0.08),rgba(6,182,212,0.08));border:1px solid rgba(26,86,219,0.2);border-radius:12px;margin-bottom:1.5rem;">
+                        <p style="font-size:0.88rem;color:var(--text-primary);margin:0;display:flex;align-items:center;gap:0.5rem;">
+                            <i data-feather="shield" style="color:var(--primary);flex-shrink:0;"></i>
+                            <span><strong>Admin Users vs Club Members:</strong> Admin Users have access to this admin panel. Club Members are for public display on the website. Use "Members Management" for public members.</span>
+                        </p>
+                    </div>
+
+                    <h4 style="margin-bottom:1rem;font-size:1rem;color:var(--text-primary);display:flex;align-items:center;gap:0.5rem;">
+                        <i data-feather="shield" style="color:var(--primary);"></i>Available Roles
+                    </h4>
+                    <div class="admin-table-wrap" style="margin-bottom:2rem;">
+                        <table class="admin-table" id="rolesTable">
+                            <thead><tr><th>Role Key</th><th>Display Name</th><th>Level</th><th>Board</th><th>Permissions</th></tr></thead>
+                            <tbody id="rolesTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="panel-section">
+                        <h4 style="display:flex;align-items:center;gap:0.5rem;"><i data-feather="users" style="color:var(--primary);"></i>Admin Users Management</h4>
+                        <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1rem;">
+                            Manage users who have access to the admin panel. Only Super Admin can add, edit, or delete admin users.
+                        </p>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table" id="userAccessTable">
+                                <thead><tr><th>Name</th><th>Email</th><th>Current Role</th><th>Change Role</th><th>Active</th><th>Actions</th></tr></thead>
+                                <tbody id="userAccessTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="admin-panel-content" id="panel-statistics-manage">
+                    <div class="panel-header">
+                        <h3>Club Statistics</h3>
+                        <div class="panel-header-actions">
+                            <button class="btn btn-outline" id="autoCalculateStatsBtn"><i data-feather="refresh-cw"></i>Auto Calculate</button>
+                            <button class="btn btn-primary" id="addStatBtn"><i data-feather="plus"></i>Add Statistic</button>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="statisticsTable">
+                            <thead><tr><th>Key</th><th>Label</th><th>Value</th><th>Icon</th><th>Actions</th></tr></thead>
+                            <tbody id="statisticsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Benefits -->
+                <div class="admin-panel-content" id="panel-benefits-manage">
+                    <div class="panel-header">
+                        <h3>Benefits of Joining</h3>
+                        <button class="btn btn-primary" id="addBenefitBtn"><i data-feather="plus"></i>Add Benefit</button>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="benefitsTable">
+                            <thead><tr><th>Title</th><th>Description</th><th>Icon</th><th>Order</th><th>Actions</th></tr></thead>
+                            <tbody id="benefitsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Chatbot -->
+                <div class="admin-panel-content" id="panel-chatbot-manage">
+                    <div class="panel-header">
+                        <h3>Chatbot Knowledge Base</h3>
+                        <button class="btn btn-primary" id="addChatbotData"><i data-feather="plus"></i>Add Knowledge</button>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="chatbotTable">
+                            <thead><tr><th>Topic</th><th>Category</th><th>Content</th><th>Actions</th></tr></thead>
+                            <tbody id="chatbotTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="admin-panel-content" id="panel-activity-log">
+                    <div class="panel-header"><h3>Activity Log</h3></div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="activityTable">
+                            <thead><tr><th>Time</th><th>Action</th><th>Details</th></tr></thead>
+                            <tbody id="activityTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ALL FORM MODALS -->
+    <!-- ============================================================ -->
+
+    <!-- Event Form -->
+    <div id="eventFormModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card">
+            <div class="admin-modal-header">
+                <h3 id="eventFormTitle">Add Project</h3>
+                <button class="modal-close" id="eventFormClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="eventForm" class="form-modern" novalidate>
+                <input type="hidden" name="id" id="eventFormId">
+                <div class="form-group"><label>Project Name</label><input type="text" name="event_name" required></div>
+                <div class="form-group"><label>Description</label><textarea name="description" rows="3"></textarea></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Avenue</label>
+                        <select id="eventAvenueSelect" name="avenue" required>
+                            <option value="">Select</option>
+                            <option value="club_service">Club Service</option>
+                            <option value="community_service">Community Service</option>
+                            <option value="professional_service">Professional Service</option>
+                            <option value="international_service">International Service</option>
+                            <option value="dpp">District Priority Projects</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Group Number</label>
+                        <select name="group_number">
+                            <option value="1">Group 1</option><option value="2">Group 2</option>
+                            <option value="3">Group 3</option><option value="4">Group 4</option>
+                            <option value="5">Group 5</option><option value="6">Group 6</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date</label><input type="date" name="event_date" required></div>
+                    <div class="form-group"><label>Start Time</label><input type="time" name="event_time" required></div>
+                    <div class="form-group"><label>End Time</label><input type="time" name="end_time"></div>
+                </div>
+                <div class="form-group"><label>Venue</label><input type="text" name="venue"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Event Chair</label><input type="text" name="event_chair"></div>
+                    <div class="form-group"><label>Event Secretary</label><input type="text" name="event_secretary"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Proposed By</label><input type="text" name="proposed_by"></div>
+                    <div class="form-group"><label>Seconded By</label><input type="text" name="seconded_by"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Collaboration</label>
+                        <select name="collaboration_type">
+                            <option value="">None</option>
+                            <option value="rotaract">Rotaract</option>
+                            <option value="interact">Interact</option>
+                            <option value="rotary">Rotary</option>
+                            <option value="ngo">NGO</option>
+                            <option value="others">Others</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Collaborator Name</label><input type="text" name="collaborator_name"></div>
+                </div>
+                <div id="dppFields" class="dpp-fields hidden">
+                    <h4 class="form-section-title">District Priority Projects Details</h4>
+                    <div class="form-row">
+                        <div class="form-group"><label>DPP Number</label><input type="text" name="dpp_project_number"></div>
+                        <div class="form-group"><label>DPP Pillar</label><input type="text" name="dpp_pillar"></div>
+                    </div>
+                    <div class="form-group"><label>DPP Category</label><input type="text" name="dpp_category"></div>
+                </div>
+                <div class="form-group">
+                    <label>Project Poster</label>
+                    <div class="file-upload-area" id="eventPosterUpload">
+                        <i data-feather="image"></i><p>Click or drag to upload poster</p>
+                        <input type="file" name="poster" accept="image/jpeg,image/png,image/webp" id="eventPosterInput">
+                        <img id="eventPosterPreview" class="photo-preview hidden" alt="Preview">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="save"></i>Save Project</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Report Form -->
+    <div id="reportFormModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card large-modal">
+            <div class="admin-modal-header">
+                <h3 id="reportFormTitle">Submit Project Report</h3>
+                <button class="modal-close" id="reportFormClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="reportForm" class="form-modern" novalidate>
+                <input type="hidden" name="event_id" id="reportEventId">
+                <div class="report-event-info" id="reportEventInfo"></div>
+                <div class="form-group"><label>Report / Description</label><textarea name="report_text" rows="8" required></textarea></div>
+                <div class="form-group">
+                    <label>Action Photographs (Max 3)</label>
+                    <div class="file-upload-area multi-upload" id="reportPhotosUpload">
+                        <i data-feather="camera"></i><p>Click or drag to upload photographs</p>
+                        <input type="file" name="photos" accept="image/jpeg,image/png,image/webp" multiple id="reportPhotosInput">
+                    </div>
+                    <div id="reportPhotosPreview" class="photos-preview-grid"></div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="check-circle"></i>Submit Report</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Meeting Form -->
+    <div id="meetingFormModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card large-modal">
+            <div class="admin-modal-header">
+                <h3 id="meetingFormTitle">Schedule Meeting</h3>
+                <button class="modal-close" id="meetingFormClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="meetingForm" class="form-modern" novalidate>
+                <input type="hidden" name="id" id="meetingFormId">
+                <div class="form-group"><label>Meeting Name</label><input type="text" name="meeting_name" required></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select name="meeting_type" required>
+                            <option value="general">General Body Meeting</option>
+                            <option value="board">Board Members Meeting</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Group</label>
+                        <select name="group_number">
+                            <option value="1">Group 1</option><option value="2">Group 2</option>
+                            <option value="3">Group 3</option><option value="4">Group 4</option>
+                            <option value="5">Group 5</option><option value="6">Group 6</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date</label><input type="date" name="meeting_date" required></div>
+                    <div class="form-group"><label>Start Time</label><input type="time" name="start_time" required></div>
+                    <div class="form-group"><label>End Time</label><input type="time" name="end_time"></div>
+                </div>
+                <div class="form-group"><label>Venue</label><input type="text" name="venue"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Minutes Prepared By</label><input type="text" name="minutes_prepared_by"></div>
+                    <div class="form-group"><label>Sergeant at Arms</label><input type="text" name="sergeant_at_arms"></div>
+                </div>
+                <div class="form-group">
+                    <label>Meeting Poster</label>
+                    <div class="file-upload-area" id="meetingPosterUpload">
+                        <i data-feather="image"></i><p>Click or drag to upload poster</p>
+                        <input type="file" name="poster" accept="image/jpeg,image/png,image/webp" id="meetingPosterInput">
+                        <img id="meetingPosterPreview" class="photo-preview hidden" alt="Preview">
+                    </div>
+                </div>
+                <div class="form-group"><label>Agenda (One per line)</label><textarea name="agenda_text" rows="6" placeholder="1. Call to order&#10;2. Welcome address&#10;3. Secretary report"></textarea></div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="save"></i>Save Meeting</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Minutes Form -->
+    <div id="minutesFormModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card large-modal">
+            <div class="admin-modal-header">
+                <h3>Meeting Minutes</h3>
+                <button class="modal-close" id="minutesFormClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="minutesForm" class="form-modern" novalidate>
+                <input type="hidden" name="meeting_id" id="minutesMeetingId">
+                <div id="minutesMeetingInfo" class="report-event-info"></div>
+                <div id="minutesItemsContainer">
+                    <h4>Minutes Items</h4>
+                    <div id="minutesItemsList" class="minutes-items-list"></div>
+                    <button type="button" class="btn btn-outline btn-sm" id="addMinuteItem"><i data-feather="plus"></i>Add Item</button>
+                </div>
+                <div class="form-group">
+                    <label>Meeting Photographs</label>
+                    <div class="file-upload-area multi-upload" id="meetingPhotosUpload">
+                        <i data-feather="camera"></i><p>Click or drag to upload</p>
+                        <input type="file" name="photos" accept="image/jpeg,image/png,image/webp" multiple id="meetingPhotosInput">
+                    </div>
+                    <div id="meetingPhotosPreview" class="photos-preview-grid"></div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="save"></i>Save Minutes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Member Form -->
+    <div id="memberFormModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card">
+            <div class="admin-modal-header">
+                <h3 id="memberFormTitle">Add Member</h3>
+                <button class="modal-close" id="memberFormClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="memberForm" class="form-modern" novalidate>
+                <input type="hidden" name="id" id="memberFormId">
+                <div class="form-group"><label>Full Name</label><input type="text" name="full_name" required></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Email</label><input type="email" name="email" required></div>
+                    <div class="form-group"><label>Phone</label><input type="tel" name="phone"></div>
+                </div>
+                <div class="form-group"><label>Password</label><input type="password" name="password" placeholder="Leave blank to keep current"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Portfolio</label><input type="text" name="portfolio"></div>
+                    <div class="form-group"><label>RI ID</label><input type="text" name="ri_id"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Role</label><select id="memberRoleSelect" name="role"></select></div>
+                    <div class="form-group">
+                        <label>Blood Group</label>
+                        <select name="blood_group">
+                            <option value="">Select</option>
+                            <option value="A+">A+</option><option value="A-">A-</option>
+                            <option value="B+">B+</option><option value="B-">B-</option>
+                            <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                            <option value="O+">O+</option><option value="O-">O-</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date of Birth</label><input type="date" name="date_of_birth"></div>
+                    <div class="form-group">
+                        <label>Board Member</label>
+                        <select name="is_board_member">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Photo</label>
+                    <div class="file-upload-area" id="memberPhotoUploadAdmin">
+                        <i data-feather="camera"></i><p>Click or drag to upload</p>
+                        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" id="memberPhotoInputAdmin">
+                        <img id="memberPhotoPreviewAdmin" class="photo-preview hidden" alt="Preview">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="save"></i>Save Member</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Treasury Form -->
+    <div id="treasuryFormModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card">
+            <div class="admin-modal-header">
+                <h3 id="treasuryFormTitle">Add Transaction</h3>
+                <button class="modal-close" id="treasuryFormClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="treasuryForm" class="form-modern" novalidate>
+                <input type="hidden" name="id" id="treasuryFormId">
+                <div class="form-group"><label>Date</label><input type="date" name="transaction_date" required></div>
+                <div class="form-group"><label>Particular</label><input type="text" name="particular" required></div>
+                <div class="form-group"><label>Category</label><input type="text" name="category"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Income (Rs.)</label><input type="number" name="income" step="0.01" min="0" value="0"></div>
+                    <div class="form-group"><label>Expense (Rs.)</label><input type="number" name="expense" step="0.01" min="0" value="0"></div>
+                </div>
+                <div class="form-group">
+                    <label>Receipt</label>
+                    <div class="file-upload-area" id="receiptUpload">
+                        <i data-feather="file"></i><p>Click or drag to upload receipt</p>
+                        <input type="file" name="receipt" accept="image/*,application/pdf" id="receiptInput">
+                        <img id="receiptPreview" class="photo-preview hidden" alt="Preview">
+                    </div>
+                </div>
+                <div class="form-group"><label>Notes</label><textarea name="notes" rows="2"></textarea></div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="save"></i>Save Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Treasury Download Modal -->
+    <div id="treasuryDownloadModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card modal-sm">
+            <div class="admin-modal-header">
+                <h3>Download Statement</h3>
+                <button class="modal-close" id="treasuryDownloadClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="treasuryDownloadForm" class="form-modern" novalidate>
+                <div class="form-group"><label>From Date</label><input type="date" id="downloadFromDate" name="from_date" required></div>
+                <div class="form-group"><label>To Date</label><input type="date" id="downloadToDate" name="to_date" required></div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="download"></i>Download Excel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Newsletter Form -->
+    <div id="newsletterFormModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card">
+            <div class="admin-modal-header">
+                <h3 id="newsletterFormTitle">Add Bulletin</h3>
+                <button class="modal-close" id="newsletterFormClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="newsletterForm" class="form-modern" novalidate>
+                <input type="hidden" name="id" id="newsletterFormId">
+                <div class="form-group"><label>Bulletin Name</label><input type="text" name="bulletin_name" required></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Edition</label><input type="text" name="edition" placeholder="e.g., Volume 1, Edition 1"></div>
+                    <div class="form-group"><label>Published Date</label><input type="date" name="published_date" required></div>
+                </div>
+                <div class="form-group"><label>Description</label><textarea name="description" rows="3"></textarea></div>
+                <div class="form-group"><label>Google Drive Link</label><input type="url" name="drive_link" placeholder="https://drive.google.com/..."></div>
+                <div class="form-group">
+                    <label>Cover Image</label>
+                    <div class="file-upload-area" id="newsletterCoverUpload">
+                        <i data-feather="image"></i><p>Click or drag to upload</p>
+                        <input type="file" name="cover" accept="image/jpeg,image/png,image/webp" id="newsletterCoverInput">
+                        <img id="newsletterCoverPreview" class="photo-preview hidden" alt="Preview">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="save"></i>Save Bulletin</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Trainer Form -->
+    <div id="trainerFormModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card">
+            <div class="admin-modal-header">
+                <h3 id="trainerFormTitle">Add Trainer</h3>
+                <button class="modal-close" id="trainerFormClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="trainerForm" class="form-modern" novalidate>
+                <input type="hidden" name="id" id="trainerFormId">
+                <div class="form-group"><label>Full Name</label><input type="text" name="full_name" required></div>
+                <div class="form-row">
+                    <div class="form-group"><label>RI ID</label><input type="text" name="ri_id"></div>
+                    <div class="form-group"><label>Email</label><input type="email" name="email"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Area of Expertise</label><input type="text" name="area_of_expertise"></div>
+                    <div class="form-group"><label>Certified Year</label><input type="text" name="certified_year"></div>
+                </div>
+                <div class="form-group">
+                    <label>Photo</label>
+                    <div class="file-upload-area" id="trainerPhotoUpload">
+                        <i data-feather="camera"></i><p>Click or drag to upload</p>
+                        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" id="trainerPhotoInput">
+                        <img id="trainerPhotoPreview" class="photo-preview hidden" alt="Preview">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="save"></i>Save Trainer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leader Form -->
+    <div id="leaderFormModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card">
+            <div class="admin-modal-header">
+                <h3 id="leaderFormTitle">Add Past Leader</h3>
+                <button class="modal-close" id="leaderFormClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="leaderForm" class="form-modern" novalidate>
+                <input type="hidden" name="id" id="leaderFormId">
+                <div class="form-group"><label>Full Name</label><input type="text" name="full_name" required></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Position</label>
+                        <select name="position" required>
+                            <option value="President">President</option>
+                            <option value="Secretary">Secretary</option>
+                            <option value="Secretary - Administration">Secretary - Administration</option>
+                            <option value="Secretary - Communication">Secretary - Communication</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Year Range</label><input type="text" name="year_range" required placeholder="2023-2024"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>RI ID</label><input type="text" name="ri_id"></div>
+                    <div class="form-group"><label>Sort Order</label><input type="number" name="sort_order" value="0"></div>
+                </div>
+                <div class="form-group">
+                    <label>Photo</label>
+                    <div class="file-upload-area" id="leaderPhotoUpload">
+                        <i data-feather="camera"></i><p>Click or drag to upload</p>
+                        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" id="leaderPhotoInput">
+                        <img id="leaderPhotoPreview" class="photo-preview hidden" alt="Preview">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="save"></i>Save Leader</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Monthly Report Modal -->
+    <div id="monthlyReportModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card modal-sm">
+            <div class="admin-modal-header">
+                <h3>Download Monthly Report</h3>
+                <button class="modal-close" id="monthlyReportClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="monthlyReportForm" class="form-modern" novalidate>
+                <div class="form-group"><label>Select Month</label><input type="month" id="monthlyReportMonth" name="report_month" required></div>
+                <div class="form-group">
+                    <label>Report Type</label>
+                    <select id="monthlyReportType" name="report_type">
+                        <option value="all">Complete Monthly Report</option>
+                        <option value="club_service">Club Service</option>
+                        <option value="community_service">Community Service</option>
+                        <option value="professional_service">Professional Service</option>
+                        <option value="international_service">International Service</option>
+                        <option value="dpp">District Priority Projects</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="download"></i>Generate Report</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Compose Mail Modal -->
+    <div id="composeMailModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card">
+            <div class="admin-modal-header">
+                <h3>Compose Mail</h3>
+                <button class="modal-close" id="composeMailClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="composeMailForm" class="form-modern" novalidate>
+                <div class="form-group">
+                    <label>Recipients</label>
+                    <select name="recipients">
+                        <option value="all">All Members</option>
+                        <option value="board">Board Members Only</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Subject</label><input type="text" name="subject" required></div>
+                <div class="form-group"><label>Message</label><textarea name="body" rows="8" required></textarea></div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="send"></i>Send Mail</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Generic Form Modal -->
+    <div id="genericFormModal" class="admin-modal hidden" role="dialog">
+        <div class="admin-modal-content glass-card">
+            <div class="admin-modal-header">
+                <h3 id="genericFormTitle">Edit</h3>
+                <button class="modal-close" id="genericFormClose"><i data-feather="x"></i></button>
+            </div>
+            <form id="genericForm" class="form-modern" novalidate>
+                <div id="genericFormFields"></div>
+                <button type="submit" class="btn btn-primary btn-block"><i data-feather="save"></i>Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Attendance Modal (Public) -->
+    <div id="attendanceModal" class="modal-overlay hidden" role="dialog">
+        <div class="modal-container glass-card">
+            <button class="modal-close" id="attendanceModalClose"><i data-feather="x"></i></button>
+            <div class="modal-body">
+                <div class="login-header">
+                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png"
+                         alt="Logo" class="login-logo" data-theme-logo="adaptive" width="80" height="80">
+                    <h2>Meeting Attendance</h2>
+                    <p id="attendanceMeetingName"></p>
+                </div>
+                <form id="attendanceForm" class="form-modern" novalidate>
+                    <input type="hidden" name="meeting_id" id="attendanceMeetingId">
+                    <div class="form-group"><label>Name</label><input type="text" name="member_name" required></div>
+                    <div class="form-group"><label>Designation</label><input type="text" name="designation"></div>
+                    <div class="form-group"><label>RI ID</label><input type="text" name="ri_id"></div>
+                    <div class="form-group"><label>In Time</label><input type="time" name="in_time" required></div>
+                    <div class="form-group">
+                        <label>Signature</label>
+                        <div class="file-upload-area" id="signatureUpload">
+                            <i data-feather="edit-3"></i><p>Upload signature image</p>
+                            <input type="file" name="signature" accept="image/*" id="signatureInput">
+                            <img id="signaturePreview" class="photo-preview hidden" alt="Signature">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block"><i data-feather="check-circle"></i>Submit Attendance</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- AI CHATBOT -->
+    <!-- ============================================================ -->
+    <div id="chatbotWidget" class="chatbot-widget">
+        <button id="chatbotToggle" class="chatbot-toggle" aria-label="Chat">
+            <i data-feather="message-circle" class="chatbot-icon-open"></i>
+            <i data-feather="x" class="chatbot-icon-close hidden"></i>
+        </button>
+        <div id="chatbotWindow" class="chatbot-window hidden glass-card">
+            <div class="chatbot-header">
+                <div class="chatbot-header-info">
+                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png"
+                         alt="Assistant" class="chatbot-avatar" data-theme-logo="adaptive" width="40" height="40">
+                    <div>
+                        <h4>Unity Assistant</h4>
+                        <span class="chatbot-status">Online</span>
+                    </div>
+                </div>
+                <button id="chatbotMinimize" class="chatbot-minimize" aria-label="Minimize">
+                    <i data-feather="minus"></i>
+                </button>
+            </div>
+            <div id="chatbotMessages" class="chatbot-messages" role="log" aria-live="polite">
+                <div class="chat-message bot">
+                    <div class="chat-bubble">
+                        Hello! I am the Unity Assistant. I can help you with information about Rotary, Rotaract, Rotary International District 3206, RSAMDIO, End Polio, and much more. How can I help?
+                    </div>
+                </div>
+            </div>
+            <form id="chatbotForm" class="chatbot-input-area">
+                <input type="text" id="chatbotInput" placeholder="Type your message..." autocomplete="off">
+                <button type="submit" class="chatbot-send" aria-label="Send">
+                    <i data-feather="send"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast & Back to Top -->
+    <div id="toastContainer" class="toast-container" role="status" aria-live="polite"></div>
+    <button id="backToTop" class="back-to-top hidden" aria-label="Back to top">
+        <i data-feather="chevron-up"></i>
+    </button>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT FILES -->
+    <!-- ============================================================ -->
+    <script src="js/theme.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/mail.js"></script>
+    <script src="js/events.js"></script>
+    <script src="js/members.js"></script>
+    <script src="js/meetings.js"></script>
+    <script src="js/treasury.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/newsletter.js"></script>
+    <script src="js/blood.js"></script>
+    <script src="js/chatbot.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/games.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof feather !== 'undefined') feather.replace();
+            if (typeof App !== 'undefined') {
+                App.init().catch(function(err) {
+                    console.error('Init error:', err);
+                    var loader = document.getElementById('loadingScreen');
+                    if (loader) loader.classList.add('hidden');
+                });
+            } else {
+                setTimeout(function() {
+                    var loader = document.getElementById('loadingScreen');
+                    if (loader) loader.classList.add('hidden');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
