@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Rotaract Club of Coimbatore Unity - Family of Rotary Club of Coimbatore East | Club ID: 91594 | Rotary International District 3206 (Coimbatore | Palakkad)">
+    <meta name="theme-color" content="#1a73e8">
+    <meta property="og:title" content="Rotaract Club of Coimbatore Unity">
+    <meta property="og:image" content="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png">
+    <title>Rotaract Club of Coimbatore Unity</title>
+
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/duoy1cje9/image/upload/w_32,h_32,c_fill/v1783501797/unity_standard_colour_mkz1k7.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Poppins','system-ui','sans-serif']},colors:{brand:{blue:'#1a73e8',dark:'#050a18',darker:'#020510',light:'#f0f6ff',purple:'#7c3aed',cyan:'#06b6d4'}},animation:{'float-slow':'floatSlow 20s ease-in-out infinite','float-medium':'floatMedium 15s ease-in-out infinite','float-fast':'floatFast 10s ease-in-out infinite','gradient-x':'gradientX 8s ease infinite'},keyframes:{floatSlow:{'0%,100%':{transform:'translate(0,0)'},'33%':{transform:'translate(30px,-50px)'},'66%':{transform:'translate(-20px,20px)'}},floatMedium:{'0%,100%':{transform:'translate(0,0) scale(1)'},'50%':{transform:'translate(-40px,30px) scale(1.05)'}},floatFast:{'0%,100%':{transform:'translateY(0)'},'50%':{transform:'translateY(-20px)'}},gradientX:{'0%,100%':{backgroundPosition:'0% 50%'},'50%':{backgroundPosition:'100% 50%'}}}}}}
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/admin.css">
+
+    <style>
+        .dark select,
+        .dark input[type="text"],
+        .dark input[type="email"],
+        .dark input[type="tel"],
+        .dark input[type="number"],
+        .dark input[type="date"],
+        .dark input[type="time"],
+        .dark input[type="url"],
+        .dark input[type="password"],
+        .dark input[type="search"],
+        .dark textarea { color: #f1f5f9 !important; }
+        .dark select option { background-color: #0c1225; color: #f1f5f9; }
+        .search-icon-fix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; z-index: 2; }
+    </style>
+</head>
+
+<body class="bg-brand-light dark:bg-brand-dark text-slate-800 dark:text-slate-100 overflow-x-hidden min-h-screen antialiased">
+
+<!-- ================================================================
+     LOADING SCREEN
+     ================================================================ -->
+<div id="global-loader" class="fixed inset-0 z-[9999] bg-brand-dark flex items-center justify-center">
+    <div class="flex flex-col items-center gap-5 w-64">
+        <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" class="h-14 w-auto animate-pulse" alt="Rotaract Club of Coimbatore Unity">
+        <div class="w-full space-y-2">
+            <div class="flex justify-between text-[9px] text-slate-500 uppercase tracking-[3px] font-semibold">
+                <span>Initializing</span>
+                <span id="loader-percent">0%</span>
+            </div>
+            <div class="w-full h-[3px] bg-slate-900 rounded-full overflow-hidden">
+                <div id="loader-progress" class="h-full bg-gradient-to-r from-brand-blue via-brand-purple to-brand-cyan rounded-full" style="width:0%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================================
+     BACKGROUND ORBS
+     ================================================================ -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+    <div class="absolute -top-32 -left-32 w-[500px] h-[500px] bg-brand-blue/[0.04] dark:bg-brand-blue/[0.03] rounded-full blur-[120px] animate-float-slow"></div>
+    <div class="absolute top-1/3 -right-48 w-[600px] h-[600px] bg-brand-purple/[0.04] dark:bg-brand-purple/[0.02] rounded-full blur-[150px] animate-float-medium"></div>
+    <div class="absolute -bottom-32 left-1/3 w-[400px] h-[400px] bg-brand-cyan/[0.03] dark:bg-brand-cyan/[0.02] rounded-full blur-[100px] animate-float-fast"></div>
+</div>
+
+<!-- ================================================================
+     NAVIGATION
+     ================================================================ -->
+<nav id="main-nav" class="fixed top-0 left-0 right-0 z-[100]">
+    <div class="mx-auto px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div class="flex items-center justify-between h-20 lg:h-[84px]">
+            <a href="#home" class="flex items-center gap-3 relative z-10">
+                <div class="relative h-11 w-11 flex-shrink-0">
+                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png" class="absolute inset-0 h-full w-auto object-contain transition-opacity duration-500 dark:opacity-0 opacity-100" alt="Rotaract Club of Coimbatore Unity">
+                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" class="absolute inset-0 h-full w-auto object-contain transition-opacity duration-500 dark:opacity-100 opacity-0" alt="Rotaract Club of Coimbatore Unity">
+                </div>
+                <div class="hidden sm:block">
+                    <span class="text-[15px] lg:text-base font-extrabold tracking-tight leading-none bg-gradient-to-r from-brand-blue via-brand-purple to-brand-cyan bg-[length:200%_auto] bg-clip-text text-transparent animate-gradient-x">Rotaract Club of Coimbatore Unity</span>
+                </div>
+            </a>
+
+            <div class="hidden xl:flex items-center gap-1">
+                <a href="#home" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-blue dark:hover:text-white hover:bg-brand-blue/5 dark:hover:bg-white/5 transition-all">Home</a>
+                <a href="#about" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-blue dark:hover:text-white hover:bg-brand-blue/5 dark:hover:bg-white/5 transition-all">About</a>
+                <a href="#projects" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-blue dark:hover:text-white hover:bg-brand-blue/5 dark:hover:bg-white/5 transition-all">Projects</a>
+                <a href="#timeline" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-blue dark:hover:text-white hover:bg-brand-blue/5 dark:hover:bg-white/5 transition-all">Heritage</a>
+                <a href="#members" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-blue dark:hover:text-white hover:bg-brand-blue/5 dark:hover:bg-white/5 transition-all">Members</a>
+                <a href="#bulletin" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-blue dark:hover:text-white hover:bg-brand-blue/5 dark:hover:bg-white/5 transition-all">Bulletins</a>
+                <a href="#blood-portal" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-red-500 hover:bg-red-500/5 transition-all"><i class="fa-solid fa-droplet mr-1 text-[10px]"></i>Blood</a>
+                <a href="games.html" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-brand-purple hover:bg-brand-purple/5 transition-all"><i class="fa-solid fa-gamepad mr-1 text-[10px]"></i>Games</a>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button id="theme-toggle" class="relative w-10 h-10 rounded-xl bg-white/60 dark:bg-white/[0.06] backdrop-blur-md border border-slate-200/60 dark:border-white/[0.08] flex items-center justify-center transition-all hover:scale-105" aria-label="Toggle theme">
+                    <i class="fa-solid fa-sun text-yellow-500 absolute transition-all duration-500 dark:opacity-100 dark:rotate-0 dark:scale-100 opacity-0 rotate-90 scale-0"></i>
+                    <i class="fa-solid fa-moon text-slate-600 absolute transition-all duration-500 dark:opacity-0 dark:rotate-90 dark:scale-0 opacity-100 rotate-0 scale-100"></i>
+                </button>
+                <a href="#join-us" class="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12px] font-bold text-white bg-gradient-to-r from-brand-blue to-brand-purple shadow-lg shadow-brand-blue/20 hover:shadow-brand-blue/40 hover:scale-[1.02] transition-all">
+                    <i class="fa-solid fa-user-plus text-[10px]"></i>Join Us
+                </a>
+                <button id="nav-admin-btn" class="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-[12px] font-bold border border-brand-blue/20 dark:border-brand-blue/30 text-brand-blue dark:text-blue-400 hover:bg-brand-blue hover:text-white hover:border-brand-blue transition-all">
+                    <i class="fa-solid fa-user-shield text-[10px]"></i>Portal
+                </button>
+                <button id="mobile-menu-trigger" class="xl:hidden w-10 h-10 rounded-xl bg-white/60 dark:bg-white/[0.06] backdrop-blur-md border border-slate-200/60 dark:border-white/[0.08] flex items-center justify-center" aria-label="Menu">
+                    <div class="flex flex-col gap-[5px] w-[18px]" id="hamburger-lines">
+                        <span class="block h-[2px] w-full bg-slate-700 dark:bg-slate-300 rounded-full transition-all origin-center"></span>
+                        <span class="block h-[2px] w-full bg-slate-700 dark:bg-slate-300 rounded-full transition-all"></span>
+                        <span class="block h-[2px] w-full bg-slate-700 dark:bg-slate-300 rounded-full transition-all origin-center"></span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="nav-glass-bg" class="absolute inset-0 -z-10 bg-white/70 dark:bg-brand-dark/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-white/[0.04] opacity-0 transition-opacity duration-500"></div>
+
+    <div id="mobile-drawer" class="hidden xl:hidden">
+        <div class="absolute top-full left-0 right-0 bg-white/95 dark:bg-brand-dark/95 backdrop-blur-2xl border-b border-slate-200/50 dark:border-white/[0.06] shadow-2xl py-4 px-6 translate-y-[-10px] opacity-0 transition-all" id="mobile-drawer-inner">
+            <div class="flex flex-col gap-1">
+                <a href="#home" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-blue/5 dark:hover:bg-white/5 hover:text-brand-blue transition-all"><i class="fa-solid fa-house w-5 text-center text-[11px] text-slate-400"></i>Home</a>
+                <a href="#about" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-blue/5 dark:hover:bg-white/5 hover:text-brand-blue transition-all"><i class="fa-solid fa-circle-info w-5 text-center text-[11px] text-slate-400"></i>About</a>
+                <a href="#projects" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-blue/5 dark:hover:bg-white/5 hover:text-brand-blue transition-all"><i class="fa-solid fa-rocket w-5 text-center text-[11px] text-slate-400"></i>Projects</a>
+                <a href="#timeline" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-blue/5 dark:hover:bg-white/5 hover:text-brand-blue transition-all"><i class="fa-solid fa-timeline w-5 text-center text-[11px] text-slate-400"></i>Heritage</a>
+                <a href="#members" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-blue/5 dark:hover:bg-white/5 hover:text-brand-blue transition-all"><i class="fa-solid fa-users w-5 text-center text-[11px] text-slate-400"></i>Members</a>
+                <a href="#bulletin" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-blue/5 dark:hover:bg-white/5 hover:text-brand-blue transition-all"><i class="fa-solid fa-newspaper w-5 text-center text-[11px] text-slate-400"></i>Bulletins</a>
+                <a href="#blood-portal" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-500/5 transition-all"><i class="fa-solid fa-droplet w-5 text-center text-[11px]"></i>Emergency Blood</a>
+                <a href="games.html" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-brand-purple hover:bg-brand-purple/5 transition-all"><i class="fa-solid fa-gamepad w-5 text-center text-[11px]"></i>Games</a>
+                <div class="h-px bg-slate-200/50 dark:bg-white/[0.06] my-3"></div>
+                <a href="#join-us" class="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-brand-blue to-brand-purple"><i class="fa-solid fa-user-plus text-[10px]"></i>Join Our Family</a>
+                <button id="mobile-portal-btn" class="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold border border-brand-blue/20 text-brand-blue dark:text-blue-400 mt-1"><i class="fa-solid fa-user-shield text-[10px]"></i>Admin Portal</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- ================================================================
+     HERO
+     ================================================================ -->
+<section id="home" class="relative min-h-screen flex items-center pt-20 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16 relative z-10 py-12 sm:py-20 flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+        <div class="flex-1 space-y-6 sm:space-y-8 text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
+            <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/60 dark:bg-white/[0.06] backdrop-blur-xl border border-slate-200/50 dark:border-white/[0.08]">
+                <div class="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></div>
+                <span class="text-[11px] font-bold text-brand-blue dark:text-blue-400 uppercase tracking-[2px]">Club ID: 91594</span>
+                <span class="w-px h-3 bg-slate-300 dark:bg-slate-700"></span>
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-[2px]">Est. 21.04.2014</span>
+            </div>
+            <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] xl:text-6xl font-black leading-[1.08] tracking-tight">
+                <span class="text-slate-900 dark:text-white">Rotaract Club of</span><br>
+                <span class="bg-gradient-to-r from-brand-blue via-brand-purple to-brand-cyan bg-[length:200%_auto] bg-clip-text text-transparent animate-gradient-x">Coimbatore Unity</span>
+            </h1>
+            <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-[15px] lg:text-base leading-relaxed max-w-xl mx-auto lg:mx-0">
+                <span class="font-semibold text-slate-700 dark:text-slate-300">Family of Rotary Club of Coimbatore East.</span>
+                Building transformative youth leadership, sustainable community impact, and meaningful professional connections across
+                <span class="font-semibold text-brand-blue">Rotary International District 3206</span>
+                <span class="text-slate-400">(Coimbatore | Palakkad)</span>.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center lg:justify-start pt-2">
+                <a href="#join-us" class="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-brand-blue to-brand-purple shadow-xl shadow-brand-blue/20 hover:shadow-brand-blue/40 hover:scale-[1.02] transition-all">
+                    <i class="fa-solid fa-hand-holding-heart text-xs group-hover:scale-125 transition-transform"></i>Join Our Movement
+                </a>
+                <a href="#projects" class="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl text-sm font-bold bg-white/60 dark:bg-white/[0.06] backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] text-slate-700 dark:text-slate-200 hover:border-brand-blue/30 hover:shadow-xl transition-all">
+                    <i class="fa-solid fa-rocket text-brand-blue text-xs group-hover:-translate-y-0.5 transition-transform"></i>Explore Projects
+                </a>
+            </div>
+            <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 pt-4">
+                <div class="flex items-center gap-2 text-[11px] font-semibold text-slate-400"><i class="fa-solid fa-shield-halved text-brand-blue text-[10px]"></i>Chartered Club</div>
+                <div class="flex items-center gap-2 text-[11px] font-semibold text-slate-400"><i class="fa-solid fa-globe text-brand-purple text-[10px]"></i>District 3206</div>
+                <div class="flex items-center gap-2 text-[11px] font-semibold text-slate-400"><i class="fa-solid fa-award text-brand-cyan text-[10px]"></i>11+ Years of Service</div>
+            </div>
+        </div>
+        <div class="flex-1 w-full max-w-md lg:max-w-lg xl:max-w-xl">
+            <div class="relative group">
+                <div class="absolute -inset-4 bg-gradient-to-r from-brand-blue/10 via-brand-purple/10 to-brand-cyan/10 rounded-[36px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <div class="relative bg-white/50 dark:bg-white/[0.04] backdrop-blur-2xl border border-white/50 dark:border-white/[0.08] rounded-[28px] p-6 sm:p-8 shadow-2xl">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center"><i class="fa-solid fa-chart-line text-white text-sm"></i></div>
+                            <div><h3 class="text-sm font-extrabold tracking-tight">Live Impact</h3><p class="text-[10px] text-slate-400">Real-time statistics</p></div>
+                        </div>
+                        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 border border-green-500/20"><span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span><span class="text-[9px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wider">Live</span></div>
+                    </div>
+                    <div id="hero-stats-grid" class="grid grid-cols-2 gap-3 sm:gap-4">
+                        <div class="p-4 sm:p-5 rounded-2xl bg-white/60 dark:bg-white/[0.04] border border-slate-100/80 dark:border-white/[0.06] hover:border-brand-blue/30 transition-all">
+                            <div class="w-9 h-9 rounded-lg bg-brand-blue/10 flex items-center justify-center mb-3"><i class="fa-solid fa-users text-brand-blue"></i></div>
+                            <h4 class="text-2xl sm:text-3xl font-black tracking-tight" id="stat-members-count">0+</h4>
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-1">Active Members</p>
+                        </div>
+                        <div class="p-4 sm:p-5 rounded-2xl bg-white/60 dark:bg-white/[0.04] border border-slate-100/80 dark:border-white/[0.06] hover:border-brand-purple/30 transition-all">
+                            <div class="w-9 h-9 rounded-lg bg-brand-purple/10 flex items-center justify-center mb-3"><i class="fa-solid fa-folder-open text-brand-purple"></i></div>
+                            <h4 class="text-2xl sm:text-3xl font-black tracking-tight" id="stat-projects-count">0+</h4>
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-1">Projects Done</p>
+                        </div>
+                        <div class="p-4 sm:p-5 rounded-2xl bg-white/60 dark:bg-white/[0.04] border border-slate-100/80 dark:border-white/[0.06] hover:border-green-500/30 transition-all">
+                            <div class="w-9 h-9 rounded-lg bg-green-500/10 flex items-center justify-center mb-3"><i class="fa-solid fa-clock text-green-500"></i></div>
+                            <h4 class="text-2xl sm:text-3xl font-black tracking-tight" id="stat-hours-count">0+</h4>
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-1">Service Hours</p>
+                        </div>
+                        <div class="p-4 sm:p-5 rounded-2xl bg-white/60 dark:bg-white/[0.04] border border-slate-100/80 dark:border-white/[0.06] hover:border-red-500/30 transition-all">
+                            <div class="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center mb-3"><i class="fa-solid fa-heart text-red-500"></i></div>
+                            <h4 class="text-2xl sm:text-3xl font-black tracking-tight" id="stat-beneficiaries-count">0+</h4>
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-1">Lives Impacted</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-6 pt-5 border-t border-slate-100/80 dark:border-white/[0.06]">
+                        <p class="text-[10px] text-slate-400">Rotary Year <span class="font-bold text-brand-blue">2026-27</span></p>
+                        <a href="#about" class="text-[10px] font-bold text-brand-blue hover:underline flex items-center gap-1">Full Statistics <i class="fa-solid fa-arrow-right text-[8px]"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-float-fast z-10">
+        <span class="text-[9px] text-slate-400 uppercase tracking-[3px] font-semibold">Scroll</span>
+        <div class="w-[1px] h-8 bg-gradient-to-b from-brand-blue to-transparent"></div>
+    </div>
+</section>
+
+<!-- ================================================================
+     BENEFITS
+     ================================================================ -->
+<section id="benefits" class="relative py-20 sm:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div class="text-center max-w-3xl mx-auto mb-16 space-y-4 reveal">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-blue/5 dark:bg-brand-blue/10 border border-brand-blue/10 text-brand-blue text-[11px] font-bold uppercase tracking-[2px]"><i class="fa-solid fa-handshake-angle text-[10px]"></i>Why Rotaract</span>
+            <h2 class="text-3xl sm:text-4xl lg:text-[2.75rem] font-black tracking-tight">The Rewards of Joining Unity</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-[15px] leading-relaxed">Rotaract empowers youth to build professional capabilities, grow dynamic leadership networks, support humanitarian activities, and make lifelong connections.</p>
+        </div>
+        <div id="benefits-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 stagger-children"></div>
+    </div>
+</section>
+
+<!-- ================================================================
+     PROJECTS
+     ================================================================ -->
+<section id="projects" class="relative py-20 sm:py-28 bg-white/30 dark:bg-white/[0.01] border-y border-slate-100/60 dark:border-white/[0.04]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div class="mb-20 reveal">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-500 uppercase tracking-[2px] mb-3"><span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>Upcoming</div>
+                    <h2 class="text-2xl sm:text-3xl font-black tracking-tight">Events in Next 7 Days</h2>
+                </div>
+            </div>
+            <div id="upcoming-events-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+        </div>
+        <div class="reveal">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-blue/5 dark:bg-brand-blue/10 border border-brand-blue/10 text-brand-blue text-[11px] font-bold uppercase tracking-[2px]"><i class="fa-solid fa-box-archive text-[10px]"></i>Portfolio</span>
+                <h2 class="text-2xl sm:text-3xl font-black tracking-tight mt-4">Completed Events by Avenue</h2>
+            </div>
+            <div class="flex items-center justify-start sm:justify-center overflow-x-auto gap-2 pb-4 mb-10 scrollbar-none">
+                <button class="avenue-tab-btn active px-4 sm:px-5 py-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap" data-avenue="club_service">Club Service</button>
+                <button class="avenue-tab-btn px-4 sm:px-5 py-2.5 rounded-xl text-[11px] font-bold border border-slate-200/60 dark:border-white/[0.08] whitespace-nowrap" data-avenue="community_service">Community Service</button>
+                <button class="avenue-tab-btn px-4 sm:px-5 py-2.5 rounded-xl text-[11px] font-bold border border-slate-200/60 dark:border-white/[0.08] whitespace-nowrap" data-avenue="professional_service">Professional Service</button>
+                <button class="avenue-tab-btn px-4 sm:px-5 py-2.5 rounded-xl text-[11px] font-bold border border-slate-200/60 dark:border-white/[0.08] whitespace-nowrap" data-avenue="international_service">International Service</button>
+                <button class="avenue-tab-btn px-4 sm:px-5 py-2.5 rounded-xl text-[11px] font-bold border border-slate-200/60 dark:border-white/[0.08] whitespace-nowrap" data-avenue="dpp">District Priority Projects</button>
+            </div>
+            <div id="completed-projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+            <div id="completed-pagination" class="flex justify-center items-center gap-4 mt-12 hidden">
+                <button id="prev-page-btn" class="px-4 py-2.5 border border-slate-200/60 dark:border-white/[0.08] rounded-xl hover:bg-white/50 dark:hover:bg-white/[0.04] text-xs font-bold transition-all"><i class="fa-solid fa-arrow-left mr-1.5"></i>Previous</button>
+                <span id="page-indicator" class="text-xs font-bold text-slate-500">Page 1 of 1</span>
+                <button id="next-page-btn" class="px-4 py-2.5 border border-slate-200/60 dark:border-white/[0.08] rounded-xl hover:bg-white/50 dark:hover:bg-white/[0.04] text-xs font-bold transition-all">Next<i class="fa-solid fa-arrow-right ml-1.5"></i></button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     TIMELINE
+     ================================================================ -->
+<section id="timeline" class="relative py-20 sm:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div class="text-center max-w-2xl mx-auto mb-20 reveal">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-blue/5 dark:bg-brand-blue/10 border border-brand-blue/10 text-brand-blue text-[11px] font-bold uppercase tracking-[2px]"><i class="fa-solid fa-timeline text-[10px]"></i>Chronology</span>
+            <h2 class="text-3xl sm:text-4xl font-black tracking-tight mt-4">Our Heritage & Dynamic Leaders</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-3 leading-relaxed">A chronological timeline honoring the presidents and secretaries who anchored our values and grew our impact year on year.</p>
+        </div>
+        <div class="relative border-l-2 border-slate-200/80 dark:border-white/[0.08] ml-4 md:ml-32 lg:ml-48">
+            <div id="timeline-flow-container" class="space-y-12"></div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     TRAINERS
+     ================================================================ -->
+<section id="trainers" class="relative py-20 sm:py-28 bg-white/30 dark:bg-white/[0.01] border-y border-slate-100/60 dark:border-white/[0.04]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-blue/5 dark:bg-brand-blue/10 border border-brand-blue/10 text-brand-blue text-[11px] font-bold uppercase tracking-[2px]"><i class="fa-solid fa-chalkboard-user text-[10px]"></i>Trainers</span>
+            <h2 class="text-3xl sm:text-4xl font-black tracking-tight mt-4">Our Certified Mentors</h2>
+        </div>
+        <div id="trainers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+    </div>
+</section>
+
+<!-- ================================================================
+     MEMBERS
+     ================================================================ -->
+<section id="members" class="relative py-20 sm:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 reveal">
+            <div>
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-blue/5 dark:bg-brand-blue/10 border border-brand-blue/10 text-brand-blue text-[11px] font-bold uppercase tracking-[2px] mb-3"><i class="fa-solid fa-address-book text-[10px]"></i>Directory</span>
+                <h2 class="text-3xl sm:text-4xl font-black tracking-tight">Our Officers & Members</h2>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="relative min-w-[240px]">
+                    <i class="fa-solid fa-magnifying-glass search-icon-fix text-slate-400 dark:text-slate-500 text-[11px]"></i>
+                    <input id="member-search-input" type="text" placeholder="Search members by name, portfolio, RI ID..." class="w-full pl-10 pr-4 py-2.5 border border-slate-200/60 dark:border-white/[0.10] rounded-xl bg-white/60 dark:bg-white/[0.05] backdrop-blur-sm text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-blue/50 focus:ring-2 focus:ring-brand-blue/10 transition-all">
+                </div>
+                <select id="member-filter-blood" class="px-4 py-2.5 border border-slate-200/60 dark:border-white/[0.10] bg-white/60 dark:bg-white/[0.05] backdrop-blur-sm rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-brand-blue/50 focus:ring-2 focus:ring-brand-blue/10 transition-all cursor-pointer">
+                    <option value="">All Blood Groups</option>
+                    <option value="A+">A+</option><option value="A-">A-</option>
+                    <option value="B+">B+</option><option value="B-">B-</option>
+                    <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                    <option value="O+">O+</option><option value="O-">O-</option>
+                </select>
+            </div>
+        </div>
+        <div id="members-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
+    </div>
+</section>
+
+<!-- ================================================================
+     BULLETINS
+     ================================================================ -->
+<section id="bulletin" class="relative py-20 sm:py-28 bg-white/30 dark:bg-white/[0.01] border-y border-slate-100/60 dark:border-white/[0.04]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-blue/5 dark:bg-brand-blue/10 border border-brand-blue/10 text-brand-blue text-[11px] font-bold uppercase tracking-[2px]"><i class="fa-solid fa-newspaper text-[10px]"></i>Publications</span>
+            <h2 class="text-3xl sm:text-4xl font-black tracking-tight mt-4">Monthly Newsletter & Bulletin</h2>
+        </div>
+        <div id="bulletins-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+</section>
+
+<!-- ================================================================
+     BLOOD REQUEST
+     ================================================================ -->
+<section id="blood-portal" class="relative py-20 sm:py-28">
+    <div class="absolute inset-0 bg-gradient-to-br from-red-500/[0.02] to-transparent pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16 relative z-10">
+        <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+            <div class="flex-1 space-y-6 reveal-left">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-[11px] font-bold uppercase tracking-[2px]"><i class="fa-solid fa-droplet text-[10px]"></i>Emergency Hub</div>
+                <h2 class="text-3xl sm:text-4xl font-black tracking-tight">Need Urgent Blood Donor Support?</h2>
+                <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">Submit an emergency blood request. Our system triggers real-time WhatsApp alerts to dedicated Donor Desk Chairpersons and broadcasts across the entire Unity Network.</p>
+            </div>
+            <div class="flex-1 w-full max-w-lg reveal-right">
+                <div class="relative bg-white/60 dark:bg-white/[0.04] backdrop-blur-2xl border border-slate-200/50 dark:border-white/[0.08] rounded-[28px] p-6 sm:p-8 shadow-2xl">
+                    <h4 class="text-lg font-extrabold mb-6 flex items-center gap-2"><i class="fa-solid fa-circle-info text-red-500"></i>Request Blood</h4>
+                    <form id="blood-request-form" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1.5"><label class="text-[10px] uppercase tracking-wider font-bold text-slate-500">Patient Name</label><input type="text" name="patient_name" required placeholder="Full Name" class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-red-500/50 transition-all"></div>
+                            <div class="space-y-1.5"><label class="text-[10px] uppercase tracking-wider font-bold text-slate-500">Blood Group</label><select name="blood_group" required class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 focus:outline-none focus:border-red-500/50 transition-all"><option value="">Select</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option><option value="Bombay Group">Bombay Blood Group</option></select></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1.5"><label class="text-[10px] uppercase tracking-wider font-bold text-slate-500">Units</label><input type="number" name="units_needed" min="1" value="1" required class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 focus:outline-none focus:border-red-500/50 transition-all"></div>
+                            <div class="space-y-1.5"><label class="text-[10px] uppercase tracking-wider font-bold text-slate-500">Urgency</label><select name="urgency" required class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 focus:outline-none focus:border-red-500/50 transition-all"><option value="normal">Normal</option><option value="urgent">Urgent</option><option value="emergency">EMERGENCY</option></select></div>
+                        </div>
+                        <div class="space-y-1.5"><label class="text-[10px] uppercase tracking-wider font-bold text-slate-500">Hospital & Address</label><textarea name="hospital_details" rows="2" required placeholder="Hospital name, area, city" class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-red-500/50 transition-all resize-none"></textarea></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1.5"><label class="text-[10px] uppercase tracking-wider font-bold text-slate-500">Contact Person</label><input type="text" name="contact_person" required placeholder="Name" class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-red-500/50 transition-all"></div>
+                            <div class="space-y-1.5"><label class="text-[10px] uppercase tracking-wider font-bold text-slate-500">Phone</label><input type="tel" name="contact_phone" required placeholder="Number" class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-red-500/50 transition-all"></div>
+                        </div>
+                        <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-600/20 text-xs tracking-wider uppercase transition-all"><i class="fa-solid fa-paper-plane mr-2"></i>Trigger Emergency Desk</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     JOIN US
+     ================================================================ -->
+<section id="join-us" class="relative py-20 sm:py-28 bg-white/30 dark:bg-white/[0.01] border-y border-slate-100/60 dark:border-white/[0.04]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div class="join-shell reveal-scale">
+            <div class="join-aside">
+                <div class="join-aside-inner">
+                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" class="join-logo" alt="Rotaract Club of Coimbatore Unity">
+                    <p class="join-club">Rotaract Club of Coimbatore Unity</p>
+                    <h2 class="join-title">Become a Part of Unity Team</h2>
+                    <p class="join-lead">Step forward to write your story of leadership and service.</p>
+                    <ul class="join-perks">
+                        <li><i class="fa-solid fa-chalkboard-user"></i><span>Professional development workshops</span></li>
+                        <li><i class="fa-solid fa-hands-holding-circle"></i><span>Community service projects</span></li>
+                        <li><i class="fa-solid fa-people-group"></i><span>Lifelong fellowship</span></li>
+                        <li><i class="fa-solid fa-earth-asia"></i><span>International exposure</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="join-form">
+                <h3 class="join-form-title">Enrollment proposal</h3>
+                <p class="join-form-sub">Takes about a minute. The membership chair will contact you.</p>
+                <form id="membership-join-form" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1.5"><label class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Full Name</label><input type="text" name="full_name" required placeholder="First and last" class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-blue/50 focus:ring-2 focus:ring-brand-blue/10 transition-all"></div>
+                        <div class="space-y-1.5"><label class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Email</label><input type="email" name="email" required placeholder="email@example.com" class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-blue/50 focus:ring-2 focus:ring-brand-blue/10 transition-all"></div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1.5"><label class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Phone</label><input type="tel" name="phone" required placeholder="Contact" class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-blue/50 focus:ring-2 focus:ring-brand-blue/10 transition-all"></div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="space-y-1.5"><label class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">DOB</label><input type="date" name="dob" required class="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 focus:outline-none focus:border-brand-blue/50 transition-all"></div>
+                            <div class="space-y-1.5"><label class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Blood</label><select name="blood_group" required class="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 focus:outline-none focus:border-brand-blue/50 transition-all"><option value="">Select</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1.5"><label class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Photo</label><div class="relative border border-dashed border-slate-300/60 dark:border-white/[0.10] rounded-xl p-3 bg-white/30 dark:bg-white/[0.03] flex items-center justify-between"><input type="file" id="member-photo-upload" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer"><span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium" id="photo-file-name">Upload portrait</span><span class="px-2.5 py-1.5 bg-brand-blue text-white rounded-lg text-[9px] font-bold uppercase pointer-events-none">Browse</span></div></div>
+                        <div class="space-y-1.5"><label class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Profession</label><input type="text" name="profession" required placeholder="Student / Engineer" class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-blue/50 focus:ring-2 focus:ring-brand-blue/10 transition-all"></div>
+                    </div>
+                    <div class="space-y-1.5"><label class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Address (optional)</label><input type="text" name="address" placeholder="Area, city" class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-blue/50 focus:ring-2 focus:ring-brand-blue/10 transition-all"></div>
+                    <div class="space-y-1.5"><label class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Why do you want to join? (optional)</label><textarea name="why_join" rows="2" placeholder="A line or two is enough" class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-blue/50 focus:ring-2 focus:ring-brand-blue/10 transition-all"></textarea></div>
+                    <div class="space-y-1.5"><label class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">How did you hear about us? (optional)</label><input type="text" name="referral_source" placeholder="Friend, Instagram, event..." class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-blue/50 focus:ring-2 focus:ring-brand-blue/10 transition-all"></div>
+                    <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-brand-dark to-slate-800 dark:from-white dark:to-slate-200 text-white dark:text-brand-dark font-extrabold rounded-2xl shadow-xl text-xs tracking-wider uppercase mt-2 transition-all"><i class="fa-solid fa-paper-plane mr-2 text-brand-blue dark:text-brand-dark"></i>Submit Enrollment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     GAMES PREVIEW
+     ================================================================ -->
+<section id="games" class="relative py-20 sm:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-purple/5 dark:bg-brand-purple/10 border border-brand-purple/10 text-brand-purple text-[11px] font-bold uppercase tracking-[2px]"><i class="fa-solid fa-gamepad text-[10px]"></i>Recreation</span>
+            <h2 class="text-3xl sm:text-4xl font-black tracking-tight mt-4">Unity Game Zone</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-3">Play multiplayer games with fellow Rotaractors during downtime.</p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-8">
+            <div class="game-card"><i class="fa-solid fa-table-cells game-icon text-brand-blue block"></i><p class="text-xs font-bold">Tic Tac Toe</p></div>
+            <div class="game-card"><i class="fa-solid fa-hand-rock game-icon text-brand-purple block"></i><p class="text-xs font-bold">Rock Paper Scissors</p></div>
+            <div class="game-card"><i class="fa-solid fa-circle-nodes game-icon text-red-500 block"></i><p class="text-xs font-bold">Connect Four</p></div>
+            <div class="game-card"><i class="fa-solid fa-brain game-icon text-brand-cyan block"></i><p class="text-xs font-bold">Memory Match</p></div>
+            <div class="game-card"><i class="fa-solid fa-dice game-icon text-indigo-500 block"></i><p class="text-xs font-bold">Dice Duel</p></div>
+        </div>
+        <div class="text-center">
+            <a href="games.html" class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-brand-purple to-brand-blue shadow-xl shadow-brand-purple/20 hover:shadow-brand-purple/40 hover:scale-[1.02] transition-all">
+                <i class="fa-solid fa-gamepad text-xs"></i>Open Full Game Zone
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     FOOTER
+     ================================================================ -->
+<footer id="contact" class="relative py-16 sm:py-20 bg-white/50 dark:bg-brand-darker/50 border-t border-slate-200/50 dark:border-white/[0.04]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16 mb-16">
+            <div class="space-y-5">
+                <div class="flex items-center gap-3">
+                    <div class="relative h-12 w-12">
+                        <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png" class="absolute inset-0 h-full w-auto dark:opacity-0 opacity-100 transition-opacity" alt="">
+                        <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" class="absolute inset-0 h-full w-auto dark:opacity-100 opacity-0 transition-opacity" alt="">
+                    </div>
+                    <div><h3 class="text-base font-extrabold">Rotaract Club of Coimbatore Unity</h3><p class="text-[10px] text-slate-400 font-semibold">Service Above Self</p></div>
+                </div>
+                <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">Family of Rotary Club of Coimbatore East. Rendering impact across Rotary International District 3206 (Coimbatore | Palakkad) since 2014.</p>
+                <div class="flex gap-2">
+                    <a href="#" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-brands fa-instagram text-sm"></i></a>
+                    <a href="#" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-brands fa-facebook text-sm"></i></a>
+                    <a href="#" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-brands fa-linkedin text-sm"></i></a>
+                    <a href="mailto:rc.cbeunity@gmail.com" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-solid fa-envelope text-sm"></i></a>
+                </div>
+            </div>
+            <div class="space-y-5">
+                <h4 class="text-xs font-extrabold uppercase tracking-[2px] text-brand-blue">Contact</h4>
+                <div class="space-y-4 text-xs">
+                    <div class="flex items-start gap-3"><div class="w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fa-solid fa-location-dot text-brand-blue text-[10px]"></i></div><div><p class="font-bold">Headquarters</p><p class="text-slate-500 dark:text-slate-400">Coimbatore, Tamil Nadu, India</p></div></div>
+                    <div class="flex items-start gap-3"><div class="w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fa-solid fa-envelope text-brand-blue text-[10px]"></i></div><div><p class="font-bold">Email</p><p class="text-slate-500 dark:text-slate-400">rc.cbeunity@gmail.com</p></div></div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <h4 class="text-xs font-extrabold uppercase tracking-[2px] text-brand-blue">Location</h4>
+                <div class="h-44 w-full rounded-2xl overflow-hidden shadow-lg border border-slate-200/50 dark:border-white/[0.06]">
+                    <iframe class="w-full h-full border-0" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15665.467472061262!2d76.95357835!3d11.0120227!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba859af2f973901%3A0xa7df13d55d172206!2sCoimbatore%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+        <div class="pt-8 border-t border-slate-200/50 dark:border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-400 font-medium">
+            <p>2026-27 Rotaract Club of Coimbatore Unity. All rights reserved.</p>
+            <p>Club ID: 91594 | Charter: 21.04.2014 | Rotary International District 3206</p>
+        </div>
+    </div>
+</footer>
+
+<!-- ================================================================
+     EVENT DETAIL MODAL
+     ================================================================ -->
+<div id="project-detail-modal" class="hidden fixed inset-0 z-[5000] bg-brand-dark/50 dark:bg-brand-dark/70 backdrop-blur-lg flex items-center justify-center p-4">
+    <div class="w-full max-w-4xl bg-white/90 dark:bg-brand-dark/90 backdrop-blur-2xl border border-slate-200/50 dark:border-white/[0.06] rounded-[28px] overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
+        <div class="flex-1 bg-slate-900 relative min-h-[220px] md:min-h-[400px]">
+            <img id="modal-event-poster" src="" class="w-full h-full object-cover" alt="">
+            <span id="modal-event-avenue-badge" class="absolute top-4 left-4 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-blue/90 backdrop-blur-sm text-white border border-white/15"></span>
+        </div>
+        <div class="flex-1 p-6 sm:p-8 flex flex-col justify-between overflow-y-auto max-h-[50vh] md:max-h-none">
+            <div class="space-y-5">
+                <div class="flex items-center justify-between">
+                    <span id="modal-event-date-time" class="text-[11px] font-semibold text-slate-500"></span>
+                    <button id="modal-project-close" class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div>
+                    <h3 id="modal-event-name" class="text-xl sm:text-2xl font-extrabold tracking-tight"></h3>
+                    <p id="modal-event-collaborations" class="text-xs text-brand-blue font-semibold mt-1"></p>
+                </div>
+                <div class="grid grid-cols-2 gap-4 py-4 border-y border-slate-100/60 dark:border-white/[0.06] text-xs">
+                    <div><span class="text-[9px] text-slate-400 uppercase font-bold tracking-wider block">Venue</span><span id="modal-event-venue" class="font-bold mt-1 block"></span></div>
+                    <div><span class="text-[9px] text-slate-400 uppercase font-bold tracking-wider block">Chair</span><span id="modal-event-chair" class="font-bold mt-1 block"></span></div>
+                    <div><span class="text-[9px] text-slate-400 uppercase font-bold tracking-wider block">Proposed By</span><span id="modal-event-proposer" class="font-bold mt-1 block"></span></div>
+                    <div><span class="text-[9px] text-slate-400 uppercase font-bold tracking-wider block">Seconded By</span><span id="modal-event-seconder" class="font-bold mt-1 block"></span></div>
+                </div>
+                <p id="modal-event-description" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed"></p>
+                <div id="modal-dpp-specs" class="p-4 bg-yellow-500/[0.06] rounded-2xl border border-yellow-500/20 space-y-2 hidden">
+                    <h5 class="text-[10px] font-bold text-yellow-700 dark:text-yellow-400 uppercase tracking-wider">District Priority Project</h5>
+                    <div class="grid grid-cols-3 gap-2 text-[10px]">
+                        <div><span class="text-slate-400 block">Project No.</span><span id="modal-dpp-no" class="font-bold block mt-0.5"></span></div>
+                        <div><span class="text-slate-400 block">Pillar</span><span id="modal-dpp-pillar" class="font-bold block mt-0.5"></span></div>
+                        <div><span class="text-slate-400 block">Category</span><span id="modal-dpp-category" class="font-bold block mt-0.5"></span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-3 pt-6 mt-6 border-t border-slate-100/60 dark:border-white/[0.06]">
+                <button id="modal-btn-add-cal" class="flex-1 py-3 border border-slate-200/60 dark:border-white/[0.08] rounded-xl hover:bg-brand-blue/5 transition-all text-xs font-bold"><i class="fa-regular fa-calendar-plus mr-2 text-brand-blue"></i>Add To Calendar</button>
+                <button id="modal-btn-action" class="flex-1 py-3 bg-gradient-to-r from-brand-blue to-brand-purple text-white rounded-xl text-xs font-bold shadow-lg shadow-brand-blue/20 transition-all">View Details</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================================
+     ADMIN PORTAL (UPGRADED INTEGRATED GLASSMORPHISM PANEL)
+     ================================================================ -->
+<div id="admin-portal-modal" class="hidden fixed inset-0 z-[6000] overflow-y-auto">
+    <!-- Header -->
+    <header class="h-20 px-6 sm:px-12 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center gap-4">
+            <div class="relative h-9 w-9">
+                <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png" class="absolute inset-0 h-full w-auto dark:opacity-0 opacity-100 transition-opacity" alt="">
+                <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" class="absolute inset-0 h-full w-auto dark:opacity-100 opacity-0 transition-opacity" alt="">
+            </div>
+            <div>
+                <h2 class="text-sm font-extrabold tracking-tight text-slate-800 dark:text-slate-100">Unity Core Portal</h2>
+                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[2px]" id="admin-user-title">GUEST</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="hidden sm:flex flex-col items-end text-xs">
+                <p class="font-bold text-slate-800 dark:text-slate-200" id="admin-profile-name"></p>
+                <p class="text-[10px] text-brand-blue font-semibold uppercase" id="admin-profile-role"></p>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-white/30 dark:bg-white/[0.06] backdrop-blur-md border border-white/20 dark:border-white/[0.08] overflow-hidden flex items-center justify-center">
+                <img id="admin-profile-img" src="" class="h-full w-full object-cover hidden" alt="">
+                <i id="admin-profile-avatar" class="fa-solid fa-user-astronaut text-slate-400 text-xs"></i>
+            </div>
+            <button id="admin-logout-btn" class="w-9 h-9 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white flex items-center justify-center transition-all backdrop-blur-md" title="Logout"><i class="fa-solid fa-right-from-bracket text-xs"></i></button>
+            <button id="admin-portal-close" class="w-9 h-9 rounded-xl bg-white/30 dark:bg-white/[0.06] backdrop-blur-md border border-white/20 dark:border-white/[0.08] flex items-center justify-center hover:bg-white/50 dark:hover:bg-white/[0.1] transition-all"><i class="fa-solid fa-xmark text-sm"></i></button>
+        </div>
+    </header>
+
+    <!-- Shell Container -->
+    <div class="flex flex-col lg:flex-row min-h-[calc(100vh-80px)]">
+        <!-- Sidebar -->
+        <aside class="w-full lg:w-64 py-4 px-3 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible scrollbar-none gap-1 lg:sticky lg:top-20 lg:max-h-[calc(100vh-80px)] lg:overflow-y-auto">
+            <!-- Sidebar Navigation buttons injected dynamically by js/admin.js -->
+        </aside>
+
+        <!-- Workspace Container -->
+        <main class="flex-1 p-5 sm:p-8 lg:p-10" id="admin-workspace"></main>
+    </div>
+</div>
+
+<!-- ================================================================
+     AUTH LOGIN (UPGRADED COATING)
+     ================================================================ -->
+<div id="auth-dialog-modal" class="hidden fixed inset-0 z-[7000] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-brand-dark/40 dark:bg-brand-dark/60 backdrop-blur-xl" onclick="document.getElementById('auth-dialog-modal').classList.add('hidden')"></div>
+
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-brand-blue/20 rounded-full blur-[100px] animate-float-slow"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-48 h-48 bg-brand-purple/20 rounded-full blur-[80px] animate-float-medium"></div>
+    </div>
+
+    <div class="w-full max-w-md relative z-10">
+        <div class="bg-white/80 dark:bg-brand-dark/80 backdrop-blur-2xl border border-white/40 dark:border-white/[0.08] rounded-[28px] p-6 sm:p-8 shadow-2xl">
+            <button id="auth-modal-close" class="absolute top-5 right-5 w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] flex items-center justify-center transition-colors z-10"><i class="fa-solid fa-xmark"></i></button>
+            <div class="text-center space-y-2 mb-8">
+                <div class="relative h-12 w-12 mx-auto mb-4">
+                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png" class="absolute inset-0 h-full w-auto dark:opacity-0 opacity-100 transition-opacity" alt="">
+                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" class="absolute inset-0 h-full w-auto dark:opacity-100 opacity-0 transition-opacity" alt="">
+                </div>
+                <h3 class="text-xl font-black text-slate-800 dark:text-slate-100">Portal Access</h3>
+                <p class="text-[11px] text-slate-500">Secure role-based administration dashboard</p>
+            </div>
+            <form id="auth-dialog-form" class="space-y-4">
+                <div class="space-y-1.5">
+                    <label class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Email</label>
+                    <input type="email" name="email" required autocomplete="username" placeholder="admin@unity.org" class="w-full px-4 py-3 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-blue/50 focus:ring-2 focus:ring-brand-blue/10 transition-all">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Password</label>
+                    <div class="relative">
+                        <input type="password" name="password" required autocomplete="current-password" placeholder="Enter password" class="w-full pl-4 pr-11 py-3 text-xs rounded-xl border border-slate-200/60 dark:border-white/[0.10] bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-blue/50 focus:ring-2 focus:ring-brand-blue/10 transition-all">
+                        <button type="button" id="toggle-password-view" aria-label="Show password" aria-pressed="false" tabindex="0" class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-brand-blue transition-colors z-10"><i class="fa-solid fa-eye-slash text-xs pointer-events-none"></i></button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-brand-blue to-brand-purple text-white font-bold rounded-xl shadow-lg shadow-brand-blue/20 hover:shadow-brand-blue/40 text-xs tracking-wider uppercase transition-all"><i class="fa-solid fa-unlock-keyhole mr-2"></i>Access Workspace</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================================
+     AI CHATBOT (UPGRADED WITH BLUR OVERLAY)
+     ================================================================ -->
+<div id="chatbot-container" class="fixed bottom-5 right-5 z-[2000] flex flex-col items-end">
+    <button id="chatbot-launcher" class="relative w-14 h-14 bg-gradient-to-r from-brand-blue to-brand-purple text-white rounded-2xl shadow-2xl shadow-brand-blue/30 hover:shadow-brand-blue/50 hover:scale-105 transition-all flex items-center justify-center">
+        <i class="fa-solid fa-robot text-xl"></i>
+        <span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white dark:border-brand-dark"><span class="absolute inset-0 bg-green-500 rounded-full animate-ping"></span></span>
+    </button>
+    <div id="chatbot-panel" class="hidden w-[340px] sm:w-[380px] h-[520px] bg-white/90 dark:bg-brand-dark/90 backdrop-blur-2xl border border-white/40 dark:border-white/[0.06] rounded-2xl shadow-2xl flex-col overflow-hidden mb-3 transition-all scale-95 origin-bottom-right">
+        <div class="p-4 bg-gradient-to-r from-brand-blue to-brand-purple text-white flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center"><i class="fa-solid fa-robot text-lg"></i></div>
+                <div><h4 class="text-sm font-bold">Unity AI</h4><p class="text-[9px] text-blue-100">Rotary & District 3206 Knowledgebase</p></div>
+            </div>
+            <button id="chatbot-close" class="w-7 h-7 hover:bg-white/10 rounded-lg flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-sm"></i></button>
+        </div>
+        <div id="chatbot-logs" class="flex-1 overflow-y-auto p-4 space-y-3">
+            <div class="flex gap-2.5 max-w-[85%]">
+                <div class="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-robot text-brand-blue text-[10px]"></i></div>
+                <div class="chat-bubble-bot"><p class="text-[11px] leading-relaxed">Welcome! I am Unity AI. Ask me about Rotaract, Rotary International District 3206, RSAMDIO, End Polio, or any general knowledge.</p></div>
+            </div>
+        </div>
+        <div class="px-3 py-2 border-t border-slate-100/60 dark:border-white/[0.04] flex gap-2 overflow-x-auto scrollbar-none flex-shrink-0">
+            <button class="chat-chip px-3 py-1 bg-white/60 dark:bg-white/[0.04] border border-slate-200/50 dark:border-white/[0.06] rounded-full text-[9px] font-semibold whitespace-nowrap hover:border-brand-blue transition-colors">What is District 3206?</button>
+            <button class="chat-chip px-3 py-1 bg-white/60 dark:bg-white/[0.04] border border-slate-200/50 dark:border-white/[0.06] rounded-full text-[9px] font-semibold whitespace-nowrap hover:border-brand-blue transition-colors">Club History</button>
+            <button class="chat-chip px-3 py-1 bg-white/60 dark:bg-white/[0.04] border border-slate-200/50 dark:border-white/[0.06] rounded-full text-[9px] font-semibold whitespace-nowrap hover:border-brand-blue transition-colors">End Polio</button>
+        </div>
+        <div class="p-3 border-t border-slate-100/60 dark:border-white/[0.04] flex gap-2 flex-shrink-0">
+            <input id="chatbot-input" type="text" placeholder="Type your query..." class="flex-1 px-4 py-2.5 text-xs border border-slate-200/60 dark:border-white/[0.10] rounded-xl bg-white/50 dark:bg-white/[0.05] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-blue/50 transition-all">
+            <button id="chatbot-submit" class="w-10 h-10 bg-gradient-to-r from-brand-blue to-brand-purple text-white rounded-xl flex items-center justify-center hover:scale-105 transition-all"><i class="fa-solid fa-paper-plane text-xs"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================================
+     SCRIPTS & DEPENDENCIES LOADING PIPELINE (STRICT IMPORT ORDER)
+     ================================================================ -->
+<!-- CDN Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Core App Configuration & Storage Utilities -->
+<script src="js/upload-manager.js"></script>
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+
+<!-- Specialized Features, Forms & Compilers -->
+<script src="js/reports.js"></script>
+<script src="js/applications.js"></script>
+<script src="js/email-hub.js"></script>
+<script src="js/blood-desk.js"></script>
+<script src="js/activity-log.js"></script>
+<script src="js/admin-users.js"></script>
+<script src="js/system-health.js"></script>
+<script src="js/meetings.js"></script>
+<script src="js/members.js"></script>
+<script src="js/chatbot.js"></script>
+<script src="js/games.js"></script>
+<script src="js/events.js"></script>
+<script src="js/treasury.js"></script>
+
+<!-- Primary Admin Engine (Initializes After Modules) -->
+<script src="js/admin.js"></script>
+<!-- Password show/hide (self-contained; works regardless of js/auth.js) -->
+<script>
+(function () {
+    'use strict';
+    // Capture phase on document: runs before any other handler, and stops it,
+    // so the password can never be toggled twice by two competing listeners.
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest ? e.target.closest('#toggle-password-view') : null;
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var wrap = btn.parentElement;
+        var input = wrap && wrap.querySelector('input[name="password"]');
+        if (!input) return;
+        var show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+        btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        var icon = btn.querySelector('i');
+        if (icon) icon.className = 'fa-solid ' + (show ? 'fa-eye' : 'fa-eye-slash') + ' text-xs pointer-events-none';
+        input.focus();
+    }, true);
+    // Keep focus (and caret) in the input when pressing the eye with a mouse.
+    document.addEventListener('mousedown', function (e) {
+        if (e.target.closest && e.target.closest('#toggle-password-view')) e.preventDefault();
+    }, true);
+    // Always reopen the dialog with the password hidden again.
+    document.addEventListener('DOMContentLoaded', function () {
+        var modal = document.getElementById('auth-dialog-modal');
+        if (!modal || !window.MutationObserver) return;
+        new MutationObserver(function () {
+            if (modal.classList.contains('hidden')) {
+                var input = modal.querySelector('input[name="password"]');
+                var btn = document.getElementById('toggle-password-view');
+                if (input) input.type = 'password';
+                if (btn) {
+                    btn.setAttribute('aria-pressed', 'false');
+                    btn.setAttribute('aria-label', 'Show password');
+                    var i = btn.querySelector('i');
+                    if (i) i.className = 'fa-solid fa-eye-slash text-xs pointer-events-none';
+                }
+            }
+        }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+    });
+})();
+</script>
+
+
+</body>
+</html>

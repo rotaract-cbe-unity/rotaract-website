@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="theme-color" content="#1a73e8">
+    <title>Unity Game Zone | Rotaract Club of Coimbatore Unity</title>
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/duoy1cje9/image/upload/w_32,h_32,c_fill/v1783501797/unity_standard_colour_mkz1k7.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Poppins','sans-serif']},colors:{brand:{blue:'#1a73e8',dark:'#050a18',purple:'#7c3aed',cyan:'#06b6d4'}}}}}
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-brand-light dark:bg-brand-dark text-slate-800 dark:text-slate-100 min-h-screen antialiased">
+
+<!-- Background Orbs -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-brand-purple/10 rounded-full blur-[120px]"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-brand-blue/10 rounded-full blur-[120px]"></div>
+</div>
+
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-white/70 dark:bg-brand-dark/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-white/[0.06]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-4 flex items-center justify-between">
+        <a href="index.html" class="flex items-center gap-3">
+            <div class="relative h-10 w-10">
+                <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png" class="absolute inset-0 h-full w-auto dark:opacity-0 opacity-100 transition-opacity" alt="">
+                <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" class="absolute inset-0 h-full w-auto dark:opacity-100 opacity-0 transition-opacity" alt="">
+            </div>
+            <div>
+                <h1 class="text-sm font-extrabold tracking-tight">Unity Game Zone</h1>
+                <p class="text-[10px] text-slate-500">Multiplayer Fun for Rotaractors</p>
+            </div>
+        </a>
+        <div class="flex items-center gap-3">
+            <button id="theme-toggle" class="w-10 h-10 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] flex items-center justify-center">
+                <i class="fa-solid fa-sun text-yellow-500 absolute dark:opacity-100 dark:scale-100 opacity-0 scale-0 transition-all"></i>
+                <i class="fa-solid fa-moon text-slate-600 absolute dark:opacity-0 dark:scale-0 opacity-100 scale-100 transition-all"></i>
+            </button>
+            <a href="index.html" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border border-brand-blue/20 text-brand-blue hover:bg-brand-blue hover:text-white transition-all">
+                <i class="fa-solid fa-arrow-left text-[10px]"></i>Back to Portal
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Main Container -->
+<main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-10">
+
+    <!-- Welcome View -->
+    <div id="welcome-view">
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-purple/10 border border-brand-purple/20 text-brand-purple text-[11px] font-bold uppercase tracking-[2px] mb-4">
+                <i class="fa-solid fa-gamepad text-[10px]"></i>Game Zone
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-black tracking-tight mb-4">
+                <span class="bg-gradient-to-r from-brand-blue via-brand-purple to-brand-cyan bg-clip-text text-transparent">Play with Fellow Rotaractors</span>
+            </h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm max-w-2xl mx-auto">Challenge your fellow members to friendly multiplayer games during meetings, fellowship events, or whenever you need a break.</p>
+        </div>
+
+        <!-- Player Setup -->
+        <div class="max-w-md mx-auto mb-10 p-6 rounded-3xl bg-white/60 dark:bg-white/[0.04] backdrop-blur-xl border border-white/50 dark:border-white/[0.08] shadow-2xl">
+            <h3 class="text-sm font-bold mb-4 text-center">Enter Your Name to Begin</h3>
+            <input id="player-name" type="text" placeholder="Your name..." maxlength="20" class="w-full px-4 py-3 text-sm rounded-xl border border-slate-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] focus:outline-none focus:border-brand-blue/50 transition-all text-center font-semibold">
+            <p class="text-[10px] text-slate-400 text-center mt-2">Your name will be visible to other players</p>
+        </div>
+
+        <!-- Games Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" id="games-grid">
+            <div class="game-card" data-game="tic_tac_toe"><i class="fa-solid fa-table-cells game-icon text-brand-blue"></i><p class="text-xs font-bold">Tic Tac Toe</p><p class="text-[9px] text-slate-400 mt-1">2 Players</p></div>
+            <div class="game-card" data-game="rps"><i class="fa-solid fa-hand-rock game-icon text-brand-purple"></i><p class="text-xs font-bold">Rock Paper Scissors</p><p class="text-[9px] text-slate-400 mt-1">2 Players</p></div>
+            <div class="game-card" data-game="connect_four"><i class="fa-solid fa-circle-nodes game-icon text-red-500"></i><p class="text-xs font-bold">Connect Four</p><p class="text-[9px] text-slate-400 mt-1">2 Players</p></div>
+            <div class="game-card" data-game="memory"><i class="fa-solid fa-brain game-icon text-brand-cyan"></i><p class="text-xs font-bold">Memory Match</p><p class="text-[9px] text-slate-400 mt-1">2 Players</p></div>
+            <div class="game-card" data-game="dots_boxes"><i class="fa-solid fa-border-all game-icon text-teal-500"></i><p class="text-xs font-bold">Dots & Boxes</p><p class="text-[9px] text-slate-400 mt-1">2 Players</p></div>
+            <div class="game-card" data-game="word_scramble"><i class="fa-solid fa-font game-icon text-orange-500"></i><p class="text-xs font-bold">Word Scramble</p><p class="text-[9px] text-slate-400 mt-1">2-4 Players</p></div>
+            <div class="game-card" data-game="trivia"><i class="fa-solid fa-question game-icon text-pink-500"></i><p class="text-xs font-bold">Trivia Challenge</p><p class="text-[9px] text-slate-400 mt-1">2-6 Players</p></div>
+            <div class="game-card" data-game="hangman"><i class="fa-solid fa-spell-check game-icon text-yellow-500"></i><p class="text-xs font-bold">Hangman</p><p class="text-[9px] text-slate-400 mt-1">2 Players</p></div>
+            <div class="game-card" data-game="dice_duel"><i class="fa-solid fa-dice game-icon text-indigo-500"></i><p class="text-xs font-bold">Dice Duel</p><p class="text-[9px] text-slate-400 mt-1">2-4 Players</p></div>
+            <div class="game-card" data-game="number_guess"><i class="fa-solid fa-calculator game-icon text-green-500"></i><p class="text-xs font-bold">Number Guess</p><p class="text-[9px] text-slate-400 mt-1">2 Players</p></div>
+        </div>
+    </div>
+
+    <!-- Room Setup View -->
+    <div id="room-view" class="hidden">
+        <div class="max-w-xl mx-auto">
+            <button onclick="GameHub.goBack()" class="mb-6 flex items-center gap-2 text-xs font-bold text-brand-blue hover:underline">
+                <i class="fa-solid fa-arrow-left"></i>Back to Games
+            </button>
+
+            <div class="p-8 rounded-3xl bg-white/60 dark:bg-white/[0.04] backdrop-blur-xl border border-white/50 dark:border-white/[0.08] shadow-2xl">
+                <div class="text-center mb-8">
+                    <i id="selected-game-icon" class="fa-solid fa-gamepad text-5xl text-brand-purple mb-4"></i>
+                    <h2 class="text-2xl font-black tracking-tight" id="selected-game-name">Game</h2>
+                    <p class="text-xs text-slate-400 mt-1" id="selected-game-players">2 Players</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <button onclick="GameHub.createRoom()" class="p-6 rounded-2xl border-2 border-brand-blue/30 bg-brand-blue/5 hover:border-brand-blue hover:bg-brand-blue/10 transition-all text-center group">
+                        <i class="fa-solid fa-plus-circle text-3xl text-brand-blue mb-3 group-hover:scale-110 transition-transform"></i>
+                        <p class="text-sm font-bold">Create Room</p>
+                        <p class="text-[10px] text-slate-400 mt-1">Start new game</p>
+                    </button>
+                    <button onclick="GameHub.showJoinInput()" class="p-6 rounded-2xl border-2 border-brand-purple/30 bg-brand-purple/5 hover:border-brand-purple hover:bg-brand-purple/10 transition-all text-center group">
+                        <i class="fa-solid fa-right-to-bracket text-3xl text-brand-purple mb-3 group-hover:scale-110 transition-transform"></i>
+                        <p class="text-sm font-bold">Join Room</p>
+                        <p class="text-[10px] text-slate-400 mt-1">Enter room code</p>
+                    </button>
+                </div>
+
+                <div id="join-input-wrapper" class="hidden">
+                    <label class="text-[10px] uppercase tracking-wider font-bold text-slate-500 block mb-2">Room Code</label>
+                    <div class="flex gap-2">
+                        <input id="join-room-code" type="text" placeholder="XXXXXX" maxlength="6" class="flex-1 px-4 py-3 text-base rounded-xl border border-slate-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] focus:outline-none focus:border-brand-purple/50 text-center font-mono font-bold uppercase tracking-widest">
+                        <button onclick="GameHub.joinRoom()" class="px-6 py-3 bg-brand-purple hover:bg-purple-700 text-white rounded-xl font-bold text-xs transition-all">Join</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lobby View -->
+    <div id="lobby-view" class="hidden">
+        <div class="max-w-2xl mx-auto">
+            <div class="p-8 rounded-3xl bg-white/60 dark:bg-white/[0.04] backdrop-blur-xl border border-white/50 dark:border-white/[0.08] shadow-2xl">
+                <div class="text-center mb-8">
+                    <i class="fa-solid fa-hourglass-half text-4xl text-brand-blue mb-4 animate-pulse"></i>
+                    <h2 class="text-2xl font-black tracking-tight">Waiting for Players</h2>
+                    <p class="text-xs text-slate-400 mt-1">Share this code with your opponent</p>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-gradient-to-br from-brand-blue/10 to-brand-purple/10 border-2 border-dashed border-brand-blue/30 text-center mb-6">
+                    <p class="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-2">Room Code</p>
+                    <p id="lobby-room-code" class="text-5xl font-black font-mono tracking-widest bg-gradient-to-r from-brand-blue to-brand-purple bg-clip-text text-transparent mb-3">------</p>
+                    <button onclick="GameHub.copyRoomCode()" class="text-xs font-bold text-brand-blue hover:underline">
+                        <i class="fa-regular fa-copy mr-1"></i>Copy Code
+                    </button>
+                </div>
+
+                <div class="space-y-2 mb-6" id="lobby-players-list"></div>
+
+                <div class="flex gap-3">
+                    <button onclick="GameHub.leaveRoom()" class="flex-1 py-3 border border-red-500/30 text-red-500 rounded-xl font-bold text-xs hover:bg-red-500/10 transition-all">
+                        <i class="fa-solid fa-door-open mr-2"></i>Leave Room
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Play View -->
+    <div id="game-view" class="hidden">
+        <div class="max-w-4xl mx-auto">
+            <!-- Game Header -->
+            <div class="flex items-center justify-between mb-6 p-4 rounded-2xl bg-white/60 dark:bg-white/[0.04] backdrop-blur-xl border border-slate-200/50 dark:border-white/[0.08]">
+                <div class="flex items-center gap-3">
+                    <i id="game-header-icon" class="fa-solid fa-gamepad text-2xl text-brand-purple"></i>
+                    <div>
+                        <h3 class="text-sm font-bold" id="game-header-name"></h3>
+                        <p class="text-[10px] text-slate-400">Room: <span id="game-header-code" class="font-mono font-bold"></span></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="turn-indicator" class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-600 text-[10px] font-bold uppercase tracking-wider">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>Your Turn
+                    </div>
+                    <button onclick="GameHub.leaveRoom()" class="w-9 h-9 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white flex items-center justify-center transition-all" title="Leave">
+                        <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Players Scorebar -->
+            <div class="grid grid-cols-2 gap-3 mb-6" id="players-scorebar"></div>
+
+            <!-- Game Canvas -->
+            <div class="p-6 sm:p-8 rounded-3xl bg-white/60 dark:bg-white/[0.04] backdrop-blur-xl border border-slate-200/50 dark:border-white/[0.08] shadow-xl min-h-[400px]" id="game-canvas"></div>
+
+            <!-- Game Chat -->
+            <div class="mt-6 p-4 rounded-2xl bg-white/60 dark:bg-white/[0.04] backdrop-blur-xl border border-slate-200/50 dark:border-white/[0.08]">
+                <div id="game-chat-logs" class="h-32 overflow-y-auto space-y-2 mb-3 text-xs scrollbar-none"></div>
+                <div class="flex gap-2">
+                    <input id="game-chat-input" type="text" placeholder="Say something..." maxlength="100" class="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] focus:outline-none focus:border-brand-blue/50">
+                    <button onclick="GameHub.sendChat()" class="px-4 py-2 bg-brand-blue text-white rounded-lg text-xs font-bold hover:bg-brand-blue/90 transition-all">
+                        <i class="fa-solid fa-paper-plane text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Winner Modal -->
+    <div id="winner-modal" class="hidden fixed inset-0 z-[9000] bg-brand-dark/70 backdrop-blur-xl flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white dark:bg-brand-dark border border-slate-200/50 dark:border-white/[0.06] rounded-3xl p-8 text-center shadow-2xl">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                <i class="fa-solid fa-trophy text-4xl text-white"></i>
+            </div>
+            <h2 class="text-2xl font-black mb-2" id="winner-text">Winner!</h2>
+            <p class="text-sm text-slate-500 mb-6" id="winner-subtext"></p>
+            <div class="flex gap-3">
+                <button onclick="GameHub.playAgain()" class="flex-1 py-3 bg-gradient-to-r from-brand-blue to-brand-purple text-white rounded-xl font-bold text-xs">
+                    <i class="fa-solid fa-rotate-right mr-2"></i>Play Again
+                </button>
+                <button onclick="GameHub.exitToMenu()" class="flex-1 py-3 border border-slate-200/60 dark:border-white/[0.08] rounded-xl font-bold text-xs">
+                    Exit
+                </button>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- Toast Container -->
+<div id="toast-root" class="fixed top-20 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+// ============================================================================
+// UNITY GAME HUB — Real-time Multiplayer Engine
+// ============================================================================
+const SUPABASE_URL = 'https://sbpwmkoxuokrscddhhuw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNicHdta294dW9rcnNjZGRoaHV3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MTA1MjUwOSwiZXhwIjoyMTA2NjI4NTA5fQ.XME9xM1FhB5HOOMi2bQHV699scfTn6Cp8ROW0PT1i8U';
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { realtime: { params: { eventsPerSecond: 10 } } });
+
+// ============================================================================
+// GAME DEFINITIONS
+// ============================================================================
+const GAMES = {
+    tic_tac_toe: { name: 'Tic Tac Toe', icon: 'fa-table-cells', color: 'text-brand-blue', maxPlayers: 2, minPlayers: 2 },
+    rps: { name: 'Rock Paper Scissors', icon: 'fa-hand-rock', color: 'text-brand-purple', maxPlayers: 2, minPlayers: 2 },
+    connect_four: { name: 'Connect Four', icon: 'fa-circle-nodes', color: 'text-red-500', maxPlayers: 2, minPlayers: 2 },
+    memory: { name: 'Memory Match', icon: 'fa-brain', color: 'text-brand-cyan', maxPlayers: 2, minPlayers: 2 },
+    dots_boxes: { name: 'Dots & Boxes', icon: 'fa-border-all', color: 'text-teal-500', maxPlayers: 2, minPlayers: 2 },
+    word_scramble: { name: 'Word Scramble', icon: 'fa-font', color: 'text-orange-500', maxPlayers: 4, minPlayers: 2 },
+    trivia: { name: 'Trivia Challenge', icon: 'fa-question', color: 'text-pink-500', maxPlayers: 6, minPlayers: 2 },
+    hangman: { name: 'Hangman', icon: 'fa-spell-check', color: 'text-yellow-500', maxPlayers: 2, minPlayers: 2 },
+    dice_duel: { name: 'Dice Duel', icon: 'fa-dice', color: 'text-indigo-500', maxPlayers: 4, minPlayers: 2 },
+    number_guess: { name: 'Number Guess', icon: 'fa-calculator', color: 'text-green-500', maxPlayers: 2, minPlayers: 2 }
+};
+
+// ============================================================================
+// GAME HUB CORE
+// ============================================================================
+const GameHub = {
+    playerName: '',
+    playerId: '',
+    selectedGame: null,
+    currentRoom: null,
+    isHost: false,
+    channel: null,
+    chatChannel: null,
+
+    init() {
+        this.playerId = this.getOrCreatePlayerId();
+        this.loadTheme();
+        this.bindGameSelection();
+        this.bindChat();
+        this.bindThemeToggle();
+    },
+
+    getOrCreatePlayerId() {
+        let id = localStorage.getItem('unity_player_id');
+        if (!id) {
+            id = 'p_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+            localStorage.setItem('unity_player_id', id);
+        }
+        return id;
+    },
+
+    loadTheme() {
+        const saved = localStorage.getItem('unity_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.classList.toggle('dark', saved === 'dark');
+    },
+
+    bindThemeToggle() {
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('unity_theme', isDark ? 'dark' : 'light');
+        });
+    },
+
+    bindGameSelection() {
+        document.querySelectorAll('.game-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const gameType = card.getAttribute('data-game');
+                const playerName = document.getElementById('player-name').value.trim();
+                if (!playerName) { this.toast('Please enter your name first', 'warning'); return; }
+                this.playerName = playerName;
+                localStorage.setItem('unity_player_name', playerName);
+                this.selectedGame = gameType;
+                this.showRoomSetup();
+            });
+        });
+
+        const saved = localStorage.getItem('unity_player_name');
+        if (saved) document.getElementById('player-name').value = saved;
+    },
+
+    bindChat() {
+        document.getElementById('game-chat-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.sendChat();
+        });
+    },
+
+    showRoomSetup() {
+        const game = GAMES[this.selectedGame];
+        document.getElementById('welcome-view').classList.add('hidden');
+        document.getElementById('room-view').classList.remove('hidden');
+        document.getElementById('selected-game-icon').className = `fa-solid ${game.icon} text-5xl ${game.color} mb-4`;
+        document.getElementById('selected-game-name').textContent = game.name;
+        document.getElementById('selected-game-players').textContent = game.minPlayers === game.maxPlayers ? `${game.minPlayers} Players` : `${game.minPlayers}-${game.maxPlayers} Players`;
+    },
+
+    showJoinInput() {
+        document.getElementById('join-input-wrapper').classList.remove('hidden');
+        document.getElementById('join-room-code').focus();
+    },
+
+    async createRoom() {
+        const roomCode = this.generateRoomCode();
+        const game = GAMES[this.selectedGame];
+        const initialState = this.getInitialGameState(this.selectedGame);
+
+        try {
+            const { data, error } = await db.from('game_rooms').insert({
+                game_type: this.selectedGame,
+                room_code: roomCode,
+                host_id: this.playerId,
+                host_name: this.playerName,
+                players: [{ id: this.playerId, name: this.playerName, score: 0, symbol: 'X' }],
+                game_state: initialState,
+                max_players: game.maxPlayers,
+                status: 'waiting'
+            }).select().single();
+
+            if (error) throw error;
+            this.currentRoom = data;
+            this.isHost = true;
+            this.showLobby();
+            this.subscribeToRoom(data.id);
+            this.toast('Room created successfully!', 'success');
+        } catch (e) {
+            this.toast('Failed to create room: ' + e.message, 'error');
+        }
+    },
+
+    async joinRoom() {
+        const code = document.getElementById('join-room-code').value.trim().toUpperCase();
+        if (!code || code.length !== 6) { this.toast('Enter a valid 6-character code', 'warning'); return; }
+
+        try {
+            const { data: rooms, error } = await db.from('game_rooms')
+                .select('*')
+                .eq('room_code', code)
+                .eq('status', 'waiting')
+                .limit(1);
+
+            if (error) throw error;
+            if (!rooms || rooms.length === 0) { this.toast('Room not found or already started', 'error'); return; }
+
+            const room = rooms[0];
+            const players = room.players || [];
+
+            if (players.find(p => p.id === this.playerId)) {
+                this.currentRoom = room;
+                this.showLobby();
+                this.subscribeToRoom(room.id);
+                return;
+            }
+
+            if (players.length >= room.max_players) { this.toast('Room is full', 'error'); return; }
+
+            const symbol = this.getPlayerSymbol(room.game_type, players.length);
+            players.push({ id: this.playerId, name: this.playerName, score: 0, symbol });
+
+            const updateData = { players };
+            if (players.length >= GAMES[room.game_type].minPlayers) {
+                updateData.status = 'playing';
+                updateData.game_state = { ...room.game_state, current_turn: players[0].id, started: true };
+            }
+
+            const { data: updated } = await db.from('game_rooms').update(updateData).eq('id', room.id).select().single();
+            this.currentRoom = updated;
+            this.isHost = false;
+
+            if (updated.status === 'playing') this.startGame();
+            else this.showLobby();
+
+            this.subscribeToRoom(room.id);
+            this.toast('Joined room!', 'success');
+        } catch (e) {
+            this.toast('Join failed: ' + e.message, 'error');
+        }
+    },
+
+    getPlayerSymbol(gameType, playerIndex) {
+        if (gameType === 'tic_tac_toe') return playerIndex === 0 ? 'X' : 'O';
+        if (gameType === 'connect_four') return playerIndex === 0 ? 'R' : 'Y';
+        return String(playerIndex + 1);
+    },
+
+    showLobby() {
+        document.getElementById('welcome-view').classList.add('hidden');
+        document.getElementById('room-view').classList.add('hidden');
+        document.getElementById('lobby-view').classList.remove('hidden');
+        document.getElementById('game-view').classList.add('hidden');
+        document.getElementById('lobby-room-code').textContent = this.currentRoom.room_code;
+        this.renderLobbyPlayers();
+    },
+
+    renderLobbyPlayers() {
+        const list = document.getElementById('lobby-players-list');
+        const players = this.currentRoom.players || [];
+        const needed = GAMES[this.currentRoom.game_type].minPlayers;
+
+        list.innerHTML = players.map((p, i) => `
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-brand-blue/5 border border-brand-blue/10">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center text-white font-bold text-xs">${p.name.charAt(0).toUpperCase()}</div>
+                <div class="flex-1">
+                    <p class="text-xs font-bold">${this.escapeHtml(p.name)}${p.id === this.playerId ? ' (You)' : ''}</p>
+                    <p class="text-[10px] text-slate-400">${i === 0 ? 'Host' : 'Player ' + (i + 1)}</p>
+                </div>
+                <i class="fa-solid fa-check-circle text-green-500"></i>
+            </div>
+        `).join('') + (players.length < needed ? `
+            <div class="flex items-center gap-3 p-3 rounded-xl border border-dashed border-slate-200/60 dark:border-white/[0.08]">
+                <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-white/[0.05] flex items-center justify-center">
+                    <i class="fa-solid fa-user-plus text-slate-400 text-xs"></i>
+                </div>
+                <p class="text-xs text-slate-400">Waiting for ${needed - players.length} more player(s)...</p>
+            </div>` : '');
+    },
+
+    copyRoomCode() {
+        navigator.clipboard.writeText(this.currentRoom.room_code).then(() => {
+            this.toast('Room code copied!', 'success');
+        });
+    },
+
+    subscribeToRoom(roomId) {
+        if (this.channel) db.removeChannel(this.channel);
+
+        this.channel = db.channel('room_' + roomId)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_rooms', filter: 'id=eq.' + roomId }, (payload) => {
+                this.currentRoom = payload.new;
+                if (this.currentRoom.status === 'playing') {
+                    if (!document.getElementById('game-view').classList.contains('hidden')) {
+                        this.renderGameState();
+                    } else {
+                        this.startGame();
+                    }
+                } else if (this.currentRoom.status === 'waiting') {
+                    this.renderLobbyPlayers();
+                } else if (this.currentRoom.status === 'finished') {
+                    this.showWinner();
+                }
+            })
+            .subscribe();
+
+        this.chatChannel = db.channel('chat_' + roomId)
+            .on('broadcast', { event: 'chat' }, (payload) => this.receiveChat(payload.payload))
+            .subscribe();
+    },
+
+    startGame() {
+        const game = GAMES[this.currentRoom.game_type];
+        document.getElementById('lobby-view').classList.add('hidden');
+        document.getElementById('game-view').classList.remove('hidden');
+        document.getElementById('game-header-icon').className = `fa-solid ${game.icon} text-2xl ${game.color}`;
+        document.getElementById('game-header-name').textContent = game.name;
+        document.getElementById('game-header-code').textContent = this.currentRoom.room_code;
+        this.renderGameState();
+    },
+
+    renderGameState() {
+        this.renderScorebar();
+        this.renderGameCanvas();
+        this.updateTurnIndicator();
+    },
+
+    renderScorebar() {
+        const bar = document.getElementById('players-scorebar');
+        const players = this.currentRoom.players || [];
+        const currentTurn = this.currentRoom.game_state?.current_turn;
+
+        bar.innerHTML = players.map(p => `
+            <div class="p-4 rounded-2xl border-2 transition-all ${p.id === currentTurn ? 'border-green-500 bg-green-500/10' : 'border-slate-200/60 dark:border-white/[0.08] bg-white/40 dark:bg-white/[0.02]'}">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center text-white font-bold">${p.name.charAt(0).toUpperCase()}</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold truncate">${this.escapeHtml(p.name)}${p.id === this.playerId ? ' (You)' : ''}</p>
+                        <p class="text-[10px] text-slate-400">${p.symbol ? 'Symbol: ' + p.symbol : ''}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-black text-brand-blue">${p.score || 0}</p>
+                        <p class="text-[9px] text-slate-400 uppercase">Score</p>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    updateTurnIndicator() {
+        const ind = document.getElementById('turn-indicator');
+        const currentTurn = this.currentRoom.game_state?.current_turn;
+        if (currentTurn === this.playerId) {
+            ind.classList.remove('hidden');
+            ind.classList.add('flex');
+        } else {
+            ind.classList.add('hidden');
+            ind.classList.remove('flex');
+        }
+    },
+
+    renderGameCanvas() {
+        const canvas = document.getElementById('game-canvas');
+        const type = this.currentRoom.game_type;
+        if (this['render_' + type]) this['render_' + type](canvas);
+        else canvas.innerHTML = '<p class="text-center text-slate-400">Game loading...</p>';
+    },
+
+    // ========================================================================
+    // GAME: TIC TAC TOE
+    // ========================================================================
+    render_tic_tac_toe(canvas) {
+        const state = this.currentRoom.game_state;
+        const board = state.board || Array(9).fill(null);
+        const myTurn = state.current_turn === this.playerId;
+
+        canvas.innerHTML = `
+            <div class="max-w-sm mx-auto">
+                <div class="grid grid-cols-3 gap-3 mb-6">
+                    ${board.map((cell, i) => `
+                        <button onclick="GameHub.ttt_move(${i})" ${cell || !myTurn ? 'disabled' : ''} class="aspect-square rounded-xl text-4xl font-black transition-all ${cell ? 'bg-slate-100 dark:bg-white/[0.04] cursor-not-allowed' : myTurn ? 'bg-brand-blue/5 border-2 border-dashed border-brand-blue/30 hover:bg-brand-blue/10 cursor-pointer' : 'bg-slate-50 dark:bg-white/[0.02] cursor-not-allowed'} ${cell === 'X' ? 'text-brand-blue' : 'text-brand-purple'}">
+                            ${cell || ''}
+                        </button>
+                    `).join('')}
+                </div>
+                <p class="text-center text-xs text-slate-400">${myTurn ? 'Your move!' : "Waiting for opponent..."}</p>
+            </div>
+        `;
+    },
+
+    async ttt_move(index) {
+        const state = this.currentRoom.game_state;
+        const board = state.board ? [...state.board] : Array(9).fill(null);
+        if (board[index]) return;
+
+        const me = this.currentRoom.players.find(p => p.id === this.playerId);
+        board[index] = me.symbol;
+
+        const winner = this.checkTTTWinner(board);
+        const nextPlayer = this.currentRoom.players.find(p => p.id !== this.playerId);
+        const isDraw = !winner && board.every(c => c);
+
+        const update = {
+            game_state: {
+                ...state,
+                board,
+                current_turn: winner || isDraw ? null : nextPlayer.id
+            }
+        };
+
+        if (winner || isDraw) {
+            update.status = 'finished';
+            update.winner_id = winner ? this.playerId : null;
+            if (winner) {
+                const players = this.currentRoom.players.map(p => p.id === this.playerId ? { ...p, score: (p.score || 0) + 1 } : p);
+                update.players = players;
+            }
+        }
+
+        await db.from('game_rooms').update(update).eq('id', this.currentRoom.id);
+    },
+
+    checkTTTWinner(board) {
+        const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+        for (const [a,b,c] of lines) {
+            if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
+        }
+        return null;
+    },
+
+    // ========================================================================
+    // GAME: ROCK PAPER SCISSORS
+    // ========================================================================
+    render_rps(canvas) {
+        const state = this.currentRoom.game_state;
+        const myChoice = state.choices?.[this.playerId];
+        const bothChosen = Object.keys(state.choices || {}).length === 2;
+
+        if (bothChosen && !state.revealed) {
+            setTimeout(() => this.rps_reveal(), 1000);
+        }
+
+        canvas.innerHTML = `
+            <div class="text-center">
+                <p class="text-sm font-bold mb-6">Round ${state.round || 1}</p>
+                ${state.last_result ? `<div class="mb-6 p-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20"><p class="text-sm font-bold text-brand-blue">${state.last_result}</p></div>` : ''}
+                ${myChoice ? `
+                    <div class="mb-6">
+                        <p class="text-xs text-slate-400 mb-2">You chose:</p>
+                        <div class="text-6xl">${this.rpsEmoji(myChoice)}</div>
+                        ${!bothChosen ? '<p class="text-xs text-slate-500 mt-4">Waiting for opponent...</p>' : ''}
+                    </div>
+                ` : `
+                    <div class="grid grid-cols-3 gap-3 max-w-sm mx-auto">
+                        <button onclick="GameHub.rps_choose('rock')" class="aspect-square rounded-2xl bg-brand-blue/5 border-2 border-brand-blue/20 hover:bg-brand-blue/10 hover:scale-105 transition-all text-5xl flex items-center justify-center">${this.rpsEmoji('rock')}</button>
+                        <button onclick="GameHub.rps_choose('paper')" class="aspect-square rounded-2xl bg-brand-blue/5 border-2 border-brand-blue/20 hover:bg-brand-blue/10 hover:scale-105 transition-all text-5xl flex items-center justify-center">${this.rpsEmoji('paper')}</button>
+                        <button onclick="GameHub.rps_choose('scissors')" class="aspect-square rounded-2xl bg-brand-blue/5 border-2 border-brand-blue/20 hover:bg-brand-blue/10 hover:scale-105 transition-all text-5xl flex items-center justify-center">${this.rpsEmoji('scissors')}</button>
+                    </div>
+                `}
+            </div>
+        `;
+    },
+
+    rpsEmoji(choice) {
+        if (choice === 'rock') return '<i class="fa-solid fa-hand-rock"></i>';
+        if (choice === 'paper') return '<i class="fa-solid fa-hand"></i>';
+        if (choice === 'scissors') return '<i class="fa-solid fa-hand-scissors"></i>';
+        return '?';
+    },
+
+    async rps_choose(choice) {
+        const state = this.currentRoom.game_state;
+        const choices = { ...(state.choices || {}), [this.playerId]: choice };
+        await db.from('game_rooms').update({ game_state: { ...state, choices } }).eq('id', this.currentRoom.id);
+    },
+
+    async rps_reveal() {
+        if (!this.isHost) return;
+        const state = this.currentRoom.game_state;
+        const [p1, p2] = this.currentRoom.players;
+        const c1 = state.choices[p1.id];
+        const c2 = state.choices[p2.id];
+
+        let result = 'Draw!';
+        let winnerId = null;
+
+        if (c1 !== c2) {
+            const beats = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+            if (beats[c1] === c2) { winnerId = p1.id; result = p1.name + ' wins!'; }
+            else { winnerId = p2.id; result = p2.name + ' wins!'; }
+        }
+
+        const round = (state.round || 1) + 1;
+        const players = this.currentRoom.players.map(p => p.id === winnerId ? { ...p, score: (p.score || 0) + 1 } : p);
+
+        if (round > 5) {
+            const champ = players.reduce((a,b) => (a.score||0) > (b.score||0) ? a : b);
+            await db.from('game_rooms').update({
+                status: 'finished',
+                winner_id: champ.id,
+                players,
+                game_state: { ...state, revealed: true, last_result: result }
+            }).eq('id', this.currentRoom.id);
+        } else {
+            await db.from('game_rooms').update({
+                players,
+                game_state: { round, choices: {}, last_result: result, current_turn: null }
+            }).eq('id', this.currentRoom.id);
+        }
+    },
+
+    // ========================================================================
+    // GAME: CONNECT FOUR
+    // ========================================================================
+    render_connect_four(canvas) {
+        const state = this.currentRoom.game_state;
+        const board = state.board || Array(6).fill(null).map(() => Array(7).fill(null));
+        const myTurn = state.current_turn === this.playerId;
+
+        canvas.innerHTML = `
+            <div class="max-w-md mx-auto">
+                <div class="grid grid-cols-7 gap-1 mb-4 p-2 rounded-2xl bg-blue-900">
+                    ${board.map((row, r) => row.map((cell, c) => `
+                        <button onclick="GameHub.c4_drop(${c})" ${!myTurn || board[0][c] ? 'disabled' : ''} class="aspect-square rounded-full ${cell === 'R' ? 'bg-red-500' : cell === 'Y' ? 'bg-yellow-400' : 'bg-blue-800 hover:bg-blue-700'} transition-all"></button>
+                    `).join('')).join('')}
+                </div>
+                <p class="text-center text-xs text-slate-400">${myTurn ? 'Click a column to drop!' : 'Opponent thinking...'}</p>
+            </div>
+        `;
+    },
+
+    async c4_drop(col) {
+        const state = this.currentRoom.game_state;
+        const board = state.board ? state.board.map(r => [...r]) : Array(6).fill(null).map(() => Array(7).fill(null));
+        const me = this.currentRoom.players.find(p => p.id === this.playerId);
+
+        for (let r = 5; r >= 0; r--) {
+            if (!board[r][col]) {
+                board[r][col] = me.symbol;
+                break;
+            }
+        }
+
+        const winner = this.checkC4Winner(board);
+        const nextPlayer = this.currentRoom.players.find(p => p.id !== this.playerId);
+        const isDraw = !winner && board[0].every(c => c);
+
+        const update = {
+            game_state: { ...state, board, current_turn: winner || isDraw ? null : nextPlayer.id }
+        };
+
+        if (winner || isDraw) {
+            update.status = 'finished';
+            update.winner_id = winner ? this.playerId : null;
+            if (winner) {
+                update.players = this.currentRoom.players.map(p => p.id === this.playerId ? { ...p, score: (p.score || 0) + 1 } : p);
+            }
+        }
+
+        await db.from('game_rooms').update(update).eq('id', this.currentRoom.id);
+    },
+
+    checkC4Winner(board) {
+        const rows = board.length, cols = board[0].length;
+        for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+            const cell = board[r][c]; if (!cell) continue;
+            if (c + 3 < cols && cell === board[r][c+1] && cell === board[r][c+2] && cell === board[r][c+3]) return cell;
+            if (r + 3 < rows && cell === board[r+1][c] && cell === board[r+2][c] && cell === board[r+3][c]) return cell;
+            if (r + 3 < rows && c + 3 < cols && cell === board[r+1][c+1] && cell === board[r+2][c+2] && cell === board[r+3][c+3]) return cell;
+            if (r + 3 < rows && c - 3 >= 0 && cell === board[r+1][c-1] && cell === board[r+2][c-2] && cell === board[r+3][c-3]) return cell;
+        }
+        return null;
+    },
+
+    // ========================================================================
+    // GAME: MEMORY MATCH
+    // ========================================================================
+    render_memory(canvas) {
+        const state = this.currentRoom.game_state;
+        const cards = state.cards || [];
+        const flipped = state.flipped || [];
+        const matched = state.matched || [];
+        const myTurn = state.current_turn === this.playerId;
+
+        canvas.innerHTML = `
+            <div class="max-w-xl mx-auto">
+                <div class="grid grid-cols-4 gap-3">
+                    ${cards.map((card, i) => {
+                        const isFlipped = flipped.includes(i) || matched.includes(i);
+                        return `<button onclick="GameHub.mem_flip(${i})" ${!myTurn || isFlipped ? 'disabled' : ''} class="aspect-square rounded-xl text-3xl font-black transition-all ${isFlipped ? matched.includes(i) ? 'bg-green-500/20 border-2 border-green-500' : 'bg-brand-blue/20 border-2 border-brand-blue' : 'bg-brand-purple/10 border-2 border-brand-purple/20 hover:bg-brand-purple/20 cursor-pointer'}">${isFlipped ? card : '?'}</button>`;
+                    }).join('')}
+                </div>
+                <p class="text-center text-xs text-slate-400 mt-4">${myTurn ? 'Pick two cards' : 'Opponent playing...'}</p>
+            </div>
+        `;
+    },
+
+    async mem_flip(index) {
+        const state = this.currentRoom.game_state;
+        const flipped = [...(state.flipped || [])];
+        if (flipped.includes(index) || flipped.length >= 2) return;
+        flipped.push(index);
+
+        if (flipped.length === 2) {
+            const [a, b] = flipped;
+            const matched = [...(state.matched || [])];
+            const players = [...this.currentRoom.players];
+
+            if (state.cards[a] === state.cards[b]) {
+                matched.push(a, b);
+                const idx = players.findIndex(p => p.id === this.playerId);
+                players[idx].score = (players[idx].score || 0) + 1;
+
+                if (matched.length === state.cards.length) {
+                    const winner = players.reduce((x, y) => (x.score||0) > (y.score||0) ? x : y);
+                    await db.from('game_rooms').update({
+                        status: 'finished', winner_id: winner.id, players,
+                        game_state: { ...state, flipped: [], matched }
+                    }).eq('id', this.currentRoom.id);
+                    return;
+                }
+
+                await db.from('game_rooms').update({
+                    players, game_state: { ...state, flipped: [], matched }
+                }).eq('id', this.currentRoom.id);
+            } else {
+                await db.from('game_rooms').update({
+                    game_state: { ...state, flipped }
+                }).eq('id', this.currentRoom.id);
+
+                setTimeout(async () => {
+                    const nextPlayer = this.currentRoom.players.find(p => p.id !== this.playerId);
+                    await db.from('game_rooms').update({
+                        game_state: { ...state, flipped: [], current_turn: nextPlayer.id }
+                    }).eq('id', this.currentRoom.id);
+                }, 1500);
+            }
+        } else {
+            await db.from('game_rooms').update({
+                game_state: { ...state, flipped }
+            }).eq('id', this.currentRoom.id);
+        }
+    },
+
+    // ========================================================================
+    // GAME: NUMBER GUESS
+    // ========================================================================
+    render_number_guess(canvas) {
+        const state = this.currentRoom.game_state;
+        const myTurn = state.current_turn === this.playerId;
+        const history = state.history || [];
+
+        canvas.innerHTML = `
+            <div class="max-w-sm mx-auto text-center">
+                <p class="text-xs text-slate-400 mb-2">Guess a number between 1 and 100</p>
+                <p class="text-xs text-brand-blue font-bold mb-6">Lower is better — closest to secret wins!</p>
+                <div class="space-y-2 mb-6 max-h-48 overflow-y-auto">
+                    ${history.map(h => `<div class="p-2 rounded-lg bg-slate-50 dark:bg-white/[0.03] text-xs"><strong>${this.escapeHtml(h.name)}</strong>: guessed <strong>${h.guess}</strong> → ${h.hint}</div>`).join('')}
+                </div>
+                ${myTurn ? `
+                    <div class="flex gap-2">
+                        <input id="guess-input" type="number" min="1" max="100" placeholder="1-100" class="flex-1 px-4 py-3 text-sm rounded-xl border border-slate-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] focus:outline-none focus:border-brand-blue/50 text-center font-bold">
+                        <button onclick="GameHub.ng_guess()" class="px-6 py-3 bg-brand-blue text-white rounded-xl font-bold text-xs">Guess</button>
+                    </div>
+                ` : '<p class="text-xs text-slate-500">Opponent is guessing...</p>'}
+            </div>
+        `;
+    },
+
+    async ng_guess() {
+        const input = document.getElementById('guess-input');
+        const guess = parseInt(input.value);
+        if (!guess || guess < 1 || guess > 100) return;
+
+        const state = this.currentRoom.game_state;
+        const me = this.currentRoom.players.find(p => p.id === this.playerId);
+        const diff = Math.abs(guess - state.secret);
+        let hint;
+        if (diff === 0) hint = 'EXACT! You win!';
+        else if (diff <= 5) hint = 'Very Hot!';
+        else if (diff <= 15) hint = 'Hot';
+        else if (diff <= 30) hint = 'Warm';
+        else hint = guess < state.secret ? 'Too Low' : 'Too High';
+
+        const history = [...(state.history || []), { name: me.name, guess, hint, diff }];
+        const nextPlayer = this.currentRoom.players.find(p => p.id !== this.playerId);
+
+        if (diff === 0 || history.length >= 10) {
+            const sorted = history.sort((a,b) => a.diff - b.diff);
+            const winner = this.currentRoom.players.find(p => p.name === sorted[0].name);
+            const players = this.currentRoom.players.map(p => p.id === winner.id ? { ...p, score: (p.score || 0) + 1 } : p);
+            await db.from('game_rooms').update({
+                status: 'finished', winner_id: winner.id, players,
+                game_state: { ...state, history, revealed: state.secret }
+            }).eq('id', this.currentRoom.id);
+        } else {
+            await db.from('game_rooms').update({
+                game_state: { ...state, history, current_turn: nextPlayer.id }
+            }).eq('id', this.currentRoom.id);
+        }
+    },
+
+    // ========================================================================
+    // GAME: DICE DUEL
+    // ========================================================================
+    render_dice_duel(canvas) {
+        const state = this.currentRoom.game_state;
+        const myTurn = state.current_turn === this.playerId;
+        const rolls = state.rolls || {};
+
+        canvas.innerHTML = `
+            <div class="max-w-md mx-auto text-center">
+                <p class="text-sm font-bold mb-2">Round ${state.round || 1} of 5</p>
+                <p class="text-xs text-slate-400 mb-8">Highest total wins!</p>
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    ${this.currentRoom.players.map(p => `
+                        <div class="p-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20">
+                            <p class="text-xs font-bold mb-2">${this.escapeHtml(p.name)}</p>
+                            <div class="text-6xl mb-2">${rolls[p.id] ? this.diceIcon(rolls[p.id]) : '<i class="fa-regular fa-circle text-slate-300"></i>'}</div>
+                            <p class="text-xs text-slate-500">${rolls[p.id] || 'Waiting'}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                ${myTurn && !rolls[this.playerId] ? `<button onclick="GameHub.dd_roll()" class="px-8 py-4 bg-gradient-to-r from-brand-blue to-brand-purple text-white rounded-2xl font-bold text-sm hover:scale-105 transition-all"><i class="fa-solid fa-dice mr-2"></i>Roll Dice</button>` : '<p class="text-xs text-slate-400">Waiting...</p>'}
+            </div>
+        `;
+    },
+
+    diceIcon(n) {
+        return `<i class="fa-solid fa-dice-${['one','two','three','four','five','six'][n-1]} text-brand-blue"></i>`;
+    },
+
+    async dd_roll() {
+        const state = this.currentRoom.game_state;
+        const roll = Math.floor(Math.random() * 6) + 1;
+        const rolls = { ...(state.rolls || {}), [this.playerId]: roll };
+        const allRolled = this.currentRoom.players.every(p => rolls[p.id]);
+
+        if (allRolled) {
+            const totals = { ...(state.totals || {}) };
+            this.currentRoom.players.forEach(p => { totals[p.id] = (totals[p.id] || 0) + rolls[p.id]; });
+            const round = (state.round || 1) + 1;
+
+            if (round > 5) {
+                const winner = this.currentRoom.players.reduce((a,b) => (totals[a.id]||0) > (totals[b.id]||0) ? a : b);
+                const players = this.currentRoom.players.map(p => p.id === winner.id ? { ...p, score: (p.score || 0) + 1 } : p);
+                await db.from('game_rooms').update({
+                    status: 'finished', winner_id: winner.id, players,
+                    game_state: { ...state, rolls, totals }
+                }).eq('id', this.currentRoom.id);
+            } else {
+                await db.from('game_rooms').update({
+                    game_state: { round, rolls: {}, totals, current_turn: this.currentRoom.players[0].id }
+                }).eq('id', this.currentRoom.id);
+            }
+        } else {
+            const nextPlayer = this.currentRoom.players.find(p => !rolls[p.id]);
+            await db.from('game_rooms').update({
+                game_state: { ...state, rolls, current_turn: nextPlayer.id }
+            }).eq('id', this.currentRoom.id);
+        }
+    },
+
+    // ========================================================================
+    // GAME: WORD SCRAMBLE / TRIVIA / HANGMAN / DOTS BOXES (Simplified placeholders)
+    // ========================================================================
+    render_word_scramble(canvas) {
+        canvas.innerHTML = `<div class="text-center py-12"><i class="fa-solid fa-font text-5xl text-orange-500 mb-4"></i><p class="text-sm font-bold mb-2">Word Scramble</p><p class="text-xs text-slate-500">Advanced gameplay coming soon. Use Number Guess, Tic Tac Toe, or Connect Four for now.</p></div>`;
+    },
+    render_trivia(canvas) {
+        canvas.innerHTML = `<div class="text-center py-12"><i class="fa-solid fa-question text-5xl text-pink-500 mb-4"></i><p class="text-sm font-bold mb-2">Trivia</p><p class="text-xs text-slate-500">Coming soon! Try our other active games.</p></div>`;
+    },
+    render_hangman(canvas) {
+        canvas.innerHTML = `<div class="text-center py-12"><i class="fa-solid fa-spell-check text-5xl text-yellow-500 mb-4"></i><p class="text-sm font-bold mb-2">Hangman</p><p class="text-xs text-slate-500">Coming soon! Try Memory Match or Dice Duel.</p></div>`;
+    },
+    render_dots_boxes(canvas) {
+        canvas.innerHTML = `<div class="text-center py-12"><i class="fa-solid fa-border-all text-5xl text-teal-500 mb-4"></i><p class="text-sm font-bold mb-2">Dots & Boxes</p><p class="text-xs text-slate-500">Coming soon! Try Connect Four.</p></div>`;
+    },
+
+    // ========================================================================
+    // INITIAL GAME STATES
+    // ========================================================================
+    getInitialGameState(type) {
+        switch (type) {
+            case 'tic_tac_toe': return { board: Array(9).fill(null), current_turn: null };
+            case 'rps': return { round: 1, choices: {}, current_turn: null };
+            case 'connect_four': return { board: Array(6).fill(null).map(() => Array(7).fill(null)), current_turn: null };
+            case 'memory':
+                const emojis = ['A','B','C','D','E','F','G','H'];
+                const cards = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+                return { cards, flipped: [], matched: [], current_turn: null };
+            case 'number_guess': return { secret: Math.floor(Math.random() * 100) + 1, history: [], current_turn: null };
+            case 'dice_duel': return { round: 1, rolls: {}, totals: {}, current_turn: null };
+            default: return { current_turn: null };
+        }
+    },
+
+    // ========================================================================
+    // WINNER MODAL
+    // ========================================================================
+    showWinner() {
+        const modal = document.getElementById('winner-modal');
+        const winner = this.currentRoom.players.find(p => p.id === this.currentRoom.winner_id);
+        if (winner) {
+            document.getElementById('winner-text').textContent = winner.id === this.playerId ? 'You Won!' : winner.name + ' Won!';
+            document.getElementById('winner-subtext').textContent = winner.id === this.playerId ? 'Congratulations on your victory!' : 'Better luck next time!';
+        } else {
+            document.getElementById('winner-text').textContent = "It's a Draw!";
+            document.getElementById('winner-subtext').textContent = 'Great game by both players.';
+        }
+        modal.classList.remove('hidden');
+    },
+
+    async playAgain() {
+        const type = this.currentRoom.game_type;
+        const players = this.currentRoom.players;
+        await db.from('game_rooms').update({
+            status: 'playing',
+            winner_id: null,
+            game_state: { ...this.getInitialGameState(type), current_turn: players[0].id, started: true }
+        }).eq('id', this.currentRoom.id);
+        document.getElementById('winner-modal').classList.add('hidden');
+    },
+
+    exitToMenu() {
+        document.getElementById('winner-modal').classList.add('hidden');
+        this.leaveRoom();
+    },
+
+    async leaveRoom() {
+        if (this.channel) { db.removeChannel(this.channel); this.channel = null; }
+        if (this.chatChannel) { db.removeChannel(this.chatChannel); this.chatChannel = null; }
+        if (this.currentRoom && this.isHost) {
+            try { await db.from('game_rooms').delete().eq('id', this.currentRoom.id); } catch (e) { }
+        }
+        this.currentRoom = null;
+        this.isHost = false;
+        document.getElementById('game-view').classList.add('hidden');
+        document.getElementById('lobby-view').classList.add('hidden');
+        document.getElementById('room-view').classList.add('hidden');
+        document.getElementById('welcome-view').classList.remove('hidden');
+    },
+
+    goBack() {
+        document.getElementById('room-view').classList.add('hidden');
+        document.getElementById('welcome-view').classList.remove('hidden');
+    },
+
+    // ========================================================================
+    // CHAT
+    // ========================================================================
+    sendChat() {
+        const input = document.getElementById('game-chat-input');
+        const msg = input.value.trim();
+        if (!msg || !this.chatChannel) return;
+        this.chatChannel.send({
+            type: 'broadcast',
+            event: 'chat',
+            payload: { name: this.playerName, msg, time: Date.now() }
+        });
+        this.receiveChat({ name: this.playerName, msg, time: Date.now(), self: true });
+        input.value = '';
+    },
+
+    receiveChat(data) {
+        const logs = document.getElementById('game-chat-logs');
+        const bubble = document.createElement('div');
+        bubble.className = data.self ? 'text-right' : 'text-left';
+        bubble.innerHTML = `<span class="inline-block px-3 py-1.5 rounded-lg ${data.self ? 'bg-brand-blue text-white' : 'bg-slate-100 dark:bg-white/[0.06]'} text-[11px]"><strong>${this.escapeHtml(data.name)}:</strong> ${this.escapeHtml(data.msg)}</span>`;
+        logs.appendChild(bubble);
+        logs.scrollTop = logs.scrollHeight;
+    },
+
+    // ========================================================================
+    // UTILITIES
+    // ========================================================================
+    generateRoomCode() {
+        return Array.from({length: 6}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('');
+    },
+
+    escapeHtml(t) {
+        if (!t) return '';
+        const d = document.createElement('div');
+        d.textContent = t;
+        return d.innerHTML;
+    },
+
+    toast(msg, type) {
+        const root = document.getElementById('toast-root');
+        const t = document.createElement('div');
+        const colors = { success: 'border-green-500', error: 'border-red-500', warning: 'border-yellow-500', info: 'border-blue-500' };
+        t.className = `pointer-events-auto px-4 py-3 rounded-xl bg-white dark:bg-brand-dark border-l-4 ${colors[type] || colors.info} shadow-xl text-xs font-medium transform translate-x-full transition-transform`;
+        t.innerHTML = `<span>${this.escapeHtml(msg)}</span>`;
+        root.appendChild(t);
+        requestAnimationFrame(() => t.style.transform = 'translateX(0)');
+        setTimeout(() => { t.style.transform = 'translateX(120%)'; setTimeout(() => t.remove(), 300); }, 3500);
+    }
+};
+
+GameHub.init();
+window.GameHub = GameHub;
+</script>
+
+</body>
+</html>

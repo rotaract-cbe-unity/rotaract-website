@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Submit your attendance for Rotaract Club of Coimbatore Unity meetings">
+    <meta name="theme-color" content="#1a73e8">
+    <title>Attendance Portal | Rotaract Unity</title>
+
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/duoy1cje9/image/upload/w_32,h_32,c_fill/v1783501797/unity_standard_colour_mkz1k7.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                fontFamily: { sans: ['Poppins', 'system-ui', 'sans-serif'] },
+                colors: {
+                    brand: { blue: '#1a73e8', dark: '#050a18', darker: '#020510', light: '#f0f6ff', purple: '#7c3aed', cyan: '#06b6d4' }
+                },
+                animation: {
+                    'float-slow': 'floatSlow 20s ease-in-out infinite',
+                    'float-medium': 'floatMedium 15s ease-in-out infinite',
+                    'float-fast': 'floatFast 10s ease-in-out infinite',
+                    'gradient-x': 'gradientX 8s ease infinite'
+                },
+                keyframes: {
+                    floatSlow: { '0%,100%': { transform: 'translate(0,0)' }, '33%': { transform: 'translate(30px,-50px)' }, '66%': { transform: 'translate(-20px,20px)' } },
+                    floatMedium: { '0%,100%': { transform: 'translate(0,0) scale(1)' }, '50%': { transform: 'translate(-40px,30px) scale(1.05)' } },
+                    floatFast: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-20px)' } },
+                    gradientX: { '0%,100%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' } }
+                }
+            }
+        }
+    };
+    </script>
+    <style>
+        html, body { font-family: 'Poppins', sans-serif; }
+        body { background: linear-gradient(135deg, #ecfeff 0%, #eff6ff 50%, #faf5ff 100%); min-height: 100vh; }
+        .dark body { background: linear-gradient(135deg, #020510 0%, #050a18 50%, #0a0a1f 100%); }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(24px) saturate(200%);
+            -webkit-backdrop-filter: blur(24px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
+        }
+        .dark .glass-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(226, 232, 240, 0.6);
+            transition: all 0.3s;
+            color: #1e293b;
+        }
+        .dark .glass-input {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            color: #f1f5f9 !important;
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(26, 115, 232, 0.5);
+            box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+            outline: none;
+        }
+        .dark .glass-input:focus {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+        .dark input[type="time"], .dark input[type="text"], .dark input[type="tel"], .dark select { color: #f1f5f9 !important; }
+        .dark select option { background: #0f172a; color: #f1f5f9; }
+
+        .glass-input.valid { border-color: rgba(34, 197, 94, 0.5); }
+        .glass-input.invalid { border-color: rgba(239, 68, 68, 0.5); background: rgba(254, 242, 242, 0.3); }
+
+        .orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(100px); }
+        .spinner { border: 4px solid rgba(26, 115, 232, 0.1); border-left-color: #1a73e8; border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes confetti { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+        .confetti-piece { position: fixed; width: 10px; height: 10px; top: -10px; animation: confetti 3s ease-in forwards; z-index: 100; }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #1a73e8, #7c3aed, #06b6d4);
+            background-size: 200% 100%;
+            animation: gradientX 3s ease infinite;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #1a73e8 0%, #7c3aed 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(26, 115, 232, 0.3);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(26, 115, 232, 0.4); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .theme-toggle {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .suggestion-dropdown {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        .dark .suggestion-dropdown {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .suggestion-item:hover { background: rgba(26, 115, 232, 0.08); }
+
+        .portfolio-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 700;
+            background: rgba(26, 115, 232, 0.1);
+            color: #1a73e8;
+            border: 1px solid rgba(26, 115, 232, 0.15);
+        }
+        .dark .portfolio-tag {
+            background: rgba(96, 165, 250, 0.15);
+            color: #93c5fd;
+            border-color: rgba(96, 165, 250, 0.2);
+        }
+        .portfolio-tag .remove-tag {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        .portfolio-tag .remove-tag:hover { opacity: 1; }
+
+        .sig-upload-zone {
+            border: 2px dashed rgba(26, 115, 232, 0.3);
+            border-radius: 16px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .sig-upload-zone:hover { border-color: rgba(26, 115, 232, 0.6); background: rgba(26, 115, 232, 0.03); }
+        .sig-upload-zone.dragover { border-color: #1a73e8; background: rgba(26, 115, 232, 0.06); transform: scale(1.01); }
+    </style>
+</head>
+
+<body class="min-h-screen antialiased overflow-x-hidden">
+
+<!-- Background Orbs -->
+<div class="orb bg-brand-blue/20 dark:bg-brand-blue/10 w-[500px] h-[500px] -top-32 -left-32 animate-float-slow"></div>
+<div class="orb bg-brand-purple/15 dark:bg-brand-purple/10 w-[600px] h-[600px] top-1/3 -right-48 animate-float-medium"></div>
+<div class="orb bg-brand-cyan/15 dark:bg-brand-cyan/10 w-[400px] h-[400px] -bottom-32 left-1/3 animate-float-fast"></div>
+
+<!-- Theme Toggle -->
+<button id="theme-toggle" class="theme-toggle fixed top-5 right-5 z-50 w-11 h-11 rounded-xl flex items-center justify-center hover:scale-105 transition-all">
+    <i class="fa-solid fa-sun text-yellow-500 absolute transition-all duration-500 dark:opacity-100 dark:rotate-0 dark:scale-100 opacity-0 rotate-90 scale-0"></i>
+    <i class="fa-solid fa-moon text-slate-600 absolute transition-all duration-500 dark:opacity-0 dark:rotate-90 dark:scale-0 opacity-100 rotate-0 scale-100"></i>
+</button>
+
+<!-- Main Container -->
+<div class="relative z-10 max-w-2xl mx-auto px-4 py-8 sm:py-12">
+
+    <!-- Logo & Header -->
+    <div class="text-center mb-8">
+        <div class="relative h-16 w-16 mx-auto mb-5">
+            <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png" class="absolute inset-0 h-full w-auto object-contain dark:opacity-0 opacity-100 transition-opacity" alt="Logo">
+            <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" class="absolute inset-0 h-full w-auto object-contain dark:opacity-100 opacity-0 transition-opacity" alt="Logo">
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-black bg-gradient-to-r from-brand-blue via-brand-purple to-brand-cyan bg-[length:200%_auto] bg-clip-text text-transparent animate-gradient-x">
+            Attendance Portal
+        </h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-semibold">Rotaract Club of Coimbatore Unity</p>
+        <div class="flex items-center justify-center gap-2 mt-3">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-blue/10 dark:bg-brand-blue/20 border border-brand-blue/20 dark:border-brand-blue/30">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-[10px] font-bold text-brand-blue dark:text-blue-400 uppercase tracking-wider">Secure Submission</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader" class="glass-card rounded-3xl p-12 text-center">
+        <div class="spinner mx-auto mb-5"></div>
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200">Loading meeting details...</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Please wait while we fetch your meeting information</p>
+    </div>
+
+    <!-- Error -->
+    <div id="error-state" class="hidden glass-card rounded-3xl p-10 text-center">
+        <div class="w-20 h-20 mx-auto mb-5 rounded-full bg-red-500/10 flex items-center justify-center">
+            <i class="fa-solid fa-triangle-exclamation text-red-500 text-3xl"></i>
+        </div>
+        <h3 class="text-xl font-black text-red-600 dark:text-red-400" id="error-title">Unable to Load</h3>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mt-3" id="error-msg">The attendance link is invalid or expired.</p>
+        <button onclick="location.reload()" class="btn-submit mt-6 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider">
+            <i class="fa-solid fa-rotate-right mr-2"></i>Try Again
+        </button>
+    </div>
+
+    <!-- Success -->
+    <div id="success-state" class="hidden glass-card rounded-3xl p-10 text-center">
+        <div class="relative w-24 h-24 mx-auto mb-5">
+            <div class="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-20"></div>
+            <div class="relative w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-xl shadow-green-500/30">
+                <i class="fa-solid fa-check text-white text-4xl"></i>
+            </div>
+        </div>
+        <h3 class="text-2xl font-black bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">Attendance Submitted!</h3>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mt-3">Your presence has been officially recorded.</p>
+        <div id="success-details" class="mt-6 p-5 rounded-2xl bg-green-500/5 border border-green-500/15 text-left"></div>
+        <div class="flex items-center justify-center gap-3 mt-6">
+            <button onclick="downloadReceipt()" class="px-5 py-3 rounded-xl text-xs font-bold bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:bg-white/80 transition">
+                <i class="fa-solid fa-download mr-1.5"></i>Download Receipt
+            </button>
+        </div>
+        <p class="text-[10px] text-slate-400 mt-6">You may close this window.</p>
+    </div>
+
+    <!-- Main Form -->
+    <div id="form-container" class="hidden">
+        <!-- Meeting Info -->
+        <div id="meeting-info-card" class="glass-card rounded-3xl p-6 sm:p-8 mb-5 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-brand-purple/5 to-brand-cyan/5 -z-10"></div>
+            <div id="meeting-info-content"></div>
+        </div>
+
+        <!-- Progress -->
+        <div class="glass-card rounded-2xl p-4 mb-5">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Form Progress</span>
+                <span class="text-xs font-black text-brand-blue" id="progress-text">0%</span>
+            </div>
+            <div class="h-2 rounded-full bg-slate-200/60 dark:bg-slate-700/40 overflow-hidden">
+                <div class="progress-fill h-full rounded-full" id="progress-bar" style="width:0%"></div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form id="attendance-form" class="glass-card rounded-3xl p-6 sm:p-8 space-y-5">
+
+            <!-- Full Name -->
+            <div class="form-field" data-field="member_name">
+                <label class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                        <i class="fa-solid fa-user text-brand-blue mr-1.5"></i>Full Name <span class="text-red-500">*</span>
+                    </span>
+                    <span class="field-status hidden"></span>
+                </label>
+                <div class="relative">
+                    <input type="text" name="member_name" required placeholder="Your full name"
+                        class="glass-input w-full px-4 py-3.5 text-sm rounded-xl"
+                        oninput="updateProgress(); validateField(this); showNameSuggestions(this.value)"
+                        autocomplete="name">
+                    <div id="name-suggestions" class="suggestion-dropdown hidden absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden z-50 max-h-60 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- RI ID + In Time -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="form-field" data-field="ri_id">
+                    <label class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                            <i class="fa-solid fa-id-card text-brand-purple mr-1.5"></i>RI ID <span class="text-red-500">*</span>
+                        </span>
+                        <span class="field-status hidden"></span>
+                    </label>
+                    <input type="text" name="ri_id" required placeholder="e.g., 12345678"
+                        class="glass-input w-full px-4 py-3.5 text-sm rounded-xl font-mono tracking-wider"
+                        oninput="updateProgress(); validateField(this)"
+                        inputmode="numeric">
+                    <p class="text-[10px] text-slate-400 mt-1.5">Your Rotary International Member ID</p>
+                </div>
+
+                <div class="form-field" data-field="in_time">
+                    <label class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                            <i class="fa-solid fa-clock text-brand-cyan mr-1.5"></i>In Time <span class="text-red-500">*</span>
+                        </span>
+                        <button type="button" onclick="setCurrentTime()" class="text-[10px] font-bold text-brand-blue hover:text-brand-purple transition">
+                            <i class="fa-solid fa-wand-magic-sparkles mr-0.5"></i>Set Now
+                        </button>
+                    </label>
+                    <input type="time" name="in_time" required
+                        class="glass-input w-full px-4 py-3.5 text-sm rounded-xl font-mono"
+                        oninput="updateProgress(); validateField(this)">
+                </div>
+            </div>
+
+            <!-- Portfolio / Designation (Multi-Select) -->
+            <div class="form-field" data-field="designation">
+                <label class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                        <i class="fa-solid fa-briefcase text-green-500 mr-1.5"></i>Portfolio(s) / Designation <span class="text-red-500">*</span>
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-semibold">Select one or more</span>
+                </label>
+
+                <!-- Selected Portfolios Tags -->
+                <div id="selected-portfolios" class="flex flex-wrap gap-2 mb-3 min-h-[28px]"></div>
+
+                <!-- Portfolio Selector -->
+                <select id="portfolio-selector" class="glass-input w-full px-4 py-3.5 text-sm rounded-xl cursor-pointer"
+                    onchange="addPortfolio(this.value); this.value='';">
+                    <option value="">+ Add a portfolio...</option>
+                    <optgroup label="Executive Board">
+                        <option value="President">President</option>
+                        <option value="Vice President">Vice President</option>
+                        <option value="Immediate Past President">Immediate Past President</option>
+                    </optgroup>
+                    <optgroup label="Secretariat">
+                        <option value="Secretary">Secretary</option>
+                        <option value="Secretary - Administration">Secretary - Administration</option>
+                        <option value="Secretary - Communication">Secretary - Communication</option>
+                        <option value="Joint Secretary">Joint Secretary</option>
+                    </optgroup>
+                    <optgroup label="Finance">
+                        <option value="Treasurer">Treasurer</option>
+                    </optgroup>
+                    <optgroup label="Avenue Directors">
+                        <option value="Director - Club Service">Director - Club Service</option>
+                        <option value="Director - Community Service">Director - Community Service</option>
+                        <option value="Director - Professional Service">Director - Professional Service</option>
+                        <option value="Director - International Service">Director - International Service</option>
+                    </optgroup>
+                    <optgroup label="Chairpersons">
+                        <option value="DPP Chair">DPP Chair</option>
+                        <option value="Club Service Chair">Club Service Chair</option>
+                        <option value="Community Service Chair">Community Service Chair</option>
+                        <option value="Professional Service Chair">Professional Service Chair</option>
+                        <option value="International Service Chair">International Service Chair</option>
+                        <option value="Public Image Chair">Public Image Chair</option>
+                        <option value="Blood Donor Cell Chair">Blood Donor Cell Chair</option>
+                        <option value="Club Foundation Chair">Club Foundation Chair</option>
+                        <option value="Club Membership Growth Chair">Club Membership Growth Chair</option>
+                        <option value="Social Media Chair">Social Media Chair</option>
+                    </optgroup>
+                    <optgroup label="Appointed Roles">
+                        <option value="Sergeant At Arms">Sergeant At Arms</option>
+                        <option value="Club Editor">Club Editor</option>
+                        <option value="Club Advisor">Club Advisor</option>
+                        <option value="Club Mentor">Club Mentor</option>
+                        <option value="President's Special Aide">President's Special Aide</option>
+                        <option value="Rotaract Learning Facilitator">Rotaract Learning Facilitator</option>
+                        <option value="Rotary Community Corps Advisor">Rotary Community Corps Advisor</option>
+                        <option value="Young Leaders Contact">Young Leaders Contact</option>
+                    </optgroup>
+                    <optgroup label="General">
+                        <option value="Member">Member</option>
+                    </optgroup>
+                </select>
+
+                <!-- Hidden real input for form submission -->
+                <input type="hidden" name="designation" id="designation-hidden" required>
+                <p class="text-[10px] text-slate-400 mt-1.5"><i class="fa-solid fa-circle-info mr-0.5"></i>A member can hold more than one portfolio. Select all that apply.</p>
+            </div>
+
+            <!-- Mobile (Optional) -->
+            <div class="form-field">
+                <label class="mb-2 block">
+                    <span class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                        <i class="fa-solid fa-phone text-indigo-500 mr-1.5"></i>Mobile Number <span class="text-slate-400 font-normal normal-case ml-1">(Optional)</span>
+                    </span>
+                </label>
+                <input type="tel" name="mobile" placeholder="+91 98765 43210"
+                    class="glass-input w-full px-4 py-3.5 text-sm rounded-xl font-mono"
+                    oninput="updateProgress()">
+            </div>
+
+            <!-- E-Signature (Upload Only) -->
+            <div class="form-field pt-4 border-t border-slate-200/40 dark:border-white/[0.04]" data-field="signature">
+                <label class="mb-3 block">
+                    <span class="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                        <i class="fa-solid fa-signature text-amber-500 mr-1.5"></i>E-Signature <span class="text-red-500">*</span>
+                    </span>
+                    <span class="block text-[10px] text-slate-400 mt-1">Upload your signature image (PNG, JPG, GIF • Max 5MB)</span>
+                </label>
+
+                <!-- Upload Zone -->
+                <label class="sig-upload-zone block cursor-pointer" id="sig-drop-zone">
+                    <div class="p-10 text-center" id="sig-upload-empty">
+                        <i class="fa-solid fa-cloud-arrow-up text-4xl text-brand-blue mb-4 block"></i>
+                        <p class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Click to upload or drag image here</p>
+                        <p class="text-[10px] text-slate-400">Accepted: PNG, JPG, GIF</p>
+                    </div>
+                    <input type="file" id="signature-upload" accept="image/png,image/jpeg,image/gif" class="hidden">
+                </label>
+
+                <!-- Preview -->
+                <div id="sig-preview-container" class="hidden mt-4 p-4 rounded-xl bg-green-500/5 border border-green-500/20">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="text-xs font-bold text-green-600 dark:text-green-400"><i class="fa-solid fa-check-circle mr-1"></i>Signature uploaded</p>
+                        <button type="button" onclick="removeSignature()" class="text-xs font-bold text-red-500 hover:text-red-600 transition">
+                            <i class="fa-solid fa-trash mr-1"></i>Remove
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-slate-200 dark:border-slate-700 text-center">
+                        <img id="sig-preview-img" class="max-h-28 mx-auto" alt="Signature">
+                    </div>
+                    <div class="flex items-center gap-3 mt-2 text-[10px] text-slate-400">
+                        <span id="sig-file-name"></span>
+                        <span>&bull;</span>
+                        <span id="sig-file-size"></span>
+                    </div>
+                </div>
+
+                <p class="text-[10px] text-slate-400 mt-3 text-center">
+                    <i class="fa-solid fa-shield-halved mr-1"></i>Your signature is securely encrypted and stored
+                </p>
+            </div>
+
+            <!-- Terms -->
+            <div class="pt-4 border-t border-slate-200/40 dark:border-white/[0.04]">
+                <label class="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" id="terms-checkbox" required class="w-4 h-4 mt-0.5 accent-brand-blue">
+                    <span class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        I confirm that the information provided is accurate and I attended this meeting. This submission will be recorded in the official attendance registry of Rotaract Club of Coimbatore Unity.
+                    </span>
+                </label>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" id="submit-btn" class="btn-submit w-full py-4 rounded-xl text-sm font-black uppercase tracking-wider mt-6">
+                <i class="fa-solid fa-paper-plane mr-2"></i>Submit Attendance
+            </button>
+
+            <!-- Security -->
+            <div class="flex items-center justify-center gap-6 pt-4 flex-wrap">
+                <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-lock text-green-500"></i>SSL Encrypted</span>
+                <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-blue-500"></i>Secure Database</span>
+                <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-user-shield text-purple-500"></i>Privacy Protected</span>
+            </div>
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-8 text-[10px] text-slate-400 dark:text-slate-500 space-y-1">
+        <p class="font-bold">Rotaract Club of Coimbatore Unity</p>
+        <p>Family of Rotary Club of Coimbatore East</p>
+        <p>Club ID: 91594 | RI District 3206 (Coimbatore | Palakkad)</p>
+    </div>
+</div>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = 'https://sbpwmkoxuokrscddhhuw.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNicHdta294dW9rcnNjZGRoaHV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwNTI1MDksImV4cCI6MjEwNjYyODUwOX0.s6-r3bywFii-ZcMowwjZnI1WtrpluJ5MQ1_UJJFcDQU';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const meetingId = urlParams.get('meeting');
+
+    let currentMeeting = null;
+    let hasSignature = false;
+    let signatureFileData = null;
+    let signatureFileName = '';
+    let selectedPortfolios = [];
+    let allMembers = [];
+    let submissionResult = null;
+
+    // ============================================
+    // THEME
+    // ============================================
+    const themeToggle = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('attendance-theme');
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+    }
+    themeToggle.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        localStorage.setItem('attendance-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    });
+
+    // ============================================
+    // INIT
+    // ============================================
+    async function init() {
+        if (!meetingId) {
+            showError('Missing Meeting Link', 'The attendance link is missing a meeting ID. Please use the link from your email.');
+            return;
+        }
+        try {
+            const { data: meeting, error } = await supabase.from('meetings').select('*').eq('id', meetingId).single();
+            if (error || !meeting) { showError('Meeting Not Found', 'This meeting does not exist or has been removed.'); return; }
+            if (meeting.status === 'cancelled') { showError('Meeting Cancelled', 'This meeting has been cancelled.'); return; }
+            currentMeeting = meeting;
+            loadMembers();
+            renderMeetingInfo(meeting);
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('form-container').classList.remove('hidden');
+            bindUploadHandler();
+            bindDragDrop();
+            bindFormHandler();
+            setTimeout(() => {
+                const timeInput = document.querySelector('[name="in_time"]');
+                if (timeInput && !timeInput.value) setCurrentTime();
+            }, 300);
+        } catch (e) {
+            showError('Loading Error', e.message);
+        }
+    }
+
+    async function loadMembers() {
+        try {
+            const { data } = await supabase.from('users').select('full_name, ri_id, portfolio, role').eq('is_active', true);
+            allMembers = data || [];
+        } catch (e) {}
+    }
+
+    function showError(title, msg) {
+        document.getElementById('loader').classList.add('hidden');
+        document.getElementById('error-state').classList.remove('hidden');
+        document.getElementById('error-title').textContent = title;
+        document.getElementById('error-msg').textContent = msg;
+    }
+
+    function renderMeetingInfo(m) {
+        const date = new Date(m.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        const type = m.meeting_type === 'board_meeting' ? 'Board Meeting' : 'General Body Meeting';
+        const typeIcon = m.meeting_type === 'board_meeting' ? 'fa-user-tie' : 'fa-users';
+        const typeColor = m.meeting_type === 'board_meeting' ? 'purple' : 'blue';
+
+        document.getElementById('meeting-info-content').innerHTML = `
+            <div class="flex items-start gap-4 mb-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-${typeColor} to-brand-purple flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <i class="fa-solid ${typeIcon} text-white text-xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-brand-${typeColor} dark:text-blue-400">${type}</p>
+                    <h2 class="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 mt-1 leading-tight">${esc(m.meeting_name)}</h2>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-slate-700/50">
+                    <div class="w-9 h-9 rounded-lg bg-brand-blue/10 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-calendar-day text-brand-blue"></i></div>
+                    <div><p class="text-[9px] font-black uppercase tracking-widest text-slate-500">Date</p><p class="text-xs font-bold text-slate-700 dark:text-slate-200 mt-0.5">${date}</p></div>
+                </div>
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-slate-700/50">
+                    <div class="w-9 h-9 rounded-lg bg-brand-cyan/10 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-clock text-brand-cyan"></i></div>
+                    <div><p class="text-[9px] font-black uppercase tracking-widest text-slate-500">Time</p><p class="text-xs font-bold text-slate-700 dark:text-slate-200 mt-0.5">${m.start_time}${m.end_time ? ' - ' + m.end_time : ''}</p></div>
+                </div>
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-slate-700/50 sm:col-span-2">
+                    <div class="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-location-dot text-amber-500"></i></div>
+                    <div class="min-w-0"><p class="text-[9px] font-black uppercase tracking-widest text-slate-500">Venue</p><p class="text-xs font-bold text-slate-700 dark:text-slate-200 mt-0.5 break-words">${esc(m.venue)}</p></div>
+                </div>
+            </div>
+        `;
+    }
+
+    // ============================================
+    // PORTFOLIO MULTI-SELECT
+    // ============================================
+    function addPortfolio(value) {
+        if (!value || selectedPortfolios.includes(value)) return;
+        selectedPortfolios.push(value);
+        renderPortfolios();
+        updateProgress();
+    }
+
+    function removePortfolioAt(index) {
+        selectedPortfolios.splice(index, 1);
+        renderPortfolios();
+        updateProgress();
+    }
+
+    function renderPortfolios() {
+        const container = document.getElementById('selected-portfolios');
+        const hidden = document.getElementById('designation-hidden');
+        
+        container.innerHTML = selectedPortfolios.length === 0
+            ? '<p class="text-[10px] text-slate-400">No portfolio selected yet</p>'
+            : selectedPortfolios.map((p, i) => `
+                <span class="portfolio-tag">
+                    ${esc(p)}
+                    <button type="button" onclick="removePortfolioAt(${i})" class="remove-tag"><i class="fa-solid fa-xmark text-[8px]"></i></button>
+                </span>
+            `).join('');
+
+        hidden.value = selectedPortfolios.join(', ');
+    }
+
+    // ============================================
+    // SIGNATURE UPLOAD
+    // ============================================
+    function bindUploadHandler() {
+        document.getElementById('signature-upload').addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            processSignatureFile(file);
+        });
+    }
+
+    function bindDragDrop() {
+        const zone = document.getElementById('sig-drop-zone');
+        ['dragenter', 'dragover'].forEach(evt => {
+            zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.add('dragover'); });
+        });
+        ['dragleave', 'drop'].forEach(evt => {
+            zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.remove('dragover'); });
+        });
+        zone.addEventListener('drop', e => {
+            const files = e.dataTransfer.files;
+            if (files && files[0]) processSignatureFile(files[0]);
+        });
+    }
+
+    function processSignatureFile(file) {
+        if (file.size > 5 * 1024 * 1024) { alert('File too large. Maximum 5MB allowed.'); return; }
+        if (!file.type.startsWith('image/')) { alert('Only image files are accepted.'); return; }
+
+        signatureFileName = file.name;
+
+        const reader = new FileReader();
+        reader.onload = ev => {
+            signatureFileData = ev.target.result;
+            document.getElementById('sig-preview-img').src = signatureFileData;
+            document.getElementById('sig-file-name').textContent = file.name;
+            document.getElementById('sig-file-size').textContent = (file.size / 1024).toFixed(1) + ' KB';
+            document.getElementById('sig-upload-empty').classList.add('hidden');
+            document.getElementById('sig-preview-container').classList.remove('hidden');
+            hasSignature = true;
+            updateProgress();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeSignature() {
+        signatureFileData = null;
+        signatureFileName = '';
+        hasSignature = false;
+        document.getElementById('signature-upload').value = '';
+        document.getElementById('sig-upload-empty').classList.remove('hidden');
+        document.getElementById('sig-preview-container').classList.add('hidden');
+        updateProgress();
+    }
+
+    // ============================================
+    // NAME SUGGESTIONS
+    // ============================================
+    function showNameSuggestions(query) {
+        const dropdown = document.getElementById('name-suggestions');
+        if (!query || query.length < 2) { dropdown.classList.add('hidden'); return; }
+        const matches = allMembers.filter(m => (m.full_name || '').toLowerCase().includes(query.toLowerCase())).slice(0, 5);
+        if (matches.length === 0) { dropdown.classList.add('hidden'); return; }
+
+        dropdown.innerHTML = matches.map(m => `
+            <div class="suggestion-item p-3 cursor-pointer transition" onclick="selectMember(${JSON.stringify(m).replace(/"/g, '&quot;')})">
+                <p class="text-xs font-bold text-slate-700 dark:text-slate-200">${esc(m.full_name)}</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">${esc(m.portfolio || (m.role || '').replace(/_/g, ' '))} ${m.ri_id ? '• RI: ' + m.ri_id : ''}</p>
+            </div>
+        `).join('');
+        dropdown.classList.remove('hidden');
+    }
+
+    function selectMember(member) {
+        document.querySelector('[name="member_name"]').value = member.full_name || '';
+        if (member.ri_id) document.querySelector('[name="ri_id"]').value = member.ri_id;
+        
+        // Auto-add portfolio
+        if (member.portfolio) {
+            const portfolios = member.portfolio.split(',').map(p => p.trim()).filter(Boolean);
+            portfolios.forEach(p => {
+                if (!selectedPortfolios.includes(p)) selectedPortfolios.push(p);
+            });
+            renderPortfolios();
+        } else if (member.role) {
+            const roleName = member.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            if (!selectedPortfolios.includes(roleName) && !selectedPortfolios.includes('Member')) {
+                addPortfolio(roleName);
+            }
+        }
+
+        document.getElementById('name-suggestions').classList.add('hidden');
+        updateProgress();
+        validateField(document.querySelector('[name="member_name"]'));
+        validateField(document.querySelector('[name="ri_id"]'));
+    }
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#name-suggestions') && !e.target.closest('[name="member_name"]')) {
+            document.getElementById('name-suggestions')?.classList.add('hidden');
+        }
+    });
+
+    // ============================================
+    // UTILITIES
+    // ============================================
+    function setCurrentTime() {
+        const now = new Date();
+        document.querySelector('[name="in_time"]').value = now.toTimeString().substring(0, 5);
+        updateProgress();
+        validateField(document.querySelector('[name="in_time"]'));
+    }
+
+    function validateField(field) {
+        const parent = field.closest('.form-field');
+        const status = parent?.querySelector('.field-status');
+        if (!status) return;
+        if (field.value.trim()) {
+            field.classList.remove('invalid');
+            field.classList.add('valid');
+            status.innerHTML = '<i class="fa-solid fa-circle-check text-green-500 text-xs"></i>';
+            status.classList.remove('hidden');
+        } else {
+            field.classList.remove('valid');
+            status.classList.add('hidden');
+        }
+    }
+
+    function updateProgress() {
+        const required = ['member_name', 'ri_id', 'in_time'];
+        let filled = required.filter(name => document.querySelector(`[name="${name}"]`)?.value.trim()).length;
+        if (selectedPortfolios.length > 0) filled++;
+        if (hasSignature) filled++;
+        if (document.getElementById('terms-checkbox')?.checked) filled++;
+        const total = required.length + 3; // + portfolios + signature + terms
+        const pct = Math.round((filled / total) * 100);
+        document.getElementById('progress-bar').style.width = pct + '%';
+        document.getElementById('progress-text').textContent = pct + '%';
+    }
+
+    document.getElementById('terms-checkbox')?.addEventListener('change', updateProgress);
+
+    function esc(str) {
+        return (str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    // ============================================
+    // FORM SUBMISSION
+    // ============================================
+    function bindFormHandler() {
+        document.getElementById('attendance-form').addEventListener('submit', async e => {
+            e.preventDefault();
+
+            if (!hasSignature) { alert('⚠️ Please upload your signature image.'); return; }
+            if (selectedPortfolios.length === 0) { alert('⚠️ Please select at least one portfolio.'); return; }
+            if (!document.getElementById('terms-checkbox').checked) { alert('⚠️ Please accept the terms.'); return; }
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Submitting...';
+
+            try {
+                const fd = new FormData(e.target);
+
+                // Upload signature to Supabase storage
+                const timestamp = Date.now();
+                const safeName = (fd.get('member_name') || 'anon').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                const sigPath = `${meetingId}/${safeName}_${timestamp}.png`;
+                const sigBlob = await (await fetch(signatureFileData)).blob();
+                let signatureUrl = signatureFileData;
+
+                try {
+                    const { error: upErr } = await supabase.storage.from('signatures').upload(sigPath, sigBlob, { contentType: 'image/png', upsert: true });
+                    if (!upErr) {
+                        const { data: urlData } = supabase.storage.from('signatures').getPublicUrl(sigPath);
+                        signatureUrl = urlData.publicUrl;
+                    }
+                } catch (uploadErr) {
+                    console.warn('Storage upload failed, using base64:', uploadErr);
+                }
+
+                const payload = {
+                    meeting_id: meetingId,
+                    member_name: fd.get('member_name').trim(),
+                    ri_id: fd.get('ri_id').trim(),
+                    designation: selectedPortfolios.join(', '),
+                    in_time: fd.get('in_time'),
+                    signature_url: signatureUrl,
+                    signature_provider: 'supabase'
+                };
+
+                const { error } = await supabase.from('meeting_attendance').insert(payload);
+                if (error) throw error;
+
+                submissionResult = payload;
+                showSuccess(payload);
+            } catch (err) {
+                console.error(err);
+                alert('❌ Submission failed: ' + err.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i>Submit Attendance';
+            }
+        });
+    }
+
+    function showSuccess(payload) {
+        document.getElementById('form-container').classList.add('hidden');
+        document.getElementById('success-state').classList.remove('hidden');
+        document.getElementById('success-details').innerHTML = `
+            <p class="text-xs font-black uppercase tracking-widest text-green-600 dark:text-green-400 mb-3">Submission Details</p>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+                <div><span class="text-slate-400 block mb-0.5">Name</span><span class="font-bold text-slate-700 dark:text-slate-200">${esc(payload.member_name)}</span></div>
+                <div><span class="text-slate-400 block mb-0.5">RI ID</span><span class="font-bold font-mono text-slate-700 dark:text-slate-200">${esc(payload.ri_id)}</span></div>
+                <div><span class="text-slate-400 block mb-0.5">In Time</span><span class="font-bold text-slate-700 dark:text-slate-200">${payload.in_time}</span></div>
+                <div><span class="text-slate-400 block mb-0.5">Portfolio</span><span class="font-bold text-slate-700 dark:text-slate-200">${esc(payload.designation)}</span></div>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-3">Submitted at ${new Date().toLocaleString()}</p>
+        `;
+        fireConfetti();
+    }
+
+    function fireConfetti() {
+        const colors = ['#1a73e8', '#7c3aed', '#06b6d4', '#f59e0b', '#10b981', '#ef4444'];
+        for (let i = 0; i < 50; i++) {
+            setTimeout(() => {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = Math.random() * 100 + '%';
+                piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                document.body.appendChild(piece);
+                setTimeout(() => piece.remove(), 4000);
+            }, i * 50);
+        }
+    }
+
+    function downloadReceipt() {
+        if (!submissionResult || !currentMeeting) return;
+        const html = `<!DOCTYPE html><html><head><title>Attendance Receipt</title>
+        <style>body{font-family:'Poppins',Arial,sans-serif;padding:40px;max-width:600px;margin:0 auto;color:#1e293b;}
+        .header{text-align:center;border-bottom:3px solid #1a73e8;padding-bottom:20px;margin-bottom:30px;}
+        h1{color:#1a73e8;margin:0;}
+        .box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:16px 0;}
+        .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;}
+        .row:last-child{border:none;}
+        .label{font-weight:bold;color:#64748b;font-size:12px;}
+        .value{font-weight:bold;color:#1e293b;font-size:13px;}
+        .confirm{background:#d1fae5;border:1px solid #10b981;color:#065f46;padding:16px;border-radius:12px;text-align:center;font-weight:bold;margin:20px 0;}</style></head>
+        <body>
+            <div class="header"><h1>✓ Attendance Receipt</h1><p style="margin:8px 0 0;color:#64748b;font-size:14px;">Rotaract Club of Coimbatore Unity</p></div>
+            <div class="confirm">✓ Your attendance has been successfully recorded</div>
+            <div class="box"><h3 style="margin:0 0 12px;color:#1a73e8;">Meeting Information</h3>
+                <div class="row"><span class="label">Meeting:</span><span class="value">${esc(currentMeeting.meeting_name)}</span></div>
+                <div class="row"><span class="label">Date:</span><span class="value">${new Date(currentMeeting.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
+                <div class="row"><span class="label">Venue:</span><span class="value">${esc(currentMeeting.venue)}</span></div></div>
+            <div class="box"><h3 style="margin:0 0 12px;color:#1a73e8;">Your Details</h3>
+                <div class="row"><span class="label">Name:</span><span class="value">${esc(submissionResult.member_name)}</span></div>
+                <div class="row"><span class="label">RI ID:</span><span class="value">${esc(submissionResult.ri_id)}</span></div>
+                <div class="row"><span class="label">Portfolio(s):</span><span class="value">${esc(submissionResult.designation)}</span></div>
+                <div class="row"><span class="label">In Time:</span><span class="value">${submissionResult.in_time}</span></div>
+                <div class="row"><span class="label">Submitted:</span><span class="value">${new Date().toLocaleString()}</span></div></div>
+            <p style="text-align:center;color:#94a3b8;font-size:11px;margin-top:30px;">Club ID: 91594 | RI District 3206</p>
+        </body></html>`;
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Attendance_Receipt_${currentMeeting.meeting_name.replace(/[^a-z0-9]/gi, '_')}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    init();
+</script>
+
+</body>
+</html>
