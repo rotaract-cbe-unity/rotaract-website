@@ -1,0 +1,2158 @@
+/* ============================================
+   ROTARACT CLUB OF COIMBATORE UNITY
+   ADVANCED ADMIN PANEL STYLESHEET
+   File: css/admin.css | Version: 12.0.0
+   Premium Glassmorphism | Unified Color System | Micro-Interactions
+   ============================================ */
+
+/* ==========================================
+   0. CSS CUSTOM PROPERTIES (UNIFIED COLOR SYSTEM)
+   ========================================== */
+:root {
+    /* Primary Palette */
+    --ap-glass-bg: rgba(255, 255, 255, 0.55);
+    --ap-glass-bg-heavy: rgba(255, 255, 255, 0.72);
+    --ap-glass-bg-light: rgba(255, 255, 255, 0.35);
+    --ap-glass-border: rgba(255, 255, 255, 0.45);
+    --ap-glass-border-light: rgba(255, 255, 255, 0.2);
+    --ap-glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.06);
+    --ap-glass-shadow-hover: 0 16px 48px rgba(31, 38, 135, 0.12);
+    --ap-glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    --ap-glass-blur: blur(20px) saturate(180%);
+    --ap-glass-blur-heavy: blur(30px) saturate(200%);
+
+    /* Unified Icon & Accent Colors */
+    --ap-icon-primary: #1a73e8;
+    --ap-icon-secondary: #7c3aed;
+    --ap-icon-success: #16a34a;
+    --ap-icon-warning: #d97706;
+    --ap-icon-danger: #dc2626;
+    --ap-icon-info: #0891b2;
+    --ap-icon-pink: #db2777;
+
+    /* Surface Colors */
+    --ap-surface-base: #f0f4f8;
+    --ap-surface-elevated: rgba(255, 255, 255, 0.6);
+    --ap-surface-input: rgba(255, 255, 255, 0.5);
+    --ap-surface-hover: rgba(26, 115, 232, 0.04);
+
+    /* Text */
+    --ap-text-heading: #0f172a;
+    --ap-text-body: #334155;
+    --ap-text-muted: #64748b;
+    --ap-text-faint: #94a3b8;
+
+    /* Borders */
+    --ap-border-subtle: rgba(0, 0, 0, 0.04);
+    --ap-border-default: rgba(0, 0, 0, 0.06);
+    --ap-border-focus: rgba(26, 115, 232, 0.4);
+
+    /* Transitions */
+    --ap-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ap-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ap-duration-fast: 0.15s;
+    --ap-duration-normal: 0.25s;
+    --ap-duration-slow: 0.4s;
+
+    /* Radius */
+    --ap-radius-sm: 8px;
+    --ap-radius-md: 12px;
+    --ap-radius-lg: 16px;
+    --ap-radius-xl: 20px;
+    --ap-radius-2xl: 24px;
+    --ap-radius-3xl: 28px;
+}
+
+/* Dark Mode Variables */
+.dark {
+    --ap-glass-bg: rgba(13, 20, 38, 0.5);
+    --ap-glass-bg-heavy: rgba(13, 20, 38, 0.7);
+    --ap-glass-bg-light: rgba(13, 20, 38, 0.35);
+    --ap-glass-border: rgba(255, 255, 255, 0.07);
+    --ap-glass-border-light: rgba(255, 255, 255, 0.04);
+    --ap-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --ap-glass-shadow-hover: 0 16px 48px rgba(0, 0, 0, 0.35);
+    --ap-glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+    --ap-icon-primary: #60a5fa;
+    --ap-icon-secondary: #a78bfa;
+    --ap-icon-success: #4ade80;
+    --ap-icon-warning: #fbbf24;
+    --ap-icon-danger: #f87171;
+    --ap-icon-info: #22d3ee;
+    --ap-icon-pink: #f472b6;
+
+    --ap-surface-base: #050a18;
+    --ap-surface-elevated: rgba(15, 23, 42, 0.6);
+    --ap-surface-input: rgba(15, 23, 42, 0.5);
+    --ap-surface-hover: rgba(26, 115, 232, 0.08);
+
+    --ap-text-heading: #f1f5f9;
+    --ap-text-body: #cbd5e1;
+    --ap-text-muted: #94a3b8;
+    --ap-text-faint: #64748b;
+
+    --ap-border-subtle: rgba(255, 255, 255, 0.03);
+    --ap-border-default: rgba(255, 255, 255, 0.06);
+    --ap-border-focus: rgba(96, 165, 250, 0.4);
+}
+
+/* ==========================================
+   1. PORTAL SHELL & BACKGROUND
+   ========================================== */
+#admin-portal-modal {
+    font-family: 'Poppins', system-ui, sans-serif;
+    background: linear-gradient(135deg, #eef2ff 0%, #e8eef8 40%, #f5f0ff 70%, #eef2ff 100%) !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9999 !important;
+    overflow-y: auto;
+}
+
+.dark #admin-portal-modal {
+    background: linear-gradient(135deg, #030712 0%, #0a0f24 35%, #0d0820 65%, #030712 100%) !important;
+}
+
+/* Animated Background Orbs */
+#admin-portal-modal::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        radial-gradient(ellipse 900px 700px at 8% 12%, rgba(26, 115, 232, 0.14) 0%, transparent 65%),
+        radial-gradient(ellipse 700px 600px at 92% 22%, rgba(124, 58, 237, 0.11) 0%, transparent 65%),
+        radial-gradient(ellipse 600px 500px at 45% 88%, rgba(6, 182, 212, 0.09) 0%, transparent 60%),
+        radial-gradient(ellipse 400px 350px at 75% 55%, rgba(236, 72, 153, 0.06) 0%, transparent 55%);
+    animation: portalOrbDrift 40s ease-in-out infinite alternate;
+}
+
+.dark #admin-portal-modal::before {
+    background:
+        radial-gradient(ellipse 900px 700px at 8% 12%, rgba(96, 165, 250, 0.08) 0%, transparent 65%),
+        radial-gradient(ellipse 700px 600px at 92% 22%, rgba(167, 139, 250, 0.06) 0%, transparent 65%),
+        radial-gradient(ellipse 600px 500px at 45% 88%, rgba(34, 211, 238, 0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 400px 350px at 75% 55%, rgba(244, 114, 182, 0.04) 0%, transparent 55%);
+}
+
+@keyframes portalOrbDrift {
+    0% { transform: scale(1) translate(0, 0); opacity: 1; }
+    33% { transform: scale(1.05) translate(10px, -8px); opacity: 0.85; }
+    66% { transform: scale(0.98) translate(-8px, 5px); opacity: 0.9; }
+    100% { transform: scale(1) translate(0, 0); opacity: 1; }
+}
+
+#admin-portal-modal > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ==========================================
+   2. HEADER GLASS BAR
+   ========================================== */
+#admin-portal-modal > header {
+    background: var(--ap-glass-bg-heavy) !important;
+    backdrop-filter: var(--ap-glass-blur-heavy) !important;
+    -webkit-backdrop-filter: var(--ap-glass-blur-heavy) !important;
+    border-bottom: 1px solid var(--ap-glass-border) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), var(--ap-glass-inner-glow) !important;
+}
+
+/* ==========================================
+   3. SIDEBAR GLASS NAVIGATION
+   ========================================== */
+#admin-portal-modal aside {
+    background: var(--ap-glass-bg-light) !important;
+    backdrop-filter: var(--ap-glass-blur) !important;
+    -webkit-backdrop-filter: var(--ap-glass-blur) !important;
+    border-right: 1px solid var(--ap-glass-border-light) !important;
+    box-shadow: inset -1px 0 0 var(--ap-glass-border-light) !important;
+}
+
+/* Sidebar Menu Buttons */
+.admin-menu-btn {
+    color: var(--ap-text-muted) !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: all var(--ap-duration-normal) var(--ap-ease-out) !important;
+    border-radius: var(--ap-radius-md) !important;
+}
+
+.admin-menu-btn::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) scaleY(0);
+    width: 3px;
+    height: 55%;
+    background: linear-gradient(180deg, var(--ap-icon-primary), var(--ap-icon-secondary));
+    border-radius: 0 6px 6px 0;
+    transition: transform var(--ap-duration-normal) var(--ap-ease-out);
+}
+
+.admin-menu-btn:hover {
+    background: var(--ap-surface-hover) !important;
+    color: var(--ap-icon-primary) !important;
+    transform: translateX(3px);
+}
+
+.admin-menu-btn.active {
+    background: linear-gradient(135deg, rgba(26, 115, 232, 0.1) 0%, rgba(124, 58, 237, 0.06) 100%) !important;
+    color: var(--ap-icon-primary) !important;
+    border-color: rgba(26, 115, 232, 0.15) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 12px rgba(26, 115, 232, 0.08);
+}
+
+.dark .admin-menu-btn.active {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.12) 0%, rgba(167, 139, 250, 0.08) 100%) !important;
+    color: var(--ap-icon-primary) !important;
+    border-color: rgba(96, 165, 250, 0.2) !important;
+}
+
+.admin-menu-btn.active::before {
+    transform: translateY(-50%) scaleY(1);
+}
+
+/* ==========================================
+   4. GLASS PANEL CARDS
+   ========================================== */
+.admin-panel {
+    background: var(--ap-glass-bg) !important;
+    backdrop-filter: var(--ap-glass-blur) !important;
+    -webkit-backdrop-filter: var(--ap-glass-blur) !important;
+    border: 1px solid var(--ap-glass-border) !important;
+    border-radius: var(--ap-radius-2xl) !important;
+    box-shadow: var(--ap-glass-shadow), var(--ap-glass-inner-glow) !important;
+    overflow: hidden;
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+}
+
+.admin-panel:hover {
+    box-shadow: var(--ap-glass-shadow-hover), var(--ap-glass-inner-glow) !important;
+    transform: translateY(-1px);
+}
+
+.admin-panel-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--ap-border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.dark .admin-panel-header {
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--ap-border-subtle);
+}
+
+.admin-panel-title {
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ap-text-heading);
+}
+
+/* UNIFIED PANEL TITLE ICON COLORS */
+.admin-panel-title i {
+    color: var(--ap-icon-primary) !important;
+    font-size: 13px;
+}
+
+.admin-panel-body {
+    padding: 22px;
+}
+
+/* ==========================================
+   5. GLASS STAT CARDS
+   ========================================== */
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.admin-stat-card {
+    background: var(--ap-glass-bg) !important;
+    backdrop-filter: var(--ap-glass-blur) !important;
+    -webkit-backdrop-filter: var(--ap-glass-blur) !important;
+    border: 1px solid var(--ap-glass-border) !important;
+    border-radius: var(--ap-radius-2xl) !important;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+    box-shadow: var(--ap-glass-shadow), var(--ap-glass-inner-glow);
+}
+
+.admin-stat-card::after {
+    content: '';
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    opacity: 0.05;
+    transition: all var(--ap-duration-slow) var(--ap-ease-out);
+}
+
+.admin-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--ap-glass-shadow-hover), var(--ap-glass-inner-glow) !important;
+}
+
+.admin-stat-card:hover::after {
+    transform: scale(1.6);
+    opacity: 0.1;
+}
+
+.admin-stat-icon { background: rgba(26, 115, 232, 0.1) !important; color: var(--ap-icon-primary) !important; }
+
+.admin-stat-card.green::after { background: var(--ap-icon-success); }
+.admin-stat-card.green .admin-stat-icon { background: rgba(22, 163, 74, 0.1) !important; color: var(--ap-icon-success) !important; }
+
+.admin-stat-card.yellow::after { background: var(--ap-icon-warning); }
+.admin-stat-card.yellow .admin-stat-icon { background: rgba(217, 119, 6, 0.1) !important; color: var(--ap-icon-warning) !important; }
+
+.admin-stat-card.purple::after { background: var(--ap-icon-secondary); }
+.admin-stat-card.purple .admin-stat-icon { background: rgba(124, 58, 237, 0.1) !important; color: var(--ap-icon-secondary) !important; }
+
+.admin-stat-card.red::after { background: var(--ap-icon-danger); }
+.admin-stat-card.red .admin-stat-icon { background: rgba(220, 38, 38, 0.1) !important; color: var(--ap-icon-danger) !important; }
+
+.admin-stat-card.cyan::after { background: var(--ap-icon-info); }
+.admin-stat-card.cyan .admin-stat-icon { background: rgba(8, 145, 178, 0.1) !important; color: var(--ap-icon-info) !important; }
+
+.admin-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--ap-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    margin-bottom: 14px;
+}
+
+.admin-stat-value {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    color: var(--ap-text-heading);
+}
+
+.admin-stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ap-text-faint);
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* ==========================================
+   6. GLASS BUTTONS (UNIFIED COLORS)
+   ========================================== */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: var(--ap-radius-md);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, var(--ap-icon-primary) 0%, var(--ap-icon-secondary) 100%) !important;
+    color: white !important;
+    border: none !important;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(26, 115, 232, 0.25);
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(26, 115, 232, 0.35);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-primary.btn-sm { padding: 7px 14px; font-size: 10px; border-radius: var(--ap-radius-sm); }
+.btn-primary.btn-xs { padding: 5px 10px; font-size: 9px; border-radius: 6px; }
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: var(--ap-radius-md);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    background: var(--ap-glass-bg) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--ap-border-default) !important;
+    color: var(--ap-text-body) !important;
+    cursor: pointer;
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+}
+
+.dark .btn-secondary {
+    background: rgba(30, 41, 59, 0.5) !important;
+    border: 1px solid var(--ap-border-default) !important;
+    color: var(--ap-text-body) !important;
+}
+
+.btn-secondary:hover {
+    background: var(--ap-glass-bg-heavy) !important;
+    border-color: var(--ap-border-focus) !important;
+    color: var(--ap-icon-primary) !important;
+}
+
+.btn-secondary.btn-sm { padding: 7px 14px; font-size: 10px; }
+.btn-secondary.btn-xs { padding: 5px 10px; font-size: 9px; }
+
+.btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: var(--ap-radius-md);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, var(--ap-icon-danger) 0%, #b91c1c 100%) !important;
+    color: white !important;
+    border: none !important;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.2);
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+}
+
+.btn-danger:hover {
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-danger.btn-xs { padding: 5px 10px; font-size: 9px; border-radius: 6px; }
+
+/* ==========================================
+   7. UNIFIED BADGE SYSTEM
+   ========================================== */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    backdrop-filter: blur(8px);
+}
+
+.badge-blue {
+    background: rgba(26, 115, 232, 0.1) !important;
+    color: var(--ap-icon-primary) !important;
+    border: 1px solid rgba(26, 115, 232, 0.15);
+}
+
+.badge-green {
+    background: rgba(22, 163, 74, 0.1) !important;
+    color: var(--ap-icon-success) !important;
+    border: 1px solid rgba(22, 163, 74, 0.15);
+}
+
+.badge-yellow {
+    background: rgba(217, 119, 6, 0.1) !important;
+    color: var(--ap-icon-warning) !important;
+    border: 1px solid rgba(217, 119, 6, 0.15);
+}
+
+.badge-red {
+    background: rgba(220, 38, 38, 0.1) !important;
+    color: var(--ap-icon-danger) !important;
+    border: 1px solid rgba(220, 38, 38, 0.15);
+}
+
+.badge-purple {
+    background: rgba(124, 58, 237, 0.1) !important;
+    color: var(--ap-icon-secondary) !important;
+    border: 1px solid rgba(124, 58, 237, 0.15);
+}
+
+.badge-gray {
+    background: rgba(148, 163, 184, 0.1) !important;
+    color: var(--ap-text-faint) !important;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.status-badge.sent, .status-badge.active, .status-badge.approved, .status-badge.completed {
+    background: rgba(22, 163, 74, 0.1); color: var(--ap-icon-success);
+}
+.status-badge.failed, .status-badge.rejected, .status-badge.cancelled {
+    background: rgba(220, 38, 38, 0.1); color: var(--ap-icon-danger);
+}
+.status-badge.pending, .status-badge.queued, .status-badge.draft {
+    background: rgba(217, 119, 6, 0.1); color: var(--ap-icon-warning);
+}
+.status-badge.fulfilled {
+    background: rgba(26, 115, 232, 0.1); color: var(--ap-icon-primary);
+}
+
+/* ==========================================
+   8. GLASS DATA TABLES
+   ========================================== */
+.admin-data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 12px;
+}
+
+.admin-data-table thead tr {
+    background: rgba(248, 250, 252, 0.5);
+}
+
+.dark .admin-data-table thead tr {
+    background: rgba(15, 23, 42, 0.4);
+}
+
+.admin-data-table th {
+    padding: 12px 16px;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ap-text-faint);
+    text-align: left;
+    border-bottom: 2px solid var(--ap-border-subtle);
+}
+
+.admin-data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--ap-border-subtle);
+    color: var(--ap-text-body);
+    vertical-align: middle;
+}
+
+.admin-data-table tbody tr {
+    transition: background var(--ap-duration-fast) var(--ap-ease-out);
+}
+
+.admin-data-table tbody tr:hover {
+    background: var(--ap-surface-hover);
+}
+
+/* ==========================================
+   9. GLASS FORM ELEMENTS
+   ========================================== */
+.admin-form-group {
+    margin-bottom: 16px;
+}
+
+.admin-form-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ap-text-muted);
+    margin-bottom: 6px;
+}
+
+.admin-form-label .required {
+    color: var(--ap-icon-danger);
+    margin-left: 2px;
+}
+
+.admin-form-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-family: 'Poppins', sans-serif;
+    border-radius: var(--ap-radius-md);
+    background: var(--ap-surface-input) !important;
+    backdrop-filter: blur(8px);
+    border: 1.5px solid var(--ap-border-default) !important;
+    color: var(--ap-text-heading) !important;
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+}
+
+.dark .admin-form-input {
+    background: rgba(15, 23, 42, 0.5) !important;
+    border: 1.5px solid var(--ap-border-default) !important;
+    color: var(--ap-text-heading) !important;
+}
+
+.admin-form-input:focus {
+    outline: none !important;
+    border-color: var(--ap-border-focus) !important;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.08);
+    background: var(--ap-glass-bg-heavy) !important;
+}
+
+.admin-form-input::placeholder {
+    color: var(--ap-text-faint);
+}
+
+.admin-form-textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.admin-form-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+
+.admin-form-grid .full-width {
+    grid-column: span 2;
+}
+
+@media (max-width: 640px) {
+    .admin-form-grid { grid-template-columns: 1fr; }
+    .admin-form-grid .full-width { grid-column: span 1; }
+}
+
+.admin-form-hint {
+    font-size: 10px;
+    color: var(--ap-text-faint);
+    margin-top: 4px;
+    display: block;
+}
+
+.admin-form-section {
+    padding: 20px;
+    border-radius: var(--ap-radius-xl);
+    background: var(--ap-glass-bg-light);
+    border: 1px solid var(--ap-border-subtle);
+    margin-bottom: 16px;
+    backdrop-filter: blur(10px);
+}
+
+.admin-form-section-title {
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ap-border-subtle);
+    color: var(--ap-text-heading);
+}
+
+.admin-form-section-title i {
+    color: var(--ap-icon-primary) !important;
+}
+
+/* ==========================================
+   10. QUICK ACTION BUTTONS
+   ========================================== */
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+}
+
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 18px 12px;
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-glass-bg) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid var(--ap-glass-border-light) !important;
+    color: var(--ap-text-body) !important;
+    cursor: pointer;
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.dark .quick-action-btn {
+    background: rgba(30, 41, 59, 0.4) !important;
+    border: 1px solid var(--ap-border-default) !important;
+    color: var(--ap-text-body) !important;
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(26, 115, 232, 0.12);
+    border-color: var(--ap-border-focus) !important;
+    color: var(--ap-icon-primary) !important;
+}
+
+/* UNIFIED QUICK ACTION ICON COLORS */
+.quick-action-btn i {
+    font-size: 20px;
+    color: var(--ap-icon-primary) !important;
+    transition: transform var(--ap-duration-normal) var(--ap-ease-bounce);
+}
+
+.quick-action-btn:hover i {
+    transform: scale(1.2);
+}
+
+.quick-action-btn span {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* ==========================================
+   11. GLASS MODAL SYSTEM
+   ========================================== */
+.admin-modal-backdrop,
+#admin-dynamic-modal > div:first-child {
+    background: rgba(0, 0, 0, 0.35) !important;
+    backdrop-filter: blur(12px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+}
+
+.dark #admin-dynamic-modal > div:first-child {
+    background: rgba(0, 0, 0, 0.5) !important;
+}
+
+#admin-dynamic-modal > div:last-child,
+.admin-modal-content {
+    background: var(--ap-glass-bg-heavy) !important;
+    backdrop-filter: var(--ap-glass-blur-heavy) !important;
+    -webkit-backdrop-filter: var(--ap-glass-blur-heavy) !important;
+    border: 1px solid var(--ap-glass-border) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12), var(--ap-glass-inner-glow) !important;
+}
+
+.dark #admin-dynamic-modal > div:last-child,
+.dark .admin-modal-content {
+    background: rgba(13, 20, 38, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), var(--ap-glass-inner-glow) !important;
+}
+
+/* ==========================================
+   12. EMPTY STATES
+   ========================================== */
+.empty-state {
+    text-align: center;
+    padding: 48px 20px;
+}
+
+.empty-state-icon {
+    font-size: 42px;
+    margin-bottom: 14px;
+    opacity: 0.3;
+    display: block;
+    color: var(--ap-text-faint);
+}
+
+.empty-state-title {
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    color: var(--ap-text-heading);
+}
+
+.empty-state-desc {
+    font-size: 11px;
+    color: var(--ap-text-faint);
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+/* ==========================================
+   13. LIVE INDICATOR
+   ========================================== */
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    background: rgba(22, 163, 74, 0.08);
+    border: 1px solid rgba(22, 163, 74, 0.15);
+    font-size: 9px;
+    font-weight: 800;
+    color: var(--ap-icon-success);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    backdrop-filter: blur(8px);
+}
+
+.live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ap-icon-success);
+    position: relative;
+}
+
+.live-dot::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid var(--ap-icon-success);
+    animation: livePulseRing 1.5s ease-out infinite;
+}
+
+@keyframes livePulseRing {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* ==========================================
+   14. NOTIFICATION BADGE
+   ========================================== */
+.notification-badge {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 50%;
+    background: var(--ap-icon-danger) !important;
+    color: white !important;
+    font-size: 8px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+}
+
+.dark .notification-badge {
+    border-color: #050a18;
+}
+
+/* ==========================================
+   15. HOVER LIFT & MICRO-INTERACTIONS
+   ========================================== */
+.hover-lift {
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+}
+
+.hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--ap-glass-shadow-hover), var(--ap-glass-inner-glow) !important;
+}
+
+/* ==========================================
+   16. SKELETON LOADERS
+   ========================================== */
+.skeleton-line {
+    height: 14px;
+    border-radius: 100px;
+    background: linear-gradient(90deg,
+        rgba(0, 0, 0, 0.04) 25%,
+        rgba(0, 0, 0, 0.08) 50%,
+        rgba(0, 0, 0, 0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+}
+
+.dark .skeleton-line {
+    background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0.03) 25%,
+        rgba(255, 255, 255, 0.06) 50%,
+        rgba(255, 255, 255, 0.03) 75%);
+    background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* ==========================================
+   17. STAGGER ANIMATIONS
+   ========================================== */
+.stagger-list > * {
+    opacity: 0;
+    animation: staggerFadeIn 0.4s var(--ap-ease-out) forwards;
+}
+
+.stagger-list > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-list > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-list > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-list > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-list > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-list > *:nth-child(6) { animation-delay: 0.3s; }
+
+@keyframes staggerFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================
+   18. UPLOAD ZONES
+   ========================================== */
+.admin-upload-zone {
+    position: relative;
+    border: 2px dashed rgba(26, 115, 232, 0.2);
+    border-radius: var(--ap-radius-xl);
+    padding: 32px 20px;
+    text-align: center;
+    background: rgba(26, 115, 232, 0.02);
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+    cursor: pointer;
+}
+
+.admin-upload-zone:hover {
+    border-color: var(--ap-icon-primary);
+    background: rgba(26, 115, 232, 0.04);
+}
+
+.admin-upload-icon {
+    font-size: 28px;
+    color: var(--ap-icon-primary) !important;
+    margin-bottom: 8px;
+}
+
+.admin-upload-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ap-text-body);
+}
+
+.admin-upload-hint {
+    font-size: 10px;
+    color: var(--ap-text-faint);
+    margin-top: 4px;
+}
+
+/* ==========================================
+   19. PAGE HEADER
+   ========================================== */
+.admin-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+
+.admin-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ap-text-faint);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+}
+
+.admin-breadcrumb i {
+    color: var(--ap-icon-primary) !important;
+}
+
+.admin-page-title {
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--ap-text-heading);
+    line-height: 1.2;
+}
+
+.admin-page-subtitle {
+    font-size: 12px;
+    color: var(--ap-text-faint);
+    margin-top: 4px;
+}
+
+/* ==========================================
+   20. DASHBOARD GRID
+   ========================================== */
+.admin-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .admin-dashboard-grid { grid-template-columns: 1fr; }
+}
+
+/* ==========================================
+   21. KEYBOARD SHORTCUT BADGES
+   ========================================== */
+.kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--ap-border-default);
+    border-bottom-width: 2px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    color: var(--ap-text-faint);
+}
+
+.dark .kbd {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--ap-border-default);
+}
+
+/* ==========================================
+   22. SCROLLBAR STYLING
+   ========================================== */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+#admin-workspace ::-webkit-scrollbar { width: 5px; }
+#admin-workspace ::-webkit-scrollbar-track { background: transparent; }
+#admin-workspace ::-webkit-scrollbar-thumb {
+    background: rgba(26, 115, 232, 0.15);
+    border-radius: 100px;
+}
+.dark #admin-workspace ::-webkit-scrollbar-thumb {
+    background: rgba(96, 165, 250, 0.15);
+}
+
+#admin-portal-modal aside::-webkit-scrollbar { width: 3px; }
+#admin-portal-modal aside::-webkit-scrollbar-thumb {
+    background: rgba(26, 115, 232, 0.15);
+    border-radius: 100px;
+}
+
+/* ==========================================
+   23. RESPONSIVE OVERRIDES
+   ========================================== */
+@media (max-width: 1024px) {
+    #admin-portal-modal aside {
+        padding: 12px 8px !important;
+    }
+    .admin-menu-btn {
+        padding: 10px 14px !important;
+        font-size: 10px !important;
+    }
+    .admin-menu-btn span { display: none; }
+    .admin-menu-btn i { font-size: 16px !important; }
+}
+
+@media (max-width: 640px) {
+    .admin-page-title { font-size: 20px; }
+    .admin-stat-value { font-size: 22px; }
+    .admin-stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .admin-dashboard-grid { grid-template-columns: 1fr; }
+}
+
+/* ==========================================
+   24. MEETING TAB BUTTONS
+   ========================================== */
+.meeting-tab-btn {
+    padding: 10px 18px;
+    border-radius: var(--ap-radius-md);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ap-text-muted);
+    background: var(--ap-glass-bg);
+    border: 1px solid var(--ap-glass-border-light);
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+    white-space: nowrap;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    display: inline-flex;
+    align-items: center;
+}
+
+.meeting-tab-btn:hover {
+    border-color: var(--ap-border-focus);
+    color: var(--ap-icon-primary);
+}
+
+.meeting-tab-btn.active {
+    background: linear-gradient(135deg, var(--ap-icon-primary), var(--ap-icon-secondary)) !important;
+    color: white !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 16px rgba(26, 115, 232, 0.25);
+}
+
+/* ==========================================
+   25. MEMBER TAB BUTTONS
+   ========================================== */
+.member-tab-btn {
+    padding: 10px 18px;
+    border-radius: var(--ap-radius-md);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ap-text-muted);
+    background: var(--ap-glass-bg);
+    border: 1px solid var(--ap-glass-border-light);
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+    white-space: nowrap;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    display: inline-flex;
+    align-items: center;
+}
+
+.member-tab-btn:hover {
+    border-color: var(--ap-border-focus);
+    color: var(--ap-icon-primary);
+}
+
+.member-tab-btn.active {
+    background: linear-gradient(135deg, var(--ap-icon-primary), var(--ap-icon-secondary)) !important;
+    color: white !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 16px rgba(26, 115, 232, 0.25);
+}
+
+/* ==========================================
+   26. AVENUE TAB BUTTONS (PUBLIC)
+   ========================================== */
+.avenue-tab-btn {
+    padding: 10px 18px;
+    border-radius: var(--ap-radius-md);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ap-text-muted);
+    background: var(--ap-glass-bg);
+    border: 1px solid var(--ap-glass-border-light);
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+    white-space: nowrap;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+}
+
+.avenue-tab-btn:hover {
+    border-color: var(--ap-border-focus);
+    color: var(--ap-icon-primary);
+}
+
+.avenue-tab-btn.active {
+    background: linear-gradient(135deg, var(--ap-icon-primary), var(--ap-icon-secondary)) !important;
+    color: white !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 16px rgba(26, 115, 232, 0.25);
+}
+
+/* ==========================================
+   27. MEMBER GRID CARDS (PUBLIC)
+   ========================================== */
+.member-grid-card {
+    position: relative;
+    padding: 20px;
+    border-radius: var(--ap-radius-2xl);
+    background: var(--ap-glass-bg) !important;
+    backdrop-filter: var(--ap-glass-blur) !important;
+    border: 1px solid var(--ap-glass-border) !important;
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+    overflow: hidden;
+    box-shadow: var(--ap-glass-shadow), var(--ap-glass-inner-glow);
+}
+
+.member-grid-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--ap-icon-primary), var(--ap-icon-secondary));
+    opacity: 0;
+    transition: opacity var(--ap-duration-normal);
+}
+
+.member-grid-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--ap-glass-shadow-hover), var(--ap-glass-inner-glow) !important;
+    border-color: var(--ap-border-focus) !important;
+}
+
+.member-grid-card:hover::after {
+    opacity: 1;
+}
+
+.member-avatar-photo {
+    width: 72px;
+    height: 72px;
+    border-radius: var(--ap-radius-lg);
+    object-fit: cover;
+    border: 2px solid var(--ap-glass-border);
+    transition: all var(--ap-duration-slow) var(--ap-ease-out);
+}
+
+.member-grid-card:hover .member-avatar-photo {
+    border-color: var(--ap-icon-primary);
+    border-radius: 50%;
+}
+
+/* ==========================================
+   28. GAME CARDS (PUBLIC)
+   ========================================== */
+.game-card {
+    padding: 24px 16px;
+    border-radius: var(--ap-radius-xl);
+    background: var(--ap-glass-bg) !important;
+    backdrop-filter: var(--ap-glass-blur) !important;
+    border: 1px solid var(--ap-glass-border) !important;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+    box-shadow: var(--ap-glass-shadow), var(--ap-glass-inner-glow);
+}
+
+.game-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--ap-glass-shadow-hover), var(--ap-glass-inner-glow) !important;
+    border-color: var(--ap-border-focus) !important;
+}
+
+/* UNIFIED GAME ICON COLORS */
+.game-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+    color: var(--ap-icon-primary) !important;
+}
+
+/* ==========================================
+   29. CHATBOT
+   The assistant (ub-*) is styled in css/styles.css and js/chatbot.js.
+   ========================================== */
+
+/* ==========================================
+   30. BLOOD GROUP TAGS
+   ========================================== */
+.blood-group-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--ap-radius-sm);
+    font-size: 10px;
+    font-weight: 800;
+    background: rgba(220, 38, 38, 0.08) !important;
+    color: var(--ap-icon-danger) !important;
+    flex-shrink: 0;
+}
+
+/* ==========================================
+   31. PORTFOLIO PILLS
+   ========================================== */
+.portfolio-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-size: 9px;
+    font-weight: 700;
+    background: rgba(26, 115, 232, 0.08) !important;
+    color: var(--ap-icon-primary) !important;
+    border: 1px solid rgba(26, 115, 232, 0.12);
+    margin: 2px;
+}
+
+/* ==========================================
+   32. WIZARD STEPS
+   ========================================== */
+.wizard-circle {
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+}
+
+.wizard-line {
+    transition: background var(--ap-duration-slow) var(--ap-ease-out);
+}
+
+/* ==========================================
+   33. SETTINGS ROWS
+   ========================================== */
+.settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--ap-border-subtle);
+    flex-wrap: wrap;
+}
+
+.settings-row:last-child { border-bottom: none; }
+
+.settings-row-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ap-text-heading);
+}
+
+.settings-row-desc {
+    font-size: 10px;
+    color: var(--ap-text-faint);
+    font-family: 'Courier New', monospace;
+}
+
+/* ==========================================
+   34. TOGGLE SWITCHES
+   ========================================== */
+.admin-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.admin-toggle input { display: none; }
+
+.admin-toggle-track {
+    width: 42px;
+    height: 24px;
+    border-radius: 100px;
+    background: rgba(0, 0, 0, 0.1);
+    position: relative;
+    transition: background var(--ap-duration-normal) var(--ap-ease-out);
+}
+
+.dark .admin-toggle-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-toggle-track::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform var(--ap-duration-normal) var(--ap-ease-bounce);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.admin-toggle input:checked + .admin-toggle-track {
+    background: var(--ap-icon-primary);
+}
+
+.admin-toggle input:checked + .admin-toggle-track::after {
+    transform: translateX(18px);
+}
+
+/* ==========================================
+   35. RESOURCE MONITOR
+   ========================================== */
+.resource-monitor {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+}
+
+.resource-item {
+    padding: 16px;
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-glass-bg-light);
+    border: 1px solid var(--ap-border-subtle);
+    backdrop-filter: blur(8px);
+}
+
+.resource-item-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: capitalize;
+    color: var(--ap-text-faint);
+}
+
+.resource-item-value {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--ap-text-heading);
+    margin: 4px 0;
+}
+
+.resource-item-limit {
+    font-size: 9px;
+    color: var(--ap-text-faint);
+}
+
+.resource-bar {
+    height: 4px;
+    background: var(--ap-border-subtle);
+    border-radius: 100px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.resource-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width var(--ap-duration-slow) var(--ap-ease-out);
+}
+
+.resource-bar-fill.safe { background: var(--ap-icon-success); }
+.resource-bar-fill.warning { background: var(--ap-icon-warning); }
+.resource-bar-fill.danger { background: var(--ap-icon-danger); }
+
+/* ==========================================
+   36. PAGINATION
+   ========================================== */
+.admin-pagination-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--ap-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ap-text-muted);
+    border: 1px solid var(--ap-border-default);
+    background: var(--ap-glass-bg);
+    cursor: pointer;
+    transition: all var(--ap-duration-fast) var(--ap-ease-out);
+}
+
+.admin-pagination-btn:hover {
+    border-color: var(--ap-border-focus);
+    color: var(--ap-icon-primary);
+}
+
+.admin-pagination-btn.active {
+    background: var(--ap-icon-primary) !important;
+    color: white !important;
+    border-color: var(--ap-icon-primary) !important;
+}
+
+.admin-pagination-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* ==========================================
+   37. BIRTHDAY HIGHLIGHT
+   ========================================== */
+.birthday-highlight {
+    animation: birthdayGlow 2s ease-in-out infinite;
+}
+
+@keyframes birthdayGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(219, 39, 119, 0.3), var(--ap-glass-shadow); }
+    50% { box-shadow: 0 0 0 8px rgba(219, 39, 119, 0), var(--ap-glass-shadow); }
+}
+
+/* ==========================================
+   38. SEARCH ICON FIX
+   ========================================== */
+.search-icon-fix {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 2;
+    color: var(--ap-text-faint) !important;
+}
+
+/* ==========================================
+   39. SIGNATURE PREVIEW
+   ========================================== */
+.signature-preview {
+    width: 100%;
+    height: 60px;
+    object-fit: contain;
+    background: white;
+    border-radius: var(--ap-radius-sm);
+    border: 1px solid var(--ap-border-default);
+    padding: 6px;
+}
+
+/* ==========================================
+   40. PHOTO GRID ITEMS
+   ========================================== */
+.photo-grid-item {
+    position: relative;
+    aspect-ratio: 16/10;
+    border-radius: var(--ap-radius-md);
+    overflow: hidden;
+    border: 1px solid var(--ap-border-default);
+}
+
+.photo-grid-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-grid-item .remove-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--ap-duration-fast);
+}
+
+.photo-grid-item:hover .remove-overlay {
+    opacity: 1;
+}
+
+/* ==========================================
+   41. ATTENDANCE ROWS
+   ========================================== */
+.attendance-row {
+    display: grid;
+    grid-template-columns: 40px 1.5fr 1.8fr 1fr 100px 120px 50px;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--ap-glass-bg-light);
+    border: 1px solid var(--ap-border-subtle);
+    border-radius: var(--ap-radius-lg);
+    margin-bottom: 8px;
+    transition: all var(--ap-duration-fast) var(--ap-ease-out);
+}
+
+.dark .attendance-row {
+    background: rgba(15, 23, 42, 0.3);
+    border-color: var(--ap-border-subtle);
+}
+
+.attendance-row:hover {
+    border-color: var(--ap-border-focus);
+}
+
+@media (max-width: 1024px) {
+    .attendance-row { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* ==========================================
+   42. FORM PORTFOLIO TAGS
+   ========================================== */
+.form-portfolio-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(26, 115, 232, 0.08);
+    color: var(--ap-icon-primary);
+    border: 1px solid rgba(26, 115, 232, 0.15);
+}
+
+.form-portfolio-tag .remove-tag {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity var(--ap-duration-fast);
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.form-portfolio-tag .remove-tag:hover {
+    opacity: 1;
+    background: rgba(220, 38, 38, 0.15);
+    color: var(--ap-icon-danger);
+}
+
+/* ==========================================
+   43. BULLETIN CARDS
+   ========================================== */
+.bulletin-admin-card {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-glass-bg);
+    border: 1px solid var(--ap-glass-border-light);
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+}
+
+.bulletin-admin-card:hover {
+    border-color: var(--ap-border-focus);
+}
+
+.bulletin-admin-cover {
+    width: 80px;
+    height: 110px;
+    border-radius: var(--ap-radius-sm);
+    object-fit: cover;
+    border: 1px solid var(--ap-border-default);
+    flex-shrink: 0;
+}
+
+/* ==========================================
+   44. BLOOD REQUEST CARDS
+   ========================================== */
+.blood-request-card {
+    padding: 16px;
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-glass-bg);
+    border: 1px solid var(--ap-glass-border-light);
+    border-left: 4px solid var(--ap-icon-danger);
+    transition: all var(--ap-duration-normal) var(--ap-ease-out);
+}
+
+.blood-request-card.emergency {
+    border-left-color: var(--ap-icon-danger) !important;
+    background: rgba(220, 38, 38, 0.03) !important;
+    animation: emergencyPulse 2s ease-in-out infinite;
+}
+
+@keyframes emergencyPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.2); }
+    50% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+}
+
+.blood-request-card.urgent {
+    border-left-color: var(--ap-icon-warning) !important;
+}
+
+.blood-request-card.normal {
+    border-left-color: var(--ap-icon-success) !important;
+}
+
+/* ==========================================
+   45. FINAL UTILITY CLASSES
+   ========================================== */
+.admin-hidden { display: none !important; }
+.admin-visible { display: block !important; }
+.admin-no-select { user-select: none; -webkit-user-select: none; }
+.admin-truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-mono { font-family: 'Courier New', monospace; font-variant-numeric: tabular-nums; }
+
+/* Focus Visible Accessibility */
+*:focus-visible {
+    outline: 2px solid var(--ap-icon-primary);
+    outline-offset: 2px;
+}
+
+/* Smooth all transitions globally in admin */
+#admin-portal-modal * {
+    transition-timing-function: var(--ap-ease-out);
+}
+
+/* ==========================================
+   END OF ADMIN STYLESHEET
+   Rotaract Club of Coimbatore Unity
+   Version 11.0.0 (unified glass layer)
+   ========================================== */
+
+/* ==========================================================================
+   UNITY ADMIN - UNIFIED GLASS LAYER
+   One accent (azure -> violet), one icon system, one glass recipe.
+   Everything below applies to the portal AND to modals (which are appended
+   to <body>, outside #admin-portal-modal).
+   ========================================================================== */
+#admin-portal-modal, #admin-dynamic-modal {
+    --ap-ico: #1a73e8;
+    --ap-ico-bg: rgba(26, 115, 232, 0.10);
+    --ap-ico-edge: rgba(26, 115, 232, 0.20);
+    --ap-grad: linear-gradient(135deg, #1a73e8 0%, #7c3aed 100%);
+    --ap-grad-shadow: 0 8px 22px rgba(26, 115, 232, 0.30);
+    --ap-field-bg: rgba(255, 255, 255, 0.62);
+    --ap-field-line: rgba(15, 23, 42, 0.10);
+}
+.dark #admin-portal-modal, .dark #admin-dynamic-modal {
+    --ap-ico: #7db3ff;
+    --ap-ico-bg: rgba(96, 165, 250, 0.12);
+    --ap-ico-edge: rgba(96, 165, 250, 0.24);
+    --ap-field-bg: rgba(15, 23, 42, 0.55);
+    --ap-field-line: rgba(255, 255, 255, 0.10);
+}
+
+/* ---------- ONE ICON SYSTEM ---------------------------------------------
+   Every icon sits on the same translucent tile in the same accent colour.
+   Only status meaning (success / warning / danger) is allowed to differ.   */
+.ap-ico {
+    flex: 0 0 auto; width: 30px; height: 30px;
+    display: inline-grid; place-items: center;
+    border-radius: 10px;
+    background: var(--ap-ico-bg);
+    border: 1px solid var(--ap-ico-edge);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transition: background .2s, border-color .2s, transform .2s;
+}
+.ap-ico i { font-size: 13px; line-height: 1; color: var(--ap-ico) !important; width: auto; }
+.ap-ico-tile {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ap-ico-bg);
+    border: 1px solid var(--ap-ico-edge);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.ap-ico-tile i { color: var(--ap-ico) !important; }
+.ap-tint-box { background: var(--ap-ico-bg); border: 1px solid var(--ap-ico-edge); }
+
+/* ---------- SIDEBAR ------------------------------------------------------ */
+#admin-portal-modal aside { scrollbar-width: none; }
+#admin-portal-modal aside::-webkit-scrollbar { display: none; }
+#admin-portal-modal .admin-menu-btn {
+    display: flex; align-items: center; gap: 10px;
+    flex: 0 0 auto; width: auto;
+    padding: 7px 12px 7px 8px !important;
+    font-size: 12px; font-weight: 600;
+    color: var(--ap-text-muted) !important;
+    border-radius: 14px !important;
+}
+#admin-portal-modal .admin-menu-btn::before { display: none; }
+#admin-portal-modal .admin-menu-btn:hover {
+    background: var(--ap-surface-hover) !important;
+    color: var(--ap-text-heading) !important;
+    transform: none;
+}
+#admin-portal-modal .admin-menu-btn:hover .ap-ico { background: rgba(26, 115, 232, 0.18); }
+#admin-portal-modal .admin-menu-btn.active {
+    background: var(--ap-grad) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+    box-shadow: var(--ap-grad-shadow);
+}
+#admin-portal-modal .admin-menu-btn.active .ap-ico { background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.34); box-shadow: none; }
+#admin-portal-modal .admin-menu-btn.active .ap-ico i { color: #fff !important; }
+#admin-portal-modal .notification-badge { top: 50%; right: 8px; transform: translateY(-50%); }
+@media (min-width: 1024px) {
+    #admin-portal-modal .admin-menu-btn { width: 100%; }
+    #admin-portal-modal aside { border-radius: 0 24px 24px 0; margin: 12px 0; }
+}
+
+/* ---------- GLASS SURFACES (one recipe) ---------------------------------- */
+#admin-portal-modal :is(.admin-panel, .admin-stat-card, .settings-section-card, .stat-metric-card, .category-pill-card) {
+    background: var(--ap-glass-bg) !important;
+    border: 1px solid var(--ap-glass-border) !important;
+    border-radius: 22px !important;
+    -webkit-backdrop-filter: var(--ap-glass-blur) !important;
+    backdrop-filter: var(--ap-glass-blur) !important;
+    box-shadow: var(--ap-glass-shadow), var(--ap-glass-inner-glow) !important;
+}
+#admin-portal-modal .admin-panel:hover { transform: none; }          /* no jumping tables / forms */
+#admin-portal-modal .admin-page-header {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 16px 20px; margin-bottom: 20px;
+    background: var(--ap-glass-bg); border: 1px solid var(--ap-glass-border); border-radius: 22px;
+    -webkit-backdrop-filter: var(--ap-glass-blur); backdrop-filter: var(--ap-glass-blur);
+    box-shadow: var(--ap-glass-shadow), var(--ap-glass-inner-glow);
+}
+
+/* stat cards: one accent, not four */
+.admin-stat-card::after { background: var(--ap-grad) !important; }
+.admin-stat-icon {
+    background: var(--ap-ico-bg) !important;
+    color: var(--ap-ico) !important;
+    border: 1px solid var(--ap-ico-edge);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+}
+/* panel titles + quick actions use the same tile */
+.admin-panel-title i {
+    display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 9px;
+    background: var(--ap-ico-bg); border: 1px solid var(--ap-ico-edge);
+    color: var(--ap-ico) !important; font-size: 12px;
+}
+.quick-action-btn i {
+    display: grid; place-items: center; width: 46px; height: 46px; border-radius: 15px;
+    background: var(--ap-ico-bg); border: 1px solid var(--ap-ico-edge);
+    color: var(--ap-ico) !important; font-size: 18px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+}
+.quick-action-btn:hover i { background: var(--ap-grad); border-color: transparent; color: #fff !important; transform: scale(1.06); }
+.quick-action-btn span { text-transform: none; letter-spacing: 0; font-size: 11px; font-weight: 600; }
+
+/* ---------- BUTTONS (neutralise the public-site .btn-primary) ------------ */
+:is(#admin-portal-modal, #admin-dynamic-modal) .btn-primary {
+    text-transform: none; letter-spacing: 0; font-weight: 600; min-height: 40px;
+    border-radius: 12px; justify-content: center;
+    background: var(--ap-grad) !important; box-shadow: var(--ap-grad-shadow);
+}
+:is(#admin-portal-modal, #admin-dynamic-modal) .btn-primary::before { display: none; }
+:is(#admin-portal-modal, #admin-dynamic-modal) .btn-secondary { min-height: 40px; border-radius: 12px; font-weight: 600; justify-content: center; }
+:is(#admin-portal-modal, #admin-dynamic-modal) .btn-danger { min-height: 40px; border-radius: 12px; font-weight: 600; justify-content: center; }
+:is(#admin-portal-modal, #admin-dynamic-modal) :is(.btn-primary, .btn-secondary, .btn-danger):disabled { opacity: .55; cursor: not-allowed; transform: none; }
+/* row actions: identical glass icon buttons; only delete carries a red hint */
+.admin-data-table :is(.btn-primary, .btn-secondary).btn-xs {
+    min-height: 30px; min-width: 30px; padding: 0 9px !important; border-radius: 10px !important; justify-content: center;
+    background: var(--ap-ico-bg) !important; color: var(--ap-ico) !important;
+    border: 1px solid var(--ap-ico-edge) !important; box-shadow: none !important;
+}
+.admin-data-table :is(.btn-primary, .btn-secondary).btn-xs:hover { background: var(--ap-grad) !important; color: #fff !important; border-color: transparent !important; }
+.admin-data-table .btn-danger.btn-xs {
+    min-height: 30px; min-width: 30px; padding: 0 9px !important; border-radius: 10px !important; justify-content: center;
+    background: rgba(220, 38, 38, 0.10) !important; color: var(--ap-icon-danger) !important;
+    border: 1px solid rgba(220, 38, 38, 0.22) !important; box-shadow: none !important;
+}
+.admin-data-table .btn-danger.btn-xs:hover { background: var(--ap-icon-danger) !important; color: #fff !important; }
+
+/* ---------- FORMS (portal + modals) -------------------------------------- */
+:is(#admin-portal-modal, #admin-dynamic-modal) :is(.admin-form-input, .settings-input,
+    input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):not([type=range]), select, textarea) {
+    width: 100%; min-height: 42px; padding: 10px 14px; font-size: 13px; border-radius: 12px;
+    color: var(--ap-text-heading); background: var(--ap-field-bg); border: 1px solid var(--ap-field-line);
+    transition: border-color .15s, box-shadow .15s, background .15s;
+}
+:is(#admin-portal-modal, #admin-dynamic-modal) textarea { min-height: 84px; resize: vertical; }
+:is(#admin-portal-modal, #admin-dynamic-modal) :is(.admin-form-input, .settings-input, input, select, textarea):focus {
+    outline: none; border-color: #1a73e8; box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.16);
+}
+:is(#admin-portal-modal, #admin-dynamic-modal) select option { background: #fff; color: #0f172a; }
+.dark :is(#admin-portal-modal, #admin-dynamic-modal) select option { background: #0c1225; color: #f1f5f9; }
+:is(#admin-portal-modal, #admin-dynamic-modal) :is(.admin-form-label, .settings-label) {
+    display: block; margin-bottom: 6px; font-size: 11px; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--ap-text-muted);
+}
+:is(#admin-portal-modal, #admin-dynamic-modal) .admin-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 0 16px; }
+:is(#admin-portal-modal, #admin-dynamic-modal) .admin-form-grid .full-width { grid-column: 1 / -1; }
+.settings-hint { font-size: 11px; color: var(--ap-text-faint); margin-top: 4px; }
+
+/* ---------- MODALS (appended to <body>) ---------------------------------- */
+#admin-dynamic-modal > div:nth-child(2) {
+    background: var(--ap-glass-bg-heavy) !important;
+    border: 1px solid var(--ap-glass-border) !important;
+    border-radius: 26px !important;
+    -webkit-backdrop-filter: var(--ap-glass-blur-heavy) !important;
+    backdrop-filter: var(--ap-glass-blur-heavy) !important;
+    box-shadow: 0 30px 80px rgba(8, 20, 60, 0.35), var(--ap-glass-inner-glow) !important;
+}
+.dark #admin-dynamic-modal > div:nth-child(2) { background: rgba(10, 16, 34, 0.82) !important; }
+#admin-dynamic-modal > div:nth-child(2) > :is(div:first-child, div:last-child:not(:nth-child(2))) { border-color: var(--ap-border-default) !important; }
+#admin-dynamic-modal { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 16px; }
+#admin-dynamic-modal h3 { color: var(--ap-text-heading); }
+#admin-dynamic-modal { animation: apModalIn .22s var(--ap-ease-out); }
+@keyframes apModalIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- WIZARD PAGES (events + reports) ------------------------------ */
+.wizard-page, .report-wizard-page { animation: apPageIn .25s var(--ap-ease-out); }
+.wizard-page.hidden, .report-wizard-page.hidden { display: none; }
+@keyframes apPageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.wizard-step { min-width: 80px; }
+.wizard-circle-event { transition: all .2s ease; }
+.wizard-line-event { transition: background .3s ease; }
+
+/* ---------- SETTINGS ------------------------------------------------------ */
+.settings-tabs {
+    display: flex; gap: 8px; margin: 0 0 20px; padding: 8px; border-radius: 20px; overflow-x: auto; scrollbar-width: none;
+    background: var(--ap-glass-bg); border: 1px solid var(--ap-glass-border);
+    -webkit-backdrop-filter: var(--ap-glass-blur); backdrop-filter: var(--ap-glass-blur);
+}
+.settings-tabs::-webkit-scrollbar { display: none; }
+.settings-tab-btn {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 8px; padding: 10px 16px; min-height: 40px; border-radius: 14px;
+    font-size: 12px; font-weight: 600; white-space: nowrap; color: var(--ap-text-muted); background: transparent; border: 1px solid transparent; cursor: pointer;
+    transition: background .2s, color .2s, box-shadow .2s;
+}
+.settings-tab-btn i { color: var(--ap-ico); }
+.settings-tab-btn:hover { background: var(--ap-surface-hover); color: var(--ap-text-heading); }
+.settings-tab-btn.active { background: var(--ap-grad); color: #fff; box-shadow: var(--ap-grad-shadow); }
+.settings-tab-btn.active i { color: #fff; }
+@media (min-width: 1024px) { .settings-tabs { flex-wrap: wrap; overflow: visible; } }
+.settings-section-card { padding: clamp(16px, 2.6vw, 28px); margin-bottom: 20px; }
+.section-sticky-header { position: static; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; background: transparent; }
+.logo-preview-box {
+    width: 100%; height: 90px; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px;
+    border-radius: 14px; background: var(--ap-ico-bg); border: 1px dashed var(--ap-ico-edge);
+}
+.logo-preview-box img { max-height: 100%; max-width: 100%; object-fit: contain; }
+.color-swatch { width: 36px; height: 36px; border-radius: 10px; cursor: pointer; border: 2px solid rgba(255,255,255,.6); box-shadow: 0 4px 12px rgba(0,0,0,.10); transition: transform .2s; }
+.color-swatch:hover { transform: scale(1.1); }
+.save-pulse-btn { position: relative; overflow: hidden; }
+
+/* ---------- TREASURY (was injected from treasury.js) ---------------------- */
+.treasury-tab-btn {
+    padding: 10px 18px; border-radius: 14px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer;
+    color: var(--ap-text-muted); background: var(--ap-glass-bg); border: 1px solid var(--ap-glass-border);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); transition: all .2s;
+}
+.treasury-tab-btn:hover { color: var(--ap-text-heading); border-color: var(--ap-ico-edge); }
+.treasury-tab-btn.active { background: var(--ap-grad); color: #fff; border-color: transparent; box-shadow: var(--ap-grad-shadow); }
+.stat-metric-card { position: relative; padding: 24px; overflow: hidden; }
+.stat-metric-card::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .6; background: var(--metric-gradient, linear-gradient(135deg, rgba(26,115,232,.06), transparent)); }
+.stat-metric-card > * { position: relative; z-index: 1; }
+.category-pill-card { padding: 20px; transition: transform .2s, box-shadow .2s; }
+.category-pill-card:hover { transform: translateY(-2px); }
+.chart-bar { position: relative; min-width: 32px; border-radius: 8px 8px 0 0; transition: all .4s ease; cursor: pointer; }
+.chart-bar:hover { opacity: .85; transform: scaleY(1.02); }
+.chart-bar .bar-tooltip {
+    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); padding: 6px 10px; border-radius: 8px;
+    background: #0f172a; color: #fff; font-size: 10px; font-weight: 700; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.chart-bar:hover .bar-tooltip { opacity: 1; }
+.transaction-row-income td:first-child { box-shadow: inset 3px 0 0 var(--ap-icon-success); }
+.transaction-row-expense td:first-child { box-shadow: inset 3px 0 0 var(--ap-icon-danger); }
+.budget-progress-bar { width: 100%; height: 8px; border-radius: 9999px; overflow: hidden; background: var(--ap-border-default); }
+.budget-progress-fill { height: 100%; border-radius: 9999px; transition: width .5s ease; }
+.budget-progress-fill.safe { background: linear-gradient(90deg, #22c55e, #16a34a); }
+.budget-progress-fill.warning { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.budget-progress-fill.danger { background: linear-gradient(90deg, #ef4444, #dc2626); }
+.cell-action-btn {
+    padding: 6px 8px; border-radius: 9px; font-size: 11px; cursor: pointer; color: var(--ap-ico);
+    background: transparent; border: 1px solid transparent; transition: all .15s;
+}
+.cell-action-btn:hover { background: var(--ap-ico-bg); border-color: var(--ap-ico-edge); }
+.cell-action-btn.danger { color: var(--ap-icon-danger); }
+.cell-action-btn.danger:hover { background: rgba(220,38,38,.10); border-color: rgba(220,38,38,.22); }
+
+/* ---------- TABLES / MISC ------------------------------------------------- */
+#admin-portal-modal main { min-width: 0; }
+#admin-portal-modal :is(.overflow-x-auto, .admin-table-wrap) { max-width: 100%; -webkit-overflow-scrolling: touch; }
+#admin-portal-modal .admin-data-table th { background: var(--ap-glass-bg-light); }
+.empty-state-icon { color: var(--ap-ico); opacity: .85; }
+
+/* ---------- MOBILE -------------------------------------------------------- */
+@media (max-width: 640px) {
+    #admin-portal-modal main { padding: 14px; }
+    #admin-portal-modal header { padding-inline: 14px; }
+    #admin-portal-modal .admin-page-header { padding: 14px; }
+    :is(#admin-portal-modal, #admin-dynamic-modal) :is(.admin-form-input, .settings-input, input, select, textarea) { font-size: 16px; }
+    #admin-portal-modal .admin-page-header > .btn-primary { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #admin-dynamic-modal, .wizard-page, .report-wizard-page { animation: none; }
+}
+
+/* ==========================================================================
+   UNITY ADMIN : PREMIUM GLASS v12
+   Frosted layers with a specular top light, inner rim, soft depth and fine
+   grain.  Applies to the portal and to modals appended to <body>.
+   Icons come from the self-contained icon system in css/styles.css.
+   ========================================================================== */
+:root {
+    --apg-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.62) 0, rgba(255, 255, 255, 0) 42%);
+    --apg-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --apg-fill: linear-gradient(145deg, rgba(255, 255, 255, 0.74) 0%, rgba(255, 255, 255, 0.46) 55%, rgba(236, 243, 255, 0.52) 100%);
+    --apg-fill-strong: linear-gradient(145deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.72) 100%);
+    --apg-edge: rgba(255, 255, 255, 0.88);
+    --apg-hair: rgba(15, 35, 90, 0.08);
+    --apg-blur: blur(30px) saturate(190%);
+    --apg-blur-sm: blur(16px) saturate(170%);
+    --apg-shadow: 0 1px 0 rgba(255, 255, 255, 0.95) inset, 0 -1px 0 rgba(255, 255, 255, 0.2) inset, 0 0 0 1px rgba(20, 60, 160, 0.045), 0 2px 4px rgba(15, 35, 80, 0.04), 0 14px 30px -12px rgba(15, 35, 80, 0.16), 0 36px 64px -32px rgba(15, 35, 80, 0.22);
+    --apg-shadow-hover: 0 1px 0 rgba(255, 255, 255, 1) inset, 0 0 0 1px rgba(26, 115, 232, 0.16), 0 4px 8px rgba(15, 35, 80, 0.05), 0 22px 40px -14px rgba(26, 80, 200, 0.28), 0 48px 80px -36px rgba(15, 35, 80, 0.3);
+    --apg-shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 0 0 1px rgba(20, 60, 160, 0.04), 0 8px 18px -10px rgba(15, 35, 80, 0.18);
+    --apg-brand: linear-gradient(135deg, #1a73e8 0%, #5b4bf0 52%, #7c3aed 100%);
+    --apg-brand-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset, 0 -8px 16px rgba(40, 20, 140, 0.2) inset, 0 12px 26px -8px rgba(76, 70, 235, 0.55);
+}
+.dark {
+    --apg-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0, rgba(255, 255, 255, 0) 38%);
+    --apg-fill: linear-gradient(145deg, rgba(30, 44, 80, 0.60) 0%, rgba(16, 26, 52, 0.50) 55%, rgba(24, 18, 52, 0.54) 100%);
+    --apg-fill-strong: linear-gradient(145deg, rgba(24, 36, 68, 0.90) 0%, rgba(12, 20, 42, 0.84) 100%);
+    --apg-edge: rgba(255, 255, 255, 0.13);
+    --apg-hair: rgba(255, 255, 255, 0.07);
+    --apg-shadow: 0 1px 0 rgba(255, 255, 255, 0.14) inset, 0 -1px 0 rgba(0, 0, 0, 0.3) inset, 0 0 0 1px rgba(0, 0, 0, 0.28), 0 2px 4px rgba(0, 0, 0, 0.25), 0 16px 34px -12px rgba(0, 0, 0, 0.55), 0 40px 70px -34px rgba(0, 0, 0, 0.7);
+    --apg-shadow-hover: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 0 0 1px rgba(96, 165, 250, 0.3), 0 4px 8px rgba(0, 0, 0, 0.3), 0 24px 46px -14px rgba(26, 115, 232, 0.35), 0 52px 90px -38px rgba(0, 0, 0, 0.75);
+    --apg-shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.1) inset, 0 0 0 1px rgba(0, 0, 0, 0.22), 0 10px 22px -10px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- shell: aurora + grain ---------- */
+#admin-portal-modal {
+    background:
+        radial-gradient(60rem 44rem at 6% -6%, rgba(26, 115, 232, 0.20), transparent 62%),
+        radial-gradient(50rem 40rem at 100% 8%, rgba(124, 58, 237, 0.15), transparent 64%),
+        radial-gradient(48rem 38rem at 52% 112%, rgba(6, 182, 212, 0.13), transparent 62%),
+        linear-gradient(160deg, #f1f5ff 0%, #e6edfb 55%, #efe9fb 100%) !important;
+}
+.dark #admin-portal-modal {
+    background:
+        radial-gradient(60rem 44rem at 6% -6%, rgba(26, 115, 232, 0.26), transparent 62%),
+        radial-gradient(50rem 40rem at 100% 8%, rgba(124, 58, 237, 0.20), transparent 64%),
+        radial-gradient(48rem 38rem at 52% 112%, rgba(6, 182, 212, 0.10), transparent 62%),
+        linear-gradient(160deg, #040a1a 0%, #08142b 55%, #0c0b22 100%) !important;
+}
+#admin-portal-modal::before { position: fixed; }
+#admin-portal-modal::after {
+    content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: var(--apg-grain); opacity: 0.5; mix-blend-mode: soft-light;
+}
+
+/* ---------- header + sidebar ---------- */
+#admin-portal-modal > header {
+    background: var(--apg-sheen), var(--apg-fill-strong) !important;
+    -webkit-backdrop-filter: var(--apg-blur) !important; backdrop-filter: var(--apg-blur) !important;
+    border-bottom: 1px solid var(--apg-edge) !important;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 12px 30px -16px rgba(15, 35, 80, 0.3) !important;
+}
+.dark #admin-portal-modal > header { box-shadow: 0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 14px 34px -16px rgba(0, 0, 0, 0.7) !important; }
+#admin-portal-modal aside {
+    background: var(--apg-sheen), var(--apg-grain), var(--apg-fill) !important;
+    -webkit-backdrop-filter: var(--apg-blur) !important; backdrop-filter: var(--apg-blur) !important;
+    border-right: 1px solid var(--apg-edge) !important;
+    box-shadow: 1px 0 0 rgba(255, 255, 255, 0.5) inset, 18px 0 40px -28px rgba(15, 35, 80, 0.35) !important;
+}
+@media (min-width: 1024px) {
+    #admin-portal-modal aside { border: 1px solid var(--apg-edge) !important; box-shadow: var(--apg-shadow) !important; }
+}
+#admin-portal-modal .admin-menu-btn.active {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0) 52%), var(--apg-brand) !important;
+    border: 1px solid rgba(255, 255, 255, 0.38) !important;
+    box-shadow: var(--apg-brand-shadow) !important;
+}
+
+/* ---------- one premium icon tile ---------- */
+.ap-ico {
+    width: 32px; height: 32px; border-radius: 11px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 70%), var(--ap-ico-bg);
+    border: 1px solid var(--ap-ico-edge);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 4px 10px -4px rgba(26, 115, 232, 0.35);
+}
+.dark .ap-ico { background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 70%), var(--ap-ico-bg); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) inset, 0 4px 10px -4px rgba(0, 0, 0, 0.5); }
+.ap-ico i { font-size: 14px; }
+.admin-stat-icon, .quick-action-btn i, .admin-panel-title i {
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 70%), var(--ap-ico-bg) !important;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 6px 14px -6px rgba(26, 115, 232, 0.4);
+}
+.dark .admin-stat-icon, .dark .quick-action-btn i, .dark .admin-panel-title i {
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 70%), var(--ap-ico-bg) !important;
+}
+.quick-action-btn:hover i { background: var(--apg-brand) !important; box-shadow: var(--apg-brand-shadow); }
+
+/* ---------- glass surfaces ---------- */
+#admin-portal-modal :is(.admin-panel, .admin-stat-card, .settings-section-card, .stat-metric-card, .category-pill-card, .admin-page-header, .settings-tabs, .bulletin-admin-card, .blood-request-card, .attendance-row) {
+    background: var(--apg-sheen), var(--apg-grain), var(--apg-fill) !important;
+    -webkit-backdrop-filter: var(--apg-blur) !important; backdrop-filter: var(--apg-blur) !important;
+    border: 1px solid var(--apg-edge) !important;
+    box-shadow: var(--apg-shadow) !important;
+}
+#admin-portal-modal .blood-request-card { border-left: 4px solid var(--ap-icon-danger) !important; }
+#admin-portal-modal .blood-request-card.urgent { border-left-color: var(--ap-icon-warning) !important; }
+#admin-portal-modal .blood-request-card.normal { border-left-color: var(--ap-icon-success) !important; }
+#admin-portal-modal :is(.admin-stat-card, .category-pill-card, .bulletin-admin-card):hover {
+    box-shadow: var(--apg-shadow-hover) !important; transform: translateY(-3px);
+}
+#admin-portal-modal .admin-panel:hover { transform: none; box-shadow: var(--apg-shadow) !important; }
+#admin-portal-modal .attendance-row { border-radius: 16px !important; }
+#admin-portal-modal .attendance-row:hover { box-shadow: var(--apg-shadow-hover) !important; }
+#admin-portal-modal .admin-stat-value { letter-spacing: -0.02em; }
+
+/* ---------- tables ---------- */
+#admin-portal-modal .admin-data-table { border-collapse: separate; border-spacing: 0; }
+#admin-portal-modal .admin-data-table th {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.15));
+    -webkit-backdrop-filter: var(--apg-blur-sm); backdrop-filter: var(--apg-blur-sm);
+    border-bottom: 1px solid var(--apg-hair);
+}
+.dark #admin-portal-modal .admin-data-table th { background: rgba(255, 255, 255, 0.04); }
+#admin-portal-modal .admin-data-table tbody tr { transition: background 0.2s, box-shadow 0.2s; }
+#admin-portal-modal .admin-data-table tbody tr:hover { background: linear-gradient(90deg, rgba(26, 115, 232, 0.07), rgba(124, 58, 237, 0.04)); }
+#admin-portal-modal .admin-data-table td { border-bottom: 1px solid var(--apg-hair); }
+
+/* ---------- fields ---------- */
+:is(#admin-portal-modal, #admin-dynamic-modal) :is(.admin-form-input, .settings-input, input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):not([type=range]), select, textarea) {
+    background-color: rgba(255, 255, 255, 0.58);
+    border: 1px solid var(--apg-edge);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 1px 3px rgba(15, 35, 80, 0.07), 0 -1px 0 rgba(15, 35, 80, 0.03) inset;
+    -webkit-backdrop-filter: var(--apg-blur-sm); backdrop-filter: var(--apg-blur-sm);
+}
+.dark :is(#admin-portal-modal, #admin-dynamic-modal) :is(.admin-form-input, .settings-input, input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):not([type=range]), select, textarea) {
+    background-color: rgba(255, 255, 255, 0.05); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+:is(#admin-portal-modal, #admin-dynamic-modal) :is(.admin-form-input, .settings-input, input, select, textarea):focus {
+    border-color: rgba(26, 115, 232, 0.65); box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.16), 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+}
+
+/* ---------- buttons ---------- */
+:is(#admin-portal-modal, #admin-dynamic-modal) .btn-primary {
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 52%), var(--apg-brand) !important;
+    box-shadow: var(--apg-brand-shadow);
+}
+:is(#admin-portal-modal, #admin-dynamic-modal) .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 -8px 16px rgba(40, 20, 140, 0.2) inset, 0 20px 36px -10px rgba(76, 70, 235, 0.65); }
+:is(#admin-portal-modal, #admin-dynamic-modal) .btn-secondary {
+    background: var(--apg-sheen), var(--apg-fill); border: 1px solid var(--apg-edge); box-shadow: var(--apg-shadow-sm);
+    -webkit-backdrop-filter: var(--apg-blur-sm); backdrop-filter: var(--apg-blur-sm);
+}
+:is(#admin-portal-modal, #admin-dynamic-modal) .btn-secondary:hover:not(:disabled) { box-shadow: var(--apg-shadow-hover); }
+:is(#admin-portal-modal, #admin-dynamic-modal) .btn-danger {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 52%), linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 12px 24px -8px rgba(220, 38, 38, 0.55);
+}
+
+/* ---------- modals ---------- */
+#admin-dynamic-modal > div:first-child {
+    background: radial-gradient(60rem 40rem at 50% 0%, rgba(26, 115, 232, 0.16), transparent 70%), rgba(6, 12, 30, 0.5) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(140%) !important; backdrop-filter: blur(16px) saturate(140%) !important;
+}
+#admin-dynamic-modal > div:nth-child(2) {
+    background: var(--apg-sheen), var(--apg-grain), var(--apg-fill-strong) !important;
+    -webkit-backdrop-filter: blur(36px) saturate(200%) !important; backdrop-filter: blur(36px) saturate(200%) !important;
+    border: 1px solid var(--apg-edge) !important; border-radius: 30px !important;
+    box-shadow: var(--apg-shadow), 0 70px 130px -30px rgba(8, 20, 60, 0.5) !important;
+}
+
+/* ---------- tabs, pagination, toggles ---------- */
+.settings-tab-btn.active, .treasury-tab-btn.active, .avenue-tab-btn.active {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0) 52%), var(--apg-brand) !important;
+    box-shadow: var(--apg-brand-shadow) !important;
+}
+.treasury-tab-btn { background: var(--apg-sheen), var(--apg-fill); border: 1px solid var(--apg-edge); box-shadow: var(--apg-shadow-sm); }
+.admin-pagination-btn { background: var(--apg-fill); border: 1px solid var(--apg-edge); box-shadow: var(--apg-shadow-sm); -webkit-backdrop-filter: var(--apg-blur-sm); backdrop-filter: var(--apg-blur-sm); }
+.admin-pagination-btn.active { background: var(--apg-brand); color: #fff; border-color: rgba(255, 255, 255, 0.4); box-shadow: var(--apg-brand-shadow); }
+.admin-toggle-track { box-shadow: 0 2px 5px rgba(15, 35, 80, 0.18) inset; }
+.admin-toggle input:checked + .admin-toggle-track { background: var(--apg-brand); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset, 0 6px 14px -4px rgba(76, 70, 235, 0.55); }
+.admin-toggle-track::after { box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 3px 8px rgba(15, 35, 80, 0.3); }
+
+/* ---------- uploads, badges, skeleton ---------- */
+.admin-upload-zone { background: var(--apg-sheen), var(--apg-fill); border: 1.5px dashed var(--ap-ico-edge); -webkit-backdrop-filter: var(--apg-blur-sm); backdrop-filter: var(--apg-blur-sm); }
+.admin-upload-zone:hover { box-shadow: var(--apg-shadow-hover); }
+.status-badge, .badge { border: 1px solid rgba(255, 255, 255, 0.55); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset; }
+
+/* ---------- scrollbars ---------- */
+#admin-portal-modal ::-webkit-scrollbar { width: 8px; height: 8px; }
+#admin-portal-modal ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.35); border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+#admin-portal-modal ::-webkit-scrollbar-thumb:hover { background: rgba(26, 115, 232, 0.6); background-clip: padding-box; }
+
+/* ---------- fallbacks ---------- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    #admin-portal-modal :is(.admin-panel, .admin-stat-card, .settings-section-card, .stat-metric-card, .category-pill-card, .admin-page-header, .settings-tabs, aside, > header) { background: var(--bg-card-solid, #fff) !important; }
+    .dark #admin-portal-modal :is(.admin-panel, .admin-stat-card, .settings-section-card, aside, > header) { background: #0c1225 !important; }
+}
+@media (max-width: 640px) {
+    :root { --apg-blur: blur(20px) saturate(170%); }
+    #admin-portal-modal::before { animation: none; }
+}
+@media (prefers-reduced-motion: reduce) { #admin-portal-modal::before { animation: none; } }
+@media print { #admin-portal-modal::after { display: none; } }
+/* ==========================  END OF ADMIN STYLESHEET v12  =============== */
