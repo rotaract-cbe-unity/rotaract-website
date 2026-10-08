@@ -467,7 +467,9 @@
 <script>
     const SUPABASE_URL = 'https://sbpwmkoxuokrscddhhuw.supabase.co';
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNicHdta294dW9rcnNjZGRoaHV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwNTI1MDksImV4cCI6MjEwNjYyODUwOX0.s6-r3bywFii-ZcMowwjZnI1WtrpluJ5MQ1_UJJFcDQU';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
 
     const urlParams = new URLSearchParams(window.location.search);
     const meetingId = urlParams.get('meeting');
@@ -502,7 +504,12 @@
             return;
         }
         try {
-            const { data: meeting, error } = await sb.from('meetings').select('*').eq('id', meetingId).single();
+            const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Request timed out. Check your connection and refresh.')), 15000));
+            const { data: meeting, error } = await Promise.race([
+                sb.from('meetings').select('*').eq('id', meetingId).single(),
+                timeout
+            ]);
+            if (error) console.error('Meeting fetch error:', error);
             if (error || !meeting) { showError('Meeting Not Found', 'This meeting does not exist or has been removed.'); return; }
             if (meeting.status === 'cancelled') { showError('Meeting Cancelled', 'This meeting has been cancelled.'); return; }
             currentMeeting = meeting;
