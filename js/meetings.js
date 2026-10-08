@@ -40,7 +40,10 @@
         const text = await resp.text();
         let result;
         try { result = JSON.parse(text); }
-        catch (e) { throw new Error('Mail service gave an unexpected reply. Check the Apps Script deployment is "Execute as: Me" and "Who has access: Anyone".'); }
+        catch (e) {
+            console.error('Mail service raw reply (HTTP ' + resp.status + '):', text.slice(0, 500));
+            throw new Error('Mail service gave an unexpected reply (HTTP ' + resp.status + '). In Apps Script open Executions to see the real error, and make sure the deployment is the latest version, Execute as: Me, Who has access: Anyone.');
+        }
         if (!result.success) throw new Error(result.error || 'Mail service reported a failure');
         return result;
     }
