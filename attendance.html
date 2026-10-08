@@ -504,13 +504,21 @@
             return;
         }
         try {
+            if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(meetingId)) {
+                showError('Invalid Meeting Link', 'This attendance link is not valid. Please use the link from your email.');
+                return;
+            }
             const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Request timed out. Check your connection and refresh.')), 15000));
             const { data: meeting, error } = await Promise.race([
-                sb.from('meetings').select('*').eq('id', meetingId).single(),
+                sb.rpc('get_attendance_meeting', { p_meeting_id: meetingId }),
                 timeout
             ]);
-            if (error) console.error('Meeting fetch error:', error);
-            if (error || !meeting) { showError('Meeting Not Found', 'This meeting does not exist or has been removed.'); return; }
+            if (error) {
+                console.error('Meeting fetch error:', error.message, '| code:', error.code, '| details:', error.details, '| hint:', error.hint);
+                showError('Loading Error', error.message || 'Could not load the meeting. Please try again.');
+                return;
+            }
+            if (!meeting) { showError('Meeting Not Found', 'This meeting does not exist or has been removed.'); return; }
             if (meeting.status === 'cancelled') { showError('Meeting Cancelled', 'This meeting has been cancelled.'); return; }
             currentMeeting = meeting;
             loadMembers();
@@ -531,8 +539,8 @@
 
     async function loadMembers() {
         try {
-            const { data } = await sb.from('users').select('full_name, ri_id, portfolio, role').eq('is_active', true);
-            allMembers = data || [];
+            const { data } = await sb.rpc('get_attendance_members', { p_meeting_id: meetingId });
+            allMembers = Array.isArray(data) ? data : [];
         } catch (e) {}
     }
 
@@ -799,7 +807,7 @@
                     signature_provider: 'supabase'
                 };
 
-                const { error } = await sb.from('meeting_attendance').insert(payload);
+                const { error } = await sb.rpc('submit_meeting_attendance', { p_payload: payload });
                 if (error) throw error;
 
                 submissionResult = payload;
