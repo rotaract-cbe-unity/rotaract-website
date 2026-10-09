@@ -57,13 +57,29 @@
         });
     }
 
-    async function getMemberRecipients() {
+    // Member / board mails go to the group addresses saved in Admin > Settings
+    // (mail_group_members / mail_group_board), as ONE message per group.
+    async function getGroupRecipients(type) {
+        const isBoard = type === 'board';
         try {
-            if (window.getEmailRecipients) return (await window.getEmailRecipients('all_members')) || [];
+            if (window.getEmailRecipients) {
+                const list = (await window.getEmailRecipients(isBoard ? 'board' : 'all_members')) || [];
+                if (list.length) return list;
+            }
             const db = window.DB_ADMIN || window.DB || window.supabaseClient;
-            const { data } = await db.from('users').select('email').eq('is_active', true).neq('role', 'super_admin').not('email', 'is', null);
-            return (data || []).map(u => u.email).filter(e => e && e.includes('@'));
-        } catch (e) { console.warn('Recipient fetch failed:', e); return []; }
+            const { data } = await db.from('system_settings').select('value').eq('key', isBoard ? 'mail_group_board' : 'mail_group_members').maybeSingle();
+            const v = String(data?.value || '').trim();
+            if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return [v];
+        } catch (e) { console.warn('Mail group lookup failed:', e); }
+        return [isBoard ? 'eternals26-27@googlegroups.com' : 'rotaractunity@googlegroups.com'];
+    }
+
+    function groupLabel(type) {
+        return type === 'board' ? 'Board Members Group' : 'All Members Group';
+    }
+
+    async function getMemberRecipients() {
+        return getGroupRecipients('all_members');
     }
 
     function currentSender() {
@@ -648,14 +664,7 @@
                 let recipients = [];
 
                 try {
-                    if (window.getEmailRecipients) {
-                        recipients = await window.getEmailRecipients(recipientType);
-                    } else {
-                        let query = window.DB_ADMIN.from('users').select('email, full_name').eq('is_active', true).neq('role', 'super_admin').not('email', 'is', null);
-                        if (recipientType === 'board') query = query.eq('is_board_member', true);
-                        const { data } = await query;
-                        recipients = (data || []).map(u => u.email).filter(e => e && e.includes('@'));
-                    }
+                    recipients = await getGroupRecipients(recipientType);
                 } catch (e) { console.warn('Recipient fetch failed:', e); }
 
                 if (recipients.length === 0) { window.AppToast?.warning('No recipients found.'); return; }
@@ -696,7 +705,7 @@
                     if (result.success) {
                         if (logEntry) await window.DB_ADMIN.from('email_log').update({ status: 'sent', sent_at: new Date().toISOString() }).eq('id', logEntry.id);
                         await window.DB_ADMIN.from('meetings').update({ invitation_sent: true, invitation_sent_at: new Date().toISOString() }).eq('id', meetingId);
-                        window.AppToast?.success(`✅ Invitation sent to ${recipients.length} recipients.`);
+                        window.AppToast?.success(`✅ Invitation sent to the ${groupLabel(recipientType)} (${recipients.join(', ')}).`);
                     } else { throw new Error(result.error || 'Send failed'); }
                 } catch (sendErr) {
                     if (logEntry) await window.DB_ADMIN.from('email_log').update({ status: 'failed', error_message: sendErr.message }).eq('id', logEntry.id);
@@ -834,14 +843,7 @@
                 let recipients = [];
 
                 try {
-                    if (window.getEmailRecipients) {
-                        recipients = await window.getEmailRecipients(recipientType);
-                    } else {
-                        let query = window.DB_ADMIN.from('users').select('email').eq('is_active', true).neq('role', 'super_admin').not('email', 'is', null);
-                        if (recipientType === 'board') query = query.eq('is_board_member', true);
-                        const { data } = await query;
-                        recipients = (data || []).map(u => u.email).filter(e => e && e.includes('@'));
-                    }
+                    recipients = await getGroupRecipients(recipientType);
                 } catch (e) { console.warn('Recipient fetch failed:', e); }
 
                 if (recipients.length === 0) { window.AppToast?.warning('No recipients found.'); return; }
@@ -874,7 +876,7 @@
                     if (result.success) {
                         if (logEntry) await window.DB_ADMIN.from('email_log').update({ status: 'sent', sent_at: new Date().toISOString() }).eq('id', logEntry.id);
                         await window.DB_ADMIN.from('meetings').update({ attendance_form_sent: true }).eq('id', meetingId);
-                        window.AppToast?.success(`✅ Attendance form sent to ${recipients.length} members!`);
+                        window.AppToast?.success(`✅ Attendance form sent to the ${groupLabel(recipientType)} (${recipients.join(', ')}).`);
                     } else { throw new Error(result.error || 'Send failed'); }
                 } catch (sendErr) {
                     if (logEntry) await window.DB_ADMIN.from('email_log').update({ status: 'failed', error_message: sendErr.message }).eq('id', logEntry.id);
@@ -1079,14 +1081,7 @@
                 const recipientType = meeting.meeting_type === 'board_meeting' ? 'board' : 'all_members';
                 let recipients = [];
                 try {
-                    if (window.getEmailRecipients) {
-                        recipients = await window.getEmailRecipients(recipientType);
-                    } else {
-                        let query = window.DB_ADMIN.from('users').select('email').eq('is_active', true).neq('role', 'super_admin').not('email', 'is', null);
-                        if (recipientType === 'board') query = query.eq('is_board_member', true);
-                        const { data } = await query;
-                        recipients = (data || []).map(u => u.email).filter(e => e && e.includes('@'));
-                    }
+                    recipients = await getGroupRecipients(recipientType);
                 } catch (e) { console.warn('Recipient fetch failed:', e); }
                 if (recipients.length === 0) { window.AppToast?.warning('No recipients found.'); return; }
 
@@ -1137,7 +1132,7 @@
                         sender: { role: sender.role, name: sender.full_name || sender.name, email: sender.email }
                     });
                     if (logEntry) await window.DB_ADMIN.from('email_log').update({ status: 'sent', sent_at: new Date().toISOString() }).eq('id', logEntry.id);
-                    window.AppToast?.success(`✅ Minutes emailed to ${result.recipients_count || recipients.length} recipients.`);
+                    window.AppToast?.success(`✅ Minutes emailed to the ${groupLabel(recipientType)} (${recipients.join(', ')}).`);
                 } catch (sendErr) {
                     if (logEntry) await window.DB_ADMIN.from('email_log').update({ status: 'failed', error_message: sendErr.message }).eq('id', logEntry.id);
                     throw sendErr;
