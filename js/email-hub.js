@@ -551,6 +551,11 @@
 
         async getRecipients(type) {
             try {
+                // Members / Board: ONE mail to the group address saved in Admin > Settings
+                if ((type === 'all_members' || type === 'board') && window.getMailGroups) {
+                    const g = await window.getMailGroups();
+                    return [{ email: type === 'board' ? g.board : g.members, full_name: type === 'board' ? 'Board Members Group' : 'All Members Group' }];
+                }
                 let q = window.DB_ADMIN.from('users').select('email, full_name').eq('is_active', true).neq('role', 'super_admin').not('email', 'is', null);
                 if (type === 'board') q = q.eq('is_board_member', true);
                 else if (type === 'executive') q = q.in('role', ['advisor', 'president', 'ipp', 'vice_president', 'secretary', 'secretary_admin', 'secretary_comm', 'treasurer']);
@@ -671,7 +676,7 @@
                 if (!confirm(
                     `📧 Dispatch Broadcast\n\n` +
                     `Subject: ${subject}\n` +
-                    `Recipients: ${recipientEmails.length}\n` +
+                    `Recipients: ${recipientEmails.length <= 3 ? recipientEmails.join(', ') : recipientEmails.length + ' addresses'}\n` +
                     `Group: ${recipientType}\n\n` +
                     `Proceed with sending?`
                 )) return;
@@ -743,7 +748,7 @@
                             })
                             .eq('id', logEntry.id);
 
-                        window.AppToast?.success(`✅ Broadcast dispatched to ${result.recipients_count || recipientEmails.length} recipients!`);
+                        window.AppToast?.success(`✅ Broadcast sent to ${recipientEmails.length <= 3 ? recipientEmails.join(', ') : recipientEmails.length + ' recipients'}.`);
                     } else {
                         throw new Error(result.error || 'Mail service returned a failure');
                     }
