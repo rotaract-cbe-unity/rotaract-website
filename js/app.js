@@ -1930,6 +1930,31 @@
         return sig;
     }
 
+    /**
+     * Mailing-group addresses saved in Admin > Settings > Email & Automation
+     * (system_settings keys: mail_group_members, mail_group_board).
+     * Member and board mails go to these group addresses, not to every person.
+     */
+    async function getMailGroups() {
+        const defaults = { members: 'rotaractunity@googlegroups.com', board: 'eternals26-27@googlegroups.com' };
+        const valid = (v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v || '');
+        try {
+            const { data } = await supabaseAdmin
+                .from('system_settings')
+                .select('key, value')
+                .in('key', ['mail_group_members', 'mail_group_board']);
+            const map = {};
+            (data || []).forEach(r => { map[r.key] = String(r.value || '').trim(); });
+            return {
+                members: valid(map.mail_group_members) ? map.mail_group_members : defaults.members,
+                board: valid(map.mail_group_board) ? map.mail_group_board : defaults.board
+            };
+        } catch (e) {
+            console.warn('Mail group lookup failed, using defaults:', e);
+            return defaults;
+        }
+    }
+
     async function getEmailRecipients(type) {
         const bearers = await getOfficeBearers();
         const sec = await getSecretaryConfig();
@@ -1947,14 +1972,18 @@
                 [r.president, r.ipp, r.vp].filter(Boolean).forEach(e => emails.push(e));
                 emails = emails.concat(r.secretaries);
                 break;
-            case 'board':
-                const bd = await getBoardMembers();
-                emails = bd.map(b => b.email).filter(Boolean);
+            case 'board': {
+                // One message to the Board Members group address (Settings)
+                const groups = await getMailGroups();
+                emails = [groups.board];
                 break;
-            case 'all_members':
-                const all = await getAllActiveMembers();
-                emails = all.map(m => m.email).filter(Boolean);
+            }
+            case 'all_members': {
+                // One message to the All Members group address (Settings)
+                const groups = await getMailGroups();
+                emails = [groups.members];
                 break;
+            }
             case 'secretariat':
                 emails = r.secretaries;
                 break;
@@ -2265,6 +2294,7 @@
     window.getOfficeBearers = getOfficeBearers;
     window.getReportSignatories = getReportSignatories;
     window.getEmailRecipients = getEmailRecipients;
+    window.getMailGroups = getMailGroups;
     window.getBoardMembers = getBoardMembers;
     window.getAllActiveMembers = getAllActiveMembers;
     window.getYearConfig = getYearConfig;
