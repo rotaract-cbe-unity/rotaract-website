@@ -4,7 +4,7 @@
 // File: js/meetings.js | Version: 10.2.0
 // Features: Authenticated Edge Pipelines (DOCX + PDF)
 // Inline Agenda Builder | Dynamic Email Dispatches | Compact Minutes UI
-// Mail via Apps Script: invitation (+poster, +agenda PDF) | attendance form | minutes (+PDFs, +photos)
+// Mail via Apps Script: invitation (+poster, +agenda PDF) | attendance form | minutes (single combined PDF)
 // ================================================================
 
 (function () {
@@ -350,7 +350,7 @@
                                 <button onclick="AdminMeetings.openMinutesEditor('${m.id}')" class="btn-secondary btn-xs text-brand-purple" title="Log Proceedings Minutes"><i class="fa-solid fa-file-pen"></i></button>
                                 <button onclick="AdminMeetings.openAttendanceEditor('${m.id}')" class="btn-secondary btn-xs text-green-500" title="Attendance Ledger"><i class="fa-solid fa-signature"></i></button>
                                 <button onclick="AdminMeetings.sendAttendanceForm('${m.id}')" class="btn-secondary btn-xs text-cyan-500" title="Email Attendance Form"><i class="fa-solid fa-paper-plane"></i></button>
-                                <button onclick="AdminMeetings.sendMinutesEmail('${m.id}')" class="btn-secondary btn-xs text-purple-500" title="Email Minutes (PDF + attendance + photos)"><i class="fa-solid fa-envelope-open-text"></i></button>
+                                <button onclick="AdminMeetings.sendMinutesEmail('${m.id}')" class="btn-secondary btn-xs text-purple-500" title="Email Minutes (combined meeting PDF)"><i class="fa-solid fa-envelope-open-text"></i></button>
                                 <button onclick="AdminMeetings.showDownloadMenu('${m.id}')" class="btn-secondary btn-xs text-amber-500" title="Download Documents"><i class="fa-solid fa-download"></i></button>
                                 <button onclick="AdminMeetings.deleteMeeting('${m.id}')" class="btn-danger btn-xs" title="Purge Record"><i class="fa-solid fa-trash"></i></button>
                             ` : ''}
@@ -943,7 +943,9 @@
             if (!meeting) return;
 
             this.minutesItems = Array.isArray(meeting.minutes_items) ? [...meeting.minutes_items] : [];
-            this.meetingPhotos = Array.isArray(meeting.meeting_photos) ? [...meeting.meeting_photos] : [];
+            this.meetingPhotos = (Array.isArray(meeting.meeting_photos) ? meeting.meeting_photos : [])
+                .map(p => (typeof p === 'string' ? { url: p, caption: '' } : { ...p, url: p?.url || p?.photo_url || '', caption: p?.caption || '' }))
+                .filter(p => p.url);
 
             window.AdminPanel.createModal({
                 title: 'Record Minutes — ' + meeting.meeting_name,
@@ -974,6 +976,17 @@
                             </button>
                         </div>
                     </div>
+                    <div class="admin-panel mb-5">
+                        <div class="admin-panel-header"><h3 class="admin-panel-title"><i class="fa-solid fa-images"></i> Meeting Photographs</h3></div>
+                        <div class="admin-panel-body">
+                            <div id="meeting-photos-container" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"></div>
+                            <label class="w-full py-3 border-2 border-dashed border-slate-200/80 dark:border-white/[0.08] rounded-xl text-xs font-bold text-slate-500 hover:border-brand-blue hover:text-brand-blue transition-all flex items-center justify-center cursor-pointer">
+                                <input type="file" id="meeting-photo-input" accept="image/*" multiple class="hidden" onchange="AdminMeetings.addMeetingPhotos(this.files); this.value='';">
+                                <i class="fa-solid fa-camera mr-1.5"></i> Attach Photos
+                            </label>
+                            <p class="text-[10px] text-slate-400 mt-2">Up to 8 photos. They appear in the minutes document and in the minutes email.</p>
+                        </div>
+                    </div>
                     <div class="admin-panel">
                         <div class="admin-panel-header"><h3 class="admin-panel-title"><i class="fa-solid fa-shield-check"></i> Sign-off State</h3></div>
                         <div class="admin-panel-body">
@@ -990,7 +1003,7 @@
                 `
             });
 
-            setTimeout(() => this.renderMinutesList(), 100);
+            setTimeout(() => { this.renderMinutesList(); this.renderMeetingPhotos(); }, 100);
         },
 
         renderMinutesList() {
@@ -1035,6 +1048,50 @@
         updateMinutesItem(i, f, v) { if (this.minutesItems[i]) this.minutesItems[i][f] = v; },
         removeMinutesItem(i) { this.minutesItems.splice(i, 1); this.renderMinutesList(); },
 
+        // ---- Meeting photographs (saved to meetings.meeting_photos as [{url, provider, publicId, caption}]) ----
+        renderMeetingPhotos() {
+            const container = document.getElementById('meeting-photos-container');
+            if (!container) return;
+            if (this.meetingPhotos.length === 0) {
+                container.innerHTML = '<p class="col-span-full text-center text-xs text-slate-400 py-6">No photographs attached yet.</p>';
+                return;
+            }
+            container.innerHTML = this.meetingPhotos.map((p, i) => `
+                <div class="relative rounded-xl overflow-hidden border border-slate-200/60 dark:border-white/[0.08] bg-white/40 dark:bg-white/[0.03]">
+                    <img src="${window.AdminPanel.esc(p.url)}" alt="Meeting photo ${i + 1}" class="w-full h-28 object-cover">
+                    <button type="button" onclick="AdminMeetings.removeMeetingPhoto(${i})" title="Remove photo"
+                        class="absolute top-1.5 right-1.5 w-7 h-7 rounded-lg bg-black/60 hover:bg-red-500 text-white flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-trash text-[10px]"></i>
+                    </button>
+                    <input type="text" value="${window.AdminPanel.esc(p.caption || '')}" placeholder="Caption (optional)"
+                        class="w-full px-2.5 py-1.5 text-[11px] bg-transparent border-t border-slate-200/60 dark:border-white/[0.08] focus:outline-none"
+                        onchange="AdminMeetings.updatePhotoCaption(${i}, this.value)">
+                </div>
+            `).join('');
+        },
+
+        async addMeetingPhotos(fileList) {
+            const files = Array.from(fileList || []).filter(f => /^image\//.test(f.type || ''));
+            if (files.length === 0) { window.AppToast?.warning('Please choose image files.'); return; }
+            const room = 8 - this.meetingPhotos.length;
+            if (room <= 0) { window.AppToast?.warning('Maximum of 8 photos reached. Remove one to add another.'); return; }
+            const batch = files.slice(0, room);
+            if (files.length > room) window.AppToast?.warning(`Only ${room} more photo(s) can be added (limit 8).`);
+            window.AppToast?.info(`Uploading ${batch.length} photo(s)...`);
+            for (const file of batch) {
+                try {
+                    const result = await window.Uploader.upload(file, { type: 'meeting_poster', folder: 'meeting-photos' });
+                    this.meetingPhotos.push({ url: result.url, provider: result.provider, publicId: result.publicId || '', caption: '' });
+                } catch (err) {
+                    window.AppToast?.error(`Upload failed (${file.name}): ${err.message}`);
+                }
+            }
+            this.renderMeetingPhotos();
+        },
+
+        updatePhotoCaption(i, v) { if (this.meetingPhotos[i]) this.meetingPhotos[i].caption = v; },
+        removeMeetingPhoto(i) { this.meetingPhotos.splice(i, 1); this.renderMeetingPhotos(); },
+
         safeFileName(str) {
             return String(str || 'Meeting').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
         },
@@ -1064,7 +1121,7 @@
         },
 
         // ==========================================
-        // EMAIL MINUTES (minutes PDF + attendance PDF + photos)
+        // EMAIL MINUTES (ONE attachment: the combined meeting PDF = agenda + attendance + minutes)
         // ==========================================
         async sendMinutesEmail(meetingId, silent) {
             try {
@@ -1074,7 +1131,7 @@
                 const items = (meeting.minutes_items || []).filter(i => (i.heading || '').trim() || (i.details || '').trim());
                 if (items.length === 0) { window.AppToast?.warning('Log the minutes first, then email them.'); return; }
 
-                if (!silent && !window.confirm(`Email the minutes of "${meeting.meeting_name}" to members?\n\nIncluded: Minutes PDF, Attendance sheet PDF (if recorded) and meeting photos (if any).`)) return;
+                if (!silent && !window.confirm(`Email the minutes of "${meeting.meeting_name}" to members?\n\nAttachment: the combined meeting document (agenda + attendance sheet + minutes) as a single PDF.`)) return;
 
                 window.AppToast?.info('Preparing minutes email...');
 
@@ -1087,14 +1144,13 @@
 
                 const base = this.safeFileName(meeting.meeting_name);
                 const files = [];
-                const minutesFile = await this.fetchDocFile('meeting_minutes', meetingId, `Minutes_${base}.pdf`);
-                if (minutesFile) files.push(minutesFile);
-
-                const { count: attCount } = await window.DB_ADMIN.from('meeting_attendance').select('id', { count: 'exact', head: true }).eq('meeting_id', meetingId);
-                if ((attCount || 0) > 0) {
-                    const attFile = await this.fetchDocFile('meeting_attendance', meetingId, `Attendance_${base}.pdf`);
-                    if (attFile) files.push(attFile);
+                // Single attachment: the combined meeting document (agenda + attendance + minutes)
+                const combinedFile = await this.fetchDocFile('meeting_combined', meetingId, `Complete_Package_${base}.pdf`);
+                if (!combinedFile) {
+                    window.AppToast?.error('The combined meeting document could not be generated, so the minutes mail was not sent. Please try again.');
+                    return;
                 }
+                files.push(combinedFile);
 
                 const photos = (Array.isArray(meeting.meeting_photos) ? meeting.meeting_photos : [])
                     .map(p => (typeof p === 'string' ? { url: p } : { url: p?.url || p?.photo_url, caption: p?.caption || '' }))
@@ -1106,7 +1162,7 @@
                 const { data: logEntry } = await window.DB_ADMIN.from('email_log').insert({
                     email_type: 'meeting_minutes',
                     subject: `[Rotaract Unity] ${subject}`,
-                    html_body: `Minutes of ${meeting.meeting_name} (${files.length} document(s), ${photos.length} photo(s))`,
+                    html_body: `Minutes of ${meeting.meeting_name} (1 combined document, ${photos.length} photo(s) shown in the mail)`,
                     sender_id: sender.id,
                     sender_name: sender.full_name || sender.name,
                     sender_role: sender.role,
@@ -1177,7 +1233,7 @@
                 window.AdminPanel.closeModal();
                 await this.loadMeetingsData();
                 if (approved && !prev?.minutes_approved && payload.minutes_items.length > 0 &&
-                    window.confirm('Minutes approved. Email the minutes PDF (with attendance sheet and photos) to members now?')) {
+                    window.confirm('Minutes approved. Email the combined meeting document (agenda + attendance + minutes) to members now?')) {
                     await this.sendMinutesEmail(mailMeetingId, true);
                 }
             } catch (e) {
