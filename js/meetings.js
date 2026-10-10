@@ -311,6 +311,7 @@
             const statusLabel = (m.status || 'scheduled').replace('_', ' ');
             const agendaCount = (m.agenda_items || []).length;
             const minutesCount = (m.minutes_items || []).length;
+            const photoCount = Array.isArray(m.meeting_photos) ? m.meeting_photos.length : 0;
             const hasPoster = !!m.poster_url;
 
             return `
@@ -339,6 +340,9 @@
                             <span title="Minutes Logged: ${minutesCount}" class="${minutesCount > 0 ? 'text-green-500 font-bold' : 'text-slate-400'} text-xs flex items-center gap-1 ml-1">
                                 <i class="fa-solid fa-file-pen text-[11px]"></i> ${minutesCount}
                             </span>
+                            <span title="Photos Attached: ${photoCount}" class="${photoCount > 0 ? 'text-pink-500 font-bold' : 'text-slate-400'} text-xs flex items-center gap-1 ml-1">
+                                <i class="fa-solid fa-camera text-[11px]"></i> ${photoCount}
+                            </span>
                             ${m.invitation_sent ? '<span title="Invitation dispatched" class="text-green-500 text-xs ml-1"><i class="fa-solid fa-envelope-circle-check text-[11px]"></i></span>' : ''}
                         </div>
                     </td>
@@ -348,6 +352,7 @@
                             ${this.canManage ? `
                                 <button onclick="AdminMeetings.openMeetingForm('${m.id}')" class="btn-secondary btn-xs" title="Edit Meeting Details & Agenda"><i class="fa-solid fa-pen"></i></button>
                                 <button onclick="AdminMeetings.openMinutesEditor('${m.id}')" class="btn-secondary btn-xs text-brand-purple" title="Log Proceedings Minutes"><i class="fa-solid fa-file-pen"></i></button>
+                                <button onclick="AdminMeetings.openPhotosEditor('${m.id}')" class="btn-secondary btn-xs text-pink-500" title="Attach Meeting Photos"><i class="fa-solid fa-camera"></i></button>
                                 <button onclick="AdminMeetings.openAttendanceEditor('${m.id}')" class="btn-secondary btn-xs text-green-500" title="Attendance Ledger"><i class="fa-solid fa-signature"></i></button>
                                 <button onclick="AdminMeetings.sendAttendanceForm('${m.id}')" class="btn-secondary btn-xs text-cyan-500" title="Email Attendance Form"><i class="fa-solid fa-paper-plane"></i></button>
                                 <button onclick="AdminMeetings.sendMinutesEmail('${m.id}')" class="btn-secondary btn-xs text-purple-500" title="Email Minutes (combined meeting PDF)"><i class="fa-solid fa-envelope-open-text"></i></button>
@@ -1048,6 +1053,54 @@
         updateMinutesItem(i, f, v) { if (this.minutesItems[i]) this.minutesItems[i][f] = v; },
         removeMinutesItem(i) { this.minutesItems.splice(i, 1); this.renderMinutesList(); },
 
+        // ---- Photos-only editor: attach / caption / remove photos without opening the minutes ----
+        async openPhotosEditor(meetingId) {
+            this.currentMeetingId = meetingId;
+            const { data: meeting, error } = await window.DB_ADMIN.from('meetings').select('id, meeting_name, meeting_photos').eq('id', meetingId).single();
+            if (error || !meeting) { window.AppToast?.error('Could not load the meeting: ' + (error?.message || 'not found')); return; }
+
+            this.meetingPhotos = (Array.isArray(meeting.meeting_photos) ? meeting.meeting_photos : [])
+                .map(p => (typeof p === 'string' ? { url: p, caption: '' } : { ...p, url: p?.url || p?.photo_url || '', caption: p?.caption || '' }))
+                .filter(p => p.url);
+
+            window.AdminPanel.createModal({
+                title: 'Meeting Photos — ' + meeting.meeting_name,
+                size: 'wide',
+                icon: 'camera',
+                body: `
+                    <div class="admin-panel">
+                        <div class="admin-panel-header"><h3 class="admin-panel-title"><i class="fa-solid fa-images"></i> Meeting Photographs</h3></div>
+                        <div class="admin-panel-body">
+                            <div id="meeting-photos-container" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"></div>
+                            <label class="w-full py-3 border-2 border-dashed border-slate-200/80 dark:border-white/[0.08] rounded-xl text-xs font-bold text-slate-500 hover:border-brand-blue hover:text-brand-blue transition-all flex items-center justify-center cursor-pointer">
+                                <input type="file" id="meeting-photo-input" accept="image/*" multiple class="hidden" onchange="AdminMeetings.addMeetingPhotos(this.files); this.value='';">
+                                <i class="fa-solid fa-camera mr-1.5"></i> Attach Photos
+                            </label>
+                            <p class="text-[10px] text-slate-400 mt-2">Up to 8 photos. They appear in the minutes document and in the minutes email.</p>
+                        </div>
+                    </div>
+                `,
+                footer: `
+                    <button class="btn-secondary" onclick="window.AdminPanel.closeModal()">Cancel</button>
+                    <button class="btn-primary" onclick="AdminMeetings.savePhotos()"><i class="fa-solid fa-floppy-disk mr-1.5"></i> Save Photos</button>
+                `
+            });
+
+            setTimeout(() => this.renderMeetingPhotos(), 50);
+        },
+
+        async savePhotos() {
+            try {
+                const { error } = await window.DB_ADMIN.from('meetings').update({ meeting_photos: this.meetingPhotos }).eq('id', this.currentMeetingId);
+                if (error) throw new Error(error.message);
+                window.AppToast?.success(`Photos saved (${this.meetingPhotos.length}).`);
+                window.AdminPanel.closeModal();
+                await this.loadMeetingsData();
+            } catch (e) {
+                window.AppToast?.error('Could not save photos: ' + e.message + ' (run meetings_minutes_photos.sql if the column is missing)');
+            }
+        },
+
         // ---- Meeting photographs (saved to meetings.meeting_photos as [{url, provider, publicId, caption}]) ----
         renderMeetingPhotos() {
             const container = document.getElementById('meeting-photos-container');
@@ -1080,7 +1133,7 @@
             window.AppToast?.info(`Uploading ${batch.length} photo(s)...`);
             for (const file of batch) {
                 try {
-                    const result = await window.Uploader.upload(file, { type: 'meeting_poster', folder: 'meeting-photos' });
+                    const result = await window.Uploader.upload(file, { type: 'meeting_photo', folder: 'meeting-photos' });
                     this.meetingPhotos.push({ url: result.url, provider: result.provider, publicId: result.publicId || '', caption: '' });
                 } catch (err) {
                     window.AppToast?.error(`Upload failed (${file.name}): ${err.message}`);
