@@ -25,6 +25,7 @@
         allMembers: [],
         canManage: false,
         formPortfolios: [], // Multi-portfolio array for form
+        _saving: false,
 
         // Role sort weights (controls directory ordering)
         ROLE_WEIGHTS: {
@@ -863,10 +864,18 @@
         async submitMember(memberId) {
             const form = document.getElementById('member-form');
             if (!form) return;
+            if (this._saving) return; // ignore double clicks (would create duplicate members)
             const fd = new FormData(form);
 
-            if (!fd.get('full_name') || !fd.get('email')) {
+            const fullName = String(fd.get('full_name') || '').trim();
+            const email = String(fd.get('email') || '').trim().toLowerCase();
+
+            if (!fullName || !email) {
                 window.AppToast?.warning('Full name and email are required');
+                return;
+            }
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                window.AppToast?.warning('Please enter a valid email address');
                 return;
             }
 
@@ -874,16 +883,16 @@
             const portfolioString = this.formPortfolios.join(', ');
 
             const payload = {
-                full_name: fd.get('full_name'),
-                email: fd.get('email'),
-                phone: fd.get('phone') || null,
+                full_name: fullName,
+                email: email,
+                phone: String(fd.get('phone') || '').trim() || null,
                 date_of_birth: fd.get('date_of_birth') || null,
                 blood_group: fd.get('blood_group') || null,
-                profession: fd.get('profession') || null,
-                address: fd.get('address') || null,
-                ri_id: fd.get('ri_id') || null,
+                profession: String(fd.get('profession') || '').trim() || null,
+                address: String(fd.get('address') || '').trim() || null,
+                ri_id: String(fd.get('ri_id') || '').trim() || null,
                 joined_date: fd.get('joined_date') || null,
-                rotary_year: fd.get('rotary_year') || null,
+                rotary_year: String(fd.get('rotary_year') || '').trim() || null,
                 portfolio: portfolioString || null,
                 role: fd.get('role') || 'member',
                 is_board_member: fd.get('is_board_member') === 'on',
@@ -892,34 +901,72 @@
                 photo_provider: window._uploadedPhotoProvider || null
             };
 
+            // Lock the save button while the request runs
+            const saveBtn = document.querySelector('#admin-dynamic-modal .btn-primary');
+            const saveBtnHtml = saveBtn ? saveBtn.innerHTML : '';
+            this._saving = true;
+            if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; }
+
             try {
+                // Duplicate e-mail check (gives a clear message instead of a database error)
+                const dupQuery = window.DB_ADMIN.from('users').select('id, full_name').ilike('email', email.replace(/[\\%_]/g, '\\$&')).limit(1);
+                const { data: dup } = await dupQuery;
+                if (dup && dup.length > 0 && dup[0].id !== memberId) {
+                    window.AppToast?.warning('A member with this email already exists: ' + dup[0].full_name);
+                    return;
+                }
+
+                let savedId = memberId;
                 if (memberId) {
                     // Update existing
-                    await window.DB_ADMIN.from('users').update(payload).eq('id', memberId);
+                    const { error } = await window.DB_ADMIN.from('users').update(payload).eq('id', memberId);
+                    if (error) throw error;
                     window.AppToast?.success('Member profile updated!');
                 } else {
-                    // Create new (without auth account - just member record)
+                    // Create new member record (no login account; admin accounts are created in Admin Users)
                     payload.created_at = new Date().toISOString();
-                    const { error } = await window.DB_ADMIN.from('users').insert(payload);
+                    const { data: created, error } = await window.DB_ADMIN.from('users').insert(payload).select('id').single();
                     if (error) throw error;
+                    savedId = created?.id || null;
                     window.AppToast?.success('Member added successfully!');
                 }
 
-                // Invalidate caches
-                if (window.AppCache) {
-                    window.AppCache.remove('office_bearers');
-                    window.AppCache.remove('members_list');
-                }
-
-                if (window.AuthManager?.logActivity) {
-                    window.AuthManager.logActivity(window.AuthManager.currentUser.id, memberId ? 'UPDATE' : 'CREATE', 'user', memberId);
-                }
+                // Invalidate caches (never let a cache or log problem turn a saved member into a "failed" one)
+                try {
+                    if (window.AppCache) {
+                        window.AppCache.remove('office_bearers');
+                        window.AppCache.remove('members_list');
+                    }
+                    if (window.AuthManager?.logActivity) {
+                        window.AuthManager.logActivity(window.AuthManager.currentUser.id, memberId ? 'UPDATE' : 'CREATE', 'user', savedId);
+                    }
+                } catch (sideErr) { console.warn('Member saved, side effect failed:', sideErr); }
 
                 window.AdminPanel.closeModal();
                 await this.loadMembersData();
             } catch (e) {
-                window.AppToast?.error('Save failed: ' + e.message);
+                console.error('Member save failed:', e);
+                window.AppToast?.error('Save failed: ' + this.friendlyMemberError(e));
+            } finally {
+                this._saving = false;
+                if (saveBtn && document.body.contains(saveBtn)) { saveBtn.disabled = false; saveBtn.innerHTML = saveBtnHtml; }
             }
+        },
+
+        // Turns raw database errors into something an admin can act on
+        friendlyMemberError(e) {
+            const msg = String(e?.message || e || 'Unknown error');
+            const code = e?.code || '';
+            if (code === '23505' || /duplicate key|already exists/i.test(msg)) return 'This email or RI ID is already used by another member.';
+            if (code === '23502' || /null value in column/i.test(msg)) {
+                const col = (msg.match(/column "([^"]+)"/) || [])[1] || 'a required column';
+                return `The database requires "${col}" for new records. Run members_add_member_fix.sql in the Supabase SQL Editor once, then try again.`;
+            }
+            if (code === '23514' || /violates check constraint/i.test(msg)) return 'The selected role is not allowed by the database. Run members_add_member_fix.sql (it widens the role list), then try again.';
+            if (code === '22P02' || /invalid input (value|syntax)/i.test(msg)) return 'One of the values has the wrong format (' + msg + ').';
+            if (code === '42501' || /permission denied|row-level security/i.test(msg)) return 'The database refused the change (permissions). ' + msg;
+            if (/column .* does not exist|Could not find the/i.test(msg)) return msg + ' (a column is missing in the users table; run members_add_member_fix.sql).';
+            return msg;
         },
 
         // ==========================================
