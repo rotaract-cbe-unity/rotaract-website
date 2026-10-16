@@ -248,7 +248,8 @@
         },
 
         goToPage(page) {
-            if (page < 1) return;
+            page = parseInt(page, 10);
+            if (!page || page < 1) return;
             this.currentPage = page;
             this.loadEvents();
         },
@@ -299,6 +300,9 @@
                 allProjects.sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 const totalCount = allProjects.length;
+                const lastPage = Math.max(1, Math.ceil(totalCount / this.limit));
+                if (this.currentPage > lastPage) this.currentPage = lastPage;
+                if (this.currentPage < 1) this.currentPage = 1;
                 const offset = (this.currentPage - 1) * this.limit;
                 const paginatedData = allProjects.slice(offset, offset + this.limit);
 
@@ -351,8 +355,9 @@
             const totalPages = Math.ceil(totalCount / this.limit);
             if (totalPages > 1) {
                 let pagesHtml = '';
-                const start = Math.max(1, this.currentPage - 2);
+                let start = Math.max(1, this.currentPage - 2);
                 const end = Math.min(totalPages, start + 4);
+                start = Math.max(1, end - 4);
                 for (let i = start; i <= end; i++) {
                     pagesHtml += `<button type="button" class="admin-pagination-btn ${i === this.currentPage ? 'active' : ''}" onclick="AdminEvents.goToPage(${i})">${i}</button>`;
                 }
