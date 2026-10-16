@@ -1074,12 +1074,16 @@
     #admin-portal-modal aside {
         padding: 12px 8px !important;
     }
-    .admin-menu-btn {
-        padding: 10px 14px !important;
-        font-size: 10px !important;
+    /* Tab bar: keep icon tile AND label visible (the old rule hid every <span>,
+       which collapsed each button to a ~20px sliver on tablets/phones). */
+    #admin-portal-modal .admin-menu-btn {
+        white-space: nowrap;
+        flex: 0 0 auto;
+        width: auto;
+        min-width: max-content;
     }
-    .admin-menu-btn span { display: none; }
-    .admin-menu-btn i { font-size: 16px !important; }
+    #admin-portal-modal .admin-menu-btn .ap-menu-label { display: inline; }
+    #admin-portal-modal .admin-menu-btn .ap-ico { display: inline-grid; }
 }
 
 @media (max-width: 640px) {
