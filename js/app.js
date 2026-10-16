@@ -1069,28 +1069,51 @@
         });
     }
 
+    // Local (not UTC) YYYY-MM-DD so IST users never see "yesterday" as today
+    function localISODate(d) {
+        const dt = d || new Date();
+        const p = n => String(n).padStart(2, '0');
+        return dt.getFullYear() + '-' + p(dt.getMonth() + 1) + '-' + p(dt.getDate());
+    }
+
+    function avenueLabel(event) {
+        const map = {
+            club_service: 'Club Service',
+            community_service: 'Community Service',
+            professional_service: 'Professional Service',
+            international_service: 'International Service',
+            dpp: 'District Priority Project'
+        };
+        if (event && event.avenue_slug && map[event.avenue_slug]) return map[event.avenue_slug];
+        if (event && event.avenue_slug) return String(event.avenue_slug).replace(/_/g, ' ');
+        return event && event.is_dpp ? 'District Priority Project' : 'Project';
+    }
+
     async function loadUpcomingEvents() {
         const container = document.getElementById('upcoming-events-container');
         if (!container) return;
         container.innerHTML = renderSkeletonCards(3);
         try {
-            const today = new Date().toISOString().split('T')[0];
-            const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
-            const { data } = await supabaseAdmin
+            const today = localISODate();
+            // Every approved project that has not happened yet (no 7-day cut-off)
+            const { data, error } = await supabaseAdmin
                 .from('events')
-                .select('*, avenues(name)')
+                .select('*')
                 .eq('status', 'approved')
                 .gte('date', today)
-                .lte('date', nextWeek)
-                .order('date')
-                .order('start_time');
+                .order('date', { ascending: true })
+                .order('start_time', { ascending: true });
+            if (error) throw error;
             container.innerHTML = '';
+            const heading = container.parentElement ? container.parentElement.querySelector('h2') : null;
+            if (heading) heading.textContent = 'Upcoming Projects';
             if (!data || !data.length) {
-                container.innerHTML = '<div class="col-span-full empty-state"><i class="fa-solid fa-calendar-xmark empty-state-icon"></i><h4 class="empty-state-title">No Upcoming Events</h4><p class="empty-state-desc">No projects scheduled in the next 7 days.</p></div>';
+                container.innerHTML = '<div class="col-span-full empty-state"><i class="fa-solid fa-calendar-xmark empty-state-icon"></i><h4 class="empty-state-title">No Upcoming Projects</h4><p class="empty-state-desc">No approved projects are scheduled right now. Check back soon.</p></div>';
                 return;
             }
             data.forEach(e => container.appendChild(createEventCard(e, true)));
         } catch (e) {
+            console.error('loadUpcomingEvents failed:', e);
             container.innerHTML = '<div class="col-span-full text-center py-12 text-xs text-slate-500"><i class="fa-solid fa-triangle-exclamation text-2xl text-yellow-500 mb-4 block"></i>Unable to load events.</div>';
         }
     }
@@ -1128,13 +1151,21 @@
             container.innerHTML = renderSkeletonCards(3);
             try {
                 const offset = (this.page - 1) * this.limit;
-                const { data, count } = await supabaseAdmin
+                const today = localISODate();
+                // Completed projects + approved projects whose date has already passed
+                let query = supabaseAdmin
                     .from('events')
-                    .select('*, avenues(name)', { count: 'exact' })
-                    .eq('status', 'completed')
-                    .eq('avenue_slug', this.avenue)
+                    .select('*', { count: 'exact' })
+                    .or('status.eq.completed,and(status.eq.approved,date.lt.' + today + ')');
+                if (this.avenue === 'dpp') {
+                    query = query.eq('is_dpp', true);
+                } else {
+                    query = query.eq('avenue_slug', this.avenue);
+                }
+                const { data, count, error } = await query
                     .order('date', { ascending: false })
                     .range(offset, offset + this.limit - 1);
+                if (error) throw error;
                 container.innerHTML = '';
                 if (!data || !data.length) {
                     container.innerHTML = '<div class="col-span-full empty-state"><i class="fa-solid fa-folder-open empty-state-icon"></i><h4 class="empty-state-title">No Completed Events</h4><p class="empty-state-desc">No completed events for this avenue yet.</p></div>';
@@ -1153,6 +1184,7 @@
                     if (pg) pg.classList.add('hidden');
                 }
             } catch (e) {
+                console.error('CompletedEvents.load failed:', e);
                 container.innerHTML = '<div class="col-span-full text-center py-12 text-xs text-slate-500">Failed to load.</div>';
             }
         }
@@ -1161,7 +1193,7 @@
     function createEventCard(event, isUpcoming) {
         const card = document.createElement('div');
         card.className = 'event-card reveal';
-        const avenueName = event.avenues?.name || (event.avenue_slug || '').replace(/_/g, ' ');
+        const avenueName = avenueLabel(event);
         const avenueClass = {
             dpp: 'dpp',
             community_service: 'community',
@@ -1214,11 +1246,12 @@
         const modal = document.getElementById('project-detail-modal');
         if (!modal) return;
         try {
-            const { data: event } = await supabaseAdmin
+            const { data: event, error: evErr } = await supabaseAdmin
                 .from('events')
-                .select('*, avenues(name)')
+                .select('*')
                 .eq('id', eventId)
                 .single();
+            if (evErr) throw evErr;
             if (!event) return;
 
             const set = (id, val) => {
@@ -1233,7 +1266,7 @@
             set('modal-event-proposer', event.event_proposed_by || 'N/A');
             set('modal-event-seconder', event.event_seconded_by || 'N/A');
             set('modal-event-description', event.description || '');
-            set('modal-event-avenue-badge', event.avenues?.name || '');
+            set('modal-event-avenue-badge', avenueLabel(event));
 
             const dateStr = new Date(event.date).toLocaleDateString('en-IN', {
                 weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
