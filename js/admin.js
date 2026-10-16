@@ -332,7 +332,7 @@
                         </div>
                         <button onclick="AdminPanel.closeModal()" class="w-8 h-8 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-700/50 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
                     </div>
-                    <div class="flex-1 overflow-y-auto p-5">${body}</div>
+                    <div id="admin-modal-body" class="flex-1 overflow-y-auto p-5">${body}</div>
                     ${footer ? `<div class="flex items-center justify-end gap-2 p-5 border-t border-slate-200/20 dark:border-white/[0.06] flex-wrap">${footer}</div>` : ''}
                 </div>
             `;
