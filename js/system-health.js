@@ -341,7 +341,7 @@
                 { name: 'users', icon: 'fa-users', color: 'blue' },
                 { name: 'events', icon: 'fa-calendar', color: 'green' },
                 { name: 'meetings', icon: 'fa-people-group', color: 'purple' },
-                { name: 'treasury_transactions', icon: 'fa-wallet', color: 'yellow' },
+                { name: 'treasury', icon: 'fa-wallet', color: 'yellow' },
                 { name: 'membership_applications', icon: 'fa-user-plus', color: 'cyan' },
                 { name: 'blood_requests', icon: 'fa-droplet', color: 'red' },
                 { name: 'bulletins', icon: 'fa-newspaper', color: 'orange' },
