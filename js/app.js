@@ -1076,17 +1076,53 @@
         return dt.getFullYear() + '-' + p(dt.getMonth() + 1) + '-' + p(dt.getDate());
     }
 
+    // ------------------------------------------------------------------
+    // Avenue resolver. A project's avenue can be stored as avenue_slug
+    // ('club_service'), as a differently written value ('Club Service',
+    // 'club-service') or only as avenue_id. The admin panel shows an empty
+    // avenue as "Club Service", so the landing page does the same.
+    // ------------------------------------------------------------------
+    const AVENUE_LABELS = {
+        club_service: 'Club Service',
+        community_service: 'Community Service',
+        professional_service: 'Professional Service',
+        international_service: 'International Service'
+    };
+
+    const AvenueResolver = {
+        map: {},
+        loaded: false,
+
+        async load() {
+            if (this.loaded) return;
+            try {
+                const { data, error } = await supabaseAdmin.from('avenues').select('*');
+                if (!error && data) data.forEach(a => { this.map[a.id] = a; });
+            } catch (e) { /* the avenues table is optional */ }
+            this.loaded = true;
+        },
+
+        keyOf(e) {
+            const row = e && e.avenue_id ? this.map[e.avenue_id] : null;
+            const raw = String((e && e.avenue_slug) || (row && (row.slug || row.name)) || '').toLowerCase();
+            if (raw.indexOf('club') !== -1) return 'club_service';
+            if (raw.indexOf('community') !== -1) return 'community_service';
+            if (raw.indexOf('professional') !== -1) return 'professional_service';
+            if (raw.indexOf('international') !== -1) return 'international_service';
+            return raw ? 'other' : 'club_service';
+        },
+
+        labelOf(e) {
+            const k = this.keyOf(e);
+            if (AVENUE_LABELS[k]) return AVENUE_LABELS[k];
+            const raw = String((e && e.avenue_slug) || '').replace(/[_-]/g, ' ').trim();
+            if (raw.toLowerCase() === 'dpp' || (e && e.is_dpp && !raw)) return 'District Priority Project';
+            return raw ? raw.replace(/\b\w/g, c => c.toUpperCase()) : 'Project';
+        }
+    };
+
     function avenueLabel(event) {
-        const map = {
-            club_service: 'Club Service',
-            community_service: 'Community Service',
-            professional_service: 'Professional Service',
-            international_service: 'International Service',
-            dpp: 'District Priority Project'
-        };
-        if (event && event.avenue_slug && map[event.avenue_slug]) return map[event.avenue_slug];
-        if (event && event.avenue_slug) return String(event.avenue_slug).replace(/_/g, ' ');
-        return event && event.is_dpp ? 'District Priority Project' : 'Project';
+        return AvenueResolver.labelOf(event);
     }
 
     async function loadUpcomingEvents() {
@@ -1094,6 +1130,7 @@
         if (!container) return;
         container.innerHTML = renderSkeletonCards(3);
         try {
+            await AvenueResolver.load();
             const today = localISODate();
             // Every approved project that has not happened yet (no 7-day cut-off)
             const { data, error } = await supabaseAdmin
@@ -1123,69 +1160,109 @@
         page: 1,
         pages: 1,
         limit: 6,
+        all: null,
+        ticket: 0,
+        bound: false,
 
         async init() {
-            document.querySelectorAll('.avenue-tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.avenue-tab-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    this.avenue = btn.getAttribute('data-avenue');
-                    this.page = 1;
-                    this.load();
+            if (!this.bound) {
+                this.bound = true;
+                document.querySelectorAll('.avenue-tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.avenue-tab-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.avenue = btn.getAttribute('data-avenue') || 'club_service';
+                        this.page = 1;
+                        this.load();
+                    });
                 });
-            });
-            const prev = document.getElementById('prev-page-btn');
-            const next = document.getElementById('next-page-btn');
-            if (prev) prev.addEventListener('click', () => {
-                if (this.page > 1) { this.page--; this.load(); }
-            });
-            if (next) next.addEventListener('click', () => {
-                if (this.page < this.pages) { this.page++; this.load(); }
-            });
+                const prev = document.getElementById('prev-page-btn');
+                const next = document.getElementById('next-page-btn');
+                const grid = document.getElementById('completed-projects-grid');
+                const goTop = () => { if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+                if (prev) prev.addEventListener('click', () => {
+                    if (this.page > 1) { this.page--; this.load(); goTop(); }
+                });
+                if (next) next.addEventListener('click', () => {
+                    if (this.page < this.pages) { this.page++; this.load(); goTop(); }
+                });
+            }
+            // Start on whichever tab is marked active in the HTML
+            const active = document.querySelector('.avenue-tab-btn.active');
+            if (active && active.getAttribute('data-avenue')) this.avenue = active.getAttribute('data-avenue');
             await this.load();
+        },
+
+        // Every finished project: status "completed", plus approved projects whose date has passed.
+        // Fetched once (paged past the 1000-row API limit) and filtered per avenue in the browser,
+        // so it works whatever way the avenue was stored.
+        async fetchAll(force) {
+            if (this.all && !force) return this.all;
+            await AvenueResolver.load();
+            const today = localISODate();
+            const rows = [];
+            const size = 1000;
+            for (let from = 0; ; from += size) {
+                const { data, error } = await supabaseAdmin
+                    .from('events')
+                    .select('*')
+                    .or('status.eq.completed,and(status.eq.approved,date.lt.' + today + ')')
+                    .order('date', { ascending: false })
+                    .order('id', { ascending: true })
+                    .range(from, from + size - 1);
+                if (error) throw error;
+                (data || []).forEach(r => rows.push(r));
+                if (!data || data.length < size) break;
+            }
+            this.all = rows;
+            return rows;
+        },
+
+        matches(e) {
+            if (this.avenue === 'dpp') return !!e.is_dpp;
+            return AvenueResolver.keyOf(e) === this.avenue;
         },
 
         async load() {
             const container = document.getElementById('completed-projects-grid');
             if (!container) return;
+            const ticket = ++this.ticket;               // ignore answers of older tab clicks
             container.innerHTML = renderSkeletonCards(3);
+            const pg = document.getElementById('completed-pagination');
             try {
-                const offset = (this.page - 1) * this.limit;
-                const today = localISODate();
-                // Completed projects + approved projects whose date has already passed
-                let query = supabaseAdmin
-                    .from('events')
-                    .select('*', { count: 'exact' })
-                    .or('status.eq.completed,and(status.eq.approved,date.lt.' + today + ')');
-                if (this.avenue === 'dpp') {
-                    query = query.eq('is_dpp', true);
-                } else {
-                    query = query.eq('avenue_slug', this.avenue);
-                }
-                const { data, count, error } = await query
-                    .order('date', { ascending: false })
-                    .range(offset, offset + this.limit - 1);
-                if (error) throw error;
+                const all = await this.fetchAll();
+                if (ticket !== this.ticket) return;
+                const list = all.filter(e => this.matches(e));
+
                 container.innerHTML = '';
-                if (!data || !data.length) {
+                if (!list.length) {
                     container.innerHTML = '<div class="col-span-full empty-state"><i class="fa-solid fa-folder-open empty-state-icon"></i><h4 class="empty-state-title">No Completed Events</h4><p class="empty-state-desc">No completed events for this avenue yet.</p></div>';
-                    const pg = document.getElementById('completed-pagination');
                     if (pg) pg.classList.add('hidden');
                     return;
                 }
-                data.forEach(e => container.appendChild(createEventCard(e, false)));
-                this.pages = Math.ceil((count || data.length) / this.limit);
-                const pg = document.getElementById('completed-pagination');
+
+                this.pages = Math.max(1, Math.ceil(list.length / this.limit));
+                if (this.page > this.pages) this.page = this.pages;
+                const offset = (this.page - 1) * this.limit;
+                list.slice(offset, offset + this.limit).forEach(e => container.appendChild(createEventCard(e, false)));
+
                 const ind = document.getElementById('page-indicator');
+                const prev = document.getElementById('prev-page-btn');
+                const next = document.getElementById('next-page-btn');
+                if (prev) prev.disabled = this.page <= 1;
+                if (next) next.disabled = this.page >= this.pages;
                 if (this.pages > 1) {
                     if (pg) pg.classList.remove('hidden');
                     if (ind) ind.textContent = 'Page ' + this.page + ' of ' + this.pages;
-                } else {
-                    if (pg) pg.classList.add('hidden');
+                } else if (pg) {
+                    pg.classList.add('hidden');
                 }
             } catch (e) {
+                if (ticket !== this.ticket) return;
                 console.error('CompletedEvents.load failed:', e);
-                container.innerHTML = '<div class="col-span-full text-center py-12 text-xs text-slate-500">Failed to load.</div>';
+                this.all = null;
+                container.innerHTML = '<div class="col-span-full text-center py-12 text-xs text-slate-500">Failed to load. Please refresh the page.</div>';
+                if (pg) pg.classList.add('hidden');
             }
         }
     };
@@ -1195,11 +1272,10 @@
         card.className = 'event-card reveal';
         const avenueName = avenueLabel(event);
         const avenueClass = {
-            dpp: 'dpp',
             community_service: 'community',
             international_service: 'international',
             professional_service: 'professional'
-        }[event.avenue_slug] || '';
+        }[AvenueResolver.keyOf(event)] || (event.is_dpp && !event.avenue_slug && !event.avenue_id ? 'dpp' : '');
         const poster = event.poster_url ? Uploader.getThumbnailUrl(event.poster_url, event.poster_provider || 'cloudinary', 600) : '';
         const dateStr = new Date(event.date).toLocaleDateString('en-IN', {
             day: 'numeric', month: 'short', year: 'numeric'
@@ -1246,6 +1322,7 @@
         const modal = document.getElementById('project-detail-modal');
         if (!modal) return;
         try {
+            await AvenueResolver.load();
             const { data: event, error: evErr } = await supabaseAdmin
                 .from('events')
                 .select('*')
@@ -1314,12 +1391,12 @@
     function addToCalendar(event) {
         const title = encodeURIComponent(event.event_name || '');
         const date = (event.date || '').replace(/-/g, '');
-        const st = (event.start_time || '000000').replace(/:/g, '').substring(0, 6);
+        const st = (event.start_time || '000000').replace(/:/g, '').padEnd(6, '0').substring(0, 6);
         const et = event.end_time
-            ? (event.end_time.replace(/:/g, '').substring(0, 6))
-            : String(parseInt(st.substring(0, 2)) + 2).padStart(2, '0') + st.substring(2);
+            ? (event.end_time.replace(/:/g, '').padEnd(6, '0').substring(0, 6))
+            : String(Math.min(23, parseInt(st.substring(0, 2), 10) + 2)).padStart(2, '0') + st.substring(2);
         window.open(
-            'https://calendar.google.com/calendar/event?action=TEMPLATE&text=' + title +
+            'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + title +
             '&dates=' + date + 'T' + st + '/' + date + 'T' + et +
             '&details=' + encodeURIComponent((event.description || '') + '\n\nRotaract Club of Coimbatore Unity') +
             '&location=' + encodeURIComponent(event.venue || ''),
@@ -1333,10 +1410,11 @@
         const container = document.getElementById('timeline-flow-container');
         if (!container) return;
         try {
-            const [{ data: presidents }, { data: secretaries }] = await Promise.all([
+            const [{ data: presidents, error: e1 }, { data: secretaries, error: e2 }] = await Promise.all([
                 supabaseAdmin.from('past_presidents').select('*').order('rotary_year', { ascending: false }),
                 supabaseAdmin.from('past_secretaries').select('*').order('rotary_year', { ascending: false })
             ]);
+            if (e1 || e2) throw (e1 || e2);
             const yearMap = {};
             (presidents || []).forEach(p => {
                 if (!yearMap[p.rotary_year]) yearMap[p.rotary_year] = { president: null, secretaries: [] };
@@ -1399,11 +1477,12 @@
         const container = document.getElementById('trainers-grid');
         if (!container) return;
         try {
-            const { data } = await supabaseAdmin
+            const { data, error: trErr } = await supabaseAdmin
                 .from('club_trainers')
                 .select('*')
                 .eq('is_active', true)
                 .order('sort_order');
+            if (trErr) throw trErr;
             container.innerHTML = '';
             if (!data || !data.length) {
                 container.innerHTML = '<div class="col-span-full empty-state py-12"><i class="fa-solid fa-chalkboard-user empty-state-icon"></i><h4 class="empty-state-title">Trainers Coming Soon</h4></div>';
@@ -1434,11 +1513,12 @@
         if (!container) return;
         container.innerHTML = renderSkeletonCards(8);
         try {
-            const { data } = await supabaseAdmin
+            const { data, error: memErr } = await supabaseAdmin
                 .from('users')
                 .select('id, full_name, portfolio, photo_url, ri_id, blood_group, phone, email, role')
                 .eq('is_active', true)
                 .neq('role', 'super_admin');
+            if (memErr) throw memErr;
             const order = {
                 president: 1, ipp: 2, vice_president: 3,
                 secretary: 4, secretary_admin: 5, secretary_comm: 6,
@@ -1449,7 +1529,7 @@
                 membership_chair: 16, trf_chair: 17, board_member: 18, member: 19
             };
             const sorted = (data || []).sort((a, b) =>
-                (order[a.role] || 99) - (order[b.role] || 99) || a.full_name.localeCompare(b.full_name)
+                (order[a.role] || 99) - (order[b.role] || 99) || String(a.full_name || '').localeCompare(String(b.full_name || ''))
             );
             window._allMembers = sorted;
             renderMembers(sorted);
@@ -1501,7 +1581,7 @@
                 (!q ||
                     (m.full_name || '').toLowerCase().includes(q) ||
                     (m.portfolio || '').toLowerCase().includes(q) ||
-                    (m.ri_id || '').toLowerCase().includes(q) ||
+                    String(m.ri_id || '').toLowerCase().includes(q) ||
                     (m.email || '').toLowerCase().includes(q)
                 ) && (!bg || m.blood_group === bg)
             ));
@@ -1517,12 +1597,13 @@
         const container = document.getElementById('bulletins-grid');
         if (!container) return;
         try {
-            const { data } = await supabaseAdmin
+            const { data, error: bErr } = await supabaseAdmin
                 .from('bulletins')
                 .select('*')
                 .eq('published', true)
                 .order('created_at', { ascending: false })
                 .limit(6);
+            if (bErr) throw bErr;
             container.innerHTML = '';
             if (!data || !data.length) {
                 container.innerHTML = '<div class="col-span-full empty-state py-12"><i class="fa-solid fa-newspaper empty-state-icon"></i><h4 class="empty-state-title">Bulletins Coming Soon</h4></div>';
@@ -1566,7 +1647,7 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Triggering...';
             try {
-                await supabaseAdmin.from('blood_requests').insert({
+                const { error: brErr } = await supabaseAdmin.from('blood_requests').insert({
                     patient_name: fd.get('patient_name'),
                     blood_group: fd.get('blood_group'),
                     units_needed: parseInt(fd.get('units_needed')) || 1,
@@ -1576,6 +1657,7 @@
                     urgency: fd.get('urgency'),
                     status: 'active'
                 });
+                if (brErr) throw brErr;
                 const msg = encodeURIComponent(
                     '*EMERGENCY BLOOD REQUEST*\n\n' +
                     'Patient: ' + fd.get('patient_name') + '\n' +
@@ -1634,7 +1716,7 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Processing...';
             try {
-                await supabaseAdmin.from('membership_applications').insert({
+                const { error: appErr } = await supabaseAdmin.from('membership_applications').insert({
                     full_name: fd.get('full_name'),
                     email: String(fd.get('email') || '').trim().toLowerCase(),
                     phone: String(fd.get('phone') || '').trim(),
@@ -1649,6 +1731,7 @@
                     referral_source: String(fd.get('referral_source') || '').trim() || null,
                     status: 'pending'
                 });
+                if (appErr) throw appErr;
                 Toast.success('Application submitted! Membership chair will contact you.');
                 form.reset();
                 if (label) label.textContent = 'Upload portrait';
