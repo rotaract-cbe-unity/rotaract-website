@@ -794,8 +794,11 @@
         },
 
         revealElements() {
-            const els = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .stagger-children');
-            if (!els.length) return;
+            const SEL = '.reveal, .reveal-left, .reveal-right, .reveal-scale, .stagger-children';
+            if (!('IntersectionObserver' in window)) {
+                document.querySelectorAll(SEL).forEach(el => el.classList.add('revealed'));
+                return;
+            }
             const observer = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -803,8 +806,24 @@
                         observer.unobserve(entry.target);
                     }
                 });
-            }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-            els.forEach(el => observer.observe(el));
+            }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
+            const seen = new WeakSet();
+            const watch = (root) => {
+                if (!root || root.nodeType !== 1) return;
+                const list = root.matches && root.matches(SEL) ? [root] : [];
+                root.querySelectorAll && root.querySelectorAll(SEL).forEach(el => list.push(el));
+                list.forEach(el => {
+                    if (seen.has(el) || el.classList.contains('revealed')) return;
+                    seen.add(el);
+                    observer.observe(el);
+                });
+            };
+            watch(document.body);
+            // Cards added later (pagination, avenue tabs, member search, ...) must be revealed too,
+            // otherwise they stay at opacity 0 and the section looks empty.
+            new MutationObserver(muts => {
+                muts.forEach(m => m.addedNodes.forEach(watch));
+            }).observe(document.body, { childList: true, subtree: true });
         },
 
         counterElements() {
@@ -1180,11 +1199,11 @@
                 const next = document.getElementById('next-page-btn');
                 const grid = document.getElementById('completed-projects-grid');
                 const goTop = () => { if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-                if (prev) prev.addEventListener('click', () => {
-                    if (this.page > 1) { this.page--; this.load(); goTop(); }
+                if (prev) prev.addEventListener('click', async () => {
+                    if (this.page > 1) { this.page--; await this.load(); goTop(); }
                 });
-                if (next) next.addEventListener('click', () => {
-                    if (this.page < this.pages) { this.page++; this.load(); goTop(); }
+                if (next) next.addEventListener('click', async () => {
+                    if (this.page < this.pages) { this.page++; await this.load(); goTop(); }
                 });
             }
             // Start on whichever tab is marked active in the HTML
