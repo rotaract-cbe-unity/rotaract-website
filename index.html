@@ -19,8 +19,10 @@
     <script>
     tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Poppins','system-ui','sans-serif']},colors:{brand:{blue:'#1a73e8',dark:'#050a18',darker:'#020510',light:'#f0f6ff',purple:'#7c3aed',cyan:'#06b6d4'}},animation:{'float-slow':'floatSlow 20s ease-in-out infinite','float-medium':'floatMedium 15s ease-in-out infinite','float-fast':'floatFast 10s ease-in-out infinite','gradient-x':'gradientX 8s ease infinite'},keyframes:{floatSlow:{'0%,100%':{transform:'translate(0,0)'},'33%':{transform:'translate(30px,-50px)'},'66%':{transform:'translate(-20px,20px)'}},floatMedium:{'0%,100%':{transform:'translate(0,0) scale(1)'},'50%':{transform:'translate(-40px,30px) scale(1.05)'}},floatFast:{'0%,100%':{transform:'translateY(0)'},'50%':{transform:'translateY(-20px)'}},gradientX:{'0%,100%':{backgroundPosition:'0% 50%'},'50%':{backgroundPosition:'100% 50%'}}}}}}
     </script>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/admin.css">
+    <!-- Site CSS. Expected layout:  index.html  +  css/styles.css, css/admin.css  +  js/*.js
+         If the files were uploaded flat (next to index.html) the onerror fallbacks below still find them. -->
+    <link rel="stylesheet" href="css/styles.css" data-css="styles.css" onerror="this.onerror=null;this.href='styles.css'">
+    <link rel="stylesheet" href="css/admin.css" data-css="admin.css" onerror="this.onerror=null;this.href='admin.css'">
 
     <style>
         .dark select,
@@ -662,6 +664,26 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <!-- Core App Configuration & Storage Utilities -->
+<!-- Load check: shows a visible notice (instead of a silently broken page) if a CSS/JS file did not connect -->
+<script>
+window.addEventListener('load', function () {
+    setTimeout(function () {
+        var problems = [];
+        var cs = getComputedStyle(document.documentElement);
+        if (!cs.getPropertyValue('--u-ink').trim()) problems.push('css/styles.css (not loaded)');
+        var apm = document.getElementById('admin-portal-modal');
+        if (apm && !getComputedStyle(apm).getPropertyValue('--ap-ico').trim()) problems.push('css/admin.css (not loaded)');
+        if (typeof window.AppTheme === 'undefined' && !window.AppConfig && !window.Toast) problems.push('js/app.js (not loaded)');
+        if (!problems.length) return;
+        console.error('[Unity] Files not connected:', problems.join(', '));
+        var d = document.createElement('div');
+        d.setAttribute('role', 'alert'); d.setAttribute('data-unity-diag', '1');
+        d.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:2147483647;background:#7f1d1d;color:#fff;font:600 12px/1.5 system-ui,sans-serif;padding:12px 16px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4)';
+        d.textContent = 'Some site files did not load: ' + problems.join(', ') + '. Keep index.html with the css/ and js/ folders.';
+        document.body.appendChild(d);
+    }, 1500);
+});
+</script>
 <script src="js/upload-manager.js"></script>
 <script src="js/app.js"></script>
 <script src="js/auth.js"></script>
