@@ -925,13 +925,16 @@
 
             // Completed projects, service hours and beneficiaries (paged to pass the 1000-row API limit).
             try {
+                // Same definition of "completed" as the Completed Projects section on the page:
+                // status "completed", plus approved projects whose date has already passed.
                 const size = 1000;
+                const today = localISODate();
                 let from = 0, projects = 0, hours = 0, benef = 0;
                 for (;;) {
                     const { data, error } = await supabaseAdmin
                         .from('events')
-                        .select('id, service_hours, beneficiaries_count')
-                        .eq('status', 'completed')
+                        .select('*')
+                        .or('status.eq.completed,and(status.eq.approved,date.lt.' + today + ')')
                         .order('id')
                         .range(from, from + size - 1);
                     if (error) throw error;
@@ -1020,16 +1023,52 @@
 
     let _statsTimer = null;
 
+    // Counts a number up from what is currently shown to the new target.
+    function runCounter(el) {
+        const target = parseInt(el.getAttribute('data-counter'), 10) || 0;
+        const suffix = el.getAttribute('data-suffix') || '';
+        const from = el._cur || 0;
+        el._anim = (el._anim || 0) + 1;
+        const id = el._anim;
+        if (from === target) { el.textContent = target.toLocaleString() + suffix; return; }
+        const duration = 1800;
+        const t0 = performance.now();
+        const tick = (now) => {
+            if (id !== el._anim) return;             // a newer animation took over
+            const p = Math.min((now - t0) / duration, 1);
+            const eased = 1 - Math.pow(1 - p, 4);
+            el._cur = Math.round(from + (target - from) * eased);
+            el.textContent = el._cur.toLocaleString() + suffix;
+            if (p < 1) requestAnimationFrame(tick);
+            else { el._cur = target; el.textContent = target.toLocaleString() + suffix; }
+        };
+        requestAnimationFrame(tick);
+    }
+
+    let _statsObserver = null;
     function paintStatistics(res, animate) {
         UnityStats.defs.forEach(d => {
             const el = document.getElementById(d.el);
             if (!el) return;
             const next = String(res.values[d.key]);
-            const changed = el.getAttribute('data-counter') !== next || el.getAttribute('data-suffix') !== res.suffix;
             el.setAttribute('data-counter', next);
             el.setAttribute('data-suffix', res.suffix);
-            if (!animate) el.textContent = '0' + res.suffix;
-            else if (changed) ScrollFX.animateCounter(el);
+            if (el._cur === undefined) { el._cur = 0; el.textContent = '0' + res.suffix; }
+            const r = el.getBoundingClientRect();
+            const visible = r.bottom > 0 && r.top < (window.innerHeight || 800);
+            if (visible || !('IntersectionObserver' in window)) {
+                runCounter(el);
+            } else {
+                // Off-screen: count up the moment it scrolls into view.
+                if (!_statsObserver) {
+                    _statsObserver = new IntersectionObserver(entries => {
+                        entries.forEach(en => {
+                            if (en.isIntersecting) { runCounter(en.target); _statsObserver.unobserve(en.target); }
+                        });
+                    }, { threshold: 0.2 });
+                }
+                _statsObserver.observe(el);
+            }
         });
     }
 
@@ -1038,13 +1077,17 @@
         try { res = await UnityStats.load(); } catch (e) { res = null; }
         if (!res) return;
         paintStatistics(res, false);
+        document.addEventListener('visibilitychange', async () => {
+            if (document.hidden) return;
+            try { paintStatistics(await UnityStats.load(true), true); } catch (e) { /* silent */ }
+        });
 
         // Keep the "Live" card fresh while the page stays open.
         if (!_statsTimer) {
             _statsTimer = setInterval(async () => {
                 if (document.hidden) return;
                 try { paintStatistics(await UnityStats.load(true), true); } catch (e) { /* silent */ }
-            }, 180000);
+            }, 60000);
         }
     }
 
