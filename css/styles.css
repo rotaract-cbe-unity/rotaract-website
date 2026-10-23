@@ -2407,3 +2407,100 @@ input:focus,select:focus,textarea:focus{border-color:var(--input-focus-border)!i
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 @media print{body::before,body::after{display:none!important}}
+
+/* ================================================================
+   UNITY LIQUID GLASS v9
+   Deeper frosted glass: brighter specular rim, inner glow, moving
+   glint on hover, crystal buttons/inputs, richer aurora. Additive
+   only - it layers on top of v8 and never changes layout.
+   ================================================================ */
+:root{
+  --lg-rim:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,255,255,.25) 38%,rgba(255,255,255,.05) 62%,rgba(255,255,255,.7));
+  --lg-glint:linear-gradient(115deg,transparent 34%,rgba(255,255,255,.42) 50%,transparent 66%);
+  --lg-blur:blur(34px) saturate(215%) brightness(1.04);
+  --lg-ring:0 0 0 1px rgba(255,255,255,.55) inset,0 1px 0 rgba(255,255,255,.95) inset,0 -10px 24px -14px rgba(120,150,255,.35) inset;
+}
+.dark{
+  --lg-rim:linear-gradient(135deg,rgba(255,255,255,.34),rgba(255,255,255,.06) 40%,rgba(255,255,255,.02) 62%,rgba(255,255,255,.22));
+  --lg-glint:linear-gradient(115deg,transparent 34%,rgba(255,255,255,.16) 50%,transparent 66%);
+  --lg-blur:blur(34px) saturate(190%) brightness(1.08);
+  --lg-ring:0 0 0 1px rgba(255,255,255,.12) inset,0 1px 0 rgba(255,255,255,.24) inset,0 -10px 24px -14px rgba(96,165,250,.28) inset;
+}
+/* richer, slowly moving aurora */
+body::before{
+  background:
+    radial-gradient(36rem 36rem at 12% 14%,var(--pg-aurora-a),transparent 62%),
+    radial-gradient(32rem 32rem at 92% 8%,var(--pg-aurora-b),transparent 64%),
+    radial-gradient(40rem 40rem at 70% 96%,var(--pg-aurora-c),transparent 62%),
+    radial-gradient(28rem 28rem at 4% 92%,var(--pg-aurora-d),transparent 62%),
+    radial-gradient(22rem 22rem at 48% 46%,rgba(124,58,237,.10),transparent 66%);
+}
+/* glass surfaces: crystal rim + glint that sweeps across on hover */
+.glass-card,.glass-static,.glass-heavy,.benefit-card,.event-card,.trainer-card,.member-card,.timeline-card,.bulletin-card,.game-card,.modal-content,.toast,.join-shell,.pg-glass{
+  background:var(--lg-glint),var(--pg-sheen),var(--pg-grain),var(--pg-fill);
+  background-size:260% 100%,auto,auto,auto;
+  background-position:140% 0,0 0,0 0,0 0;
+  background-repeat:no-repeat,no-repeat,repeat,no-repeat;
+  -webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);
+  box-shadow:var(--pg-shadow),var(--lg-ring);
+  transition:transform .5s cubic-bezier(.22,1,.36,1),box-shadow .5s cubic-bezier(.22,1,.36,1),border-color .3s,background-position 1.1s cubic-bezier(.22,1,.36,1);
+}
+.glass-card:hover,.benefit-card:hover,.event-card:hover,.trainer-card:hover,.member-card:hover,.bulletin-card:hover,.game-card:hover,.timeline-card:hover{
+  background-position:-40% 0,0 0,0 0,0 0;
+  transform:translateY(-6px) scale(1.012);
+  box-shadow:var(--pg-shadow-hover),var(--lg-ring);
+}
+.glass-heavy,.modal-content,.join-shell{background:var(--lg-glint),var(--pg-sheen),var(--pg-grain),var(--pg-fill-strong)}
+/* glass pills / chips */
+.badge,.score-badge,.avenue-tab-btn{
+  background-image:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 60%);
+  -webkit-backdrop-filter:blur(14px) saturate(190%);backdrop-filter:blur(14px) saturate(190%);
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 6px 16px -8px rgba(15,35,80,.28);
+}
+.dark .badge,.dark .score-badge,.dark .avenue-tab-btn{background-image:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0) 60%);box-shadow:0 1px 0 rgba(255,255,255,.14) inset,0 8px 18px -10px rgba(0,0,0,.7)}
+.avenue-tab-btn:hover:not(.active){transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 14px 26px -12px rgba(26,115,232,.45)}
+/* crystal buttons */
+.btn-primary,.join-form button[type="submit"]{
+  position:relative;overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 -10px 18px rgba(40,20,140,.28) inset,0 16px 32px -10px rgba(76,70,235,.65),0 0 0 1px rgba(255,255,255,.18);
+  transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s;
+}
+.btn-primary::after,.join-form button[type="submit"]::after{content:"";position:absolute;inset:0;pointer-events:none;background:var(--lg-glint);background-size:260% 100%;background-position:140% 0;transition:background-position .9s cubic-bezier(.22,1,.36,1)}
+.btn-primary:hover::after,.join-form button[type="submit"]:hover::after{background-position:-40% 0}
+.btn-primary:active,.btn-secondary:active{transform:translateY(1px) scale(.985)}
+.btn-secondary{box-shadow:var(--lg-ring),0 10px 22px -12px rgba(15,35,80,.3)}
+/* glass inputs */
+form :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]):not([type=hidden]),select,textarea):not(.ub-composer *):not(#admin-portal-modal *):not(#admin-dynamic-modal *){
+  background-image:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 70%);
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 2px 6px -2px rgba(15,35,80,.12);
+  transition:box-shadow .2s,border-color .2s,background-color .2s;
+}
+.dark form :is(input,select,textarea):not(#admin-portal-modal *){background-image:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,0) 70%)}
+/* nav + footer */
+#main-nav{-webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);box-shadow:0 1px 0 rgba(255,255,255,.85) inset,0 14px 36px -16px rgba(11,42,91,.32)}
+.dark #main-nav{box-shadow:0 1px 0 rgba(255,255,255,.12) inset,0 16px 40px -16px rgba(0,0,0,.8)}
+.nav-link{transition:background .25s,color .25s,transform .25s}.nav-link:hover{transform:translateY(-1px)}
+footer{-webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur)}
+/* hero stat tiles */
+#hero-stats-grid>div{box-shadow:var(--lg-ring),var(--pg-shadow-sm);transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s}
+#hero-stats-grid>div:hover{transform:translateY(-4px);box-shadow:var(--lg-ring),var(--pg-shadow-hover)}
+/* modal backdrop: deeper frosted blur */
+.modal-backdrop{-webkit-backdrop-filter:blur(22px) saturate(150%);backdrop-filter:blur(22px) saturate(150%)}
+/* glass scrollbar + selection */
+html{scrollbar-width:thin;scrollbar-color:rgba(100,130,200,.5) transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(120,150,255,.55),rgba(150,100,255,.45));border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,rgba(26,115,232,.8),rgba(124,58,237,.7));background-clip:padding-box}
+::selection{background:rgba(26,115,232,.28)}
+@media (hover:none){
+  .glass-card:hover,.benefit-card:hover,.event-card:hover,.trainer-card:hover,.member-card:hover,.bulletin-card:hover,.game-card:hover,.timeline-card:hover{transform:none}
+}
+@media (max-width:640px){:root{--lg-blur:blur(22px) saturate(180%)}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .glass-card,.glass-static,.glass-heavy,.benefit-card,.event-card,.trainer-card,.member-card,.timeline-card,.bulletin-card,.game-card,.modal-content,.toast,.join-shell,.pg-glass{background-color:var(--bg-card-solid)}
+}
+@media (prefers-reduced-motion:reduce){
+  .glass-card:hover,.benefit-card:hover,.event-card:hover,.trainer-card:hover,.member-card:hover,.bulletin-card:hover,.game-card:hover,.timeline-card:hover{transform:none}
+  .btn-primary::after,.join-shell::after{transition:none}
+}
+/* ====================== END UNITY LIQUID GLASS v9 ====================== */
