@@ -1,8 +1,8 @@
 // ============================================
 // ROTARACT CLUB OF COIMBATORE UNITY
 // Games Zone Module
-// File: js/games.js | Version: 5.0.0
-// Portal Mini-Games + External Multiplayer Hub
+// File: js/games.js | Version: 6.0.0
+// Portal Mini-Games + Unity Arcade (multiplayer rooms, 10 live games)
 // ============================================
 
 (function () {
@@ -325,11 +325,11 @@
                     const classes = icon.className;
                     // Map icon to game
                     if (classes.includes('fa-table-cells')) this.launchGame('tic_tac_toe');
-                    else if (classes.includes('fa-hand-rock')) window.location.href = 'games.html';
-                    else if (classes.includes('fa-circle-nodes')) window.location.href = 'games.html';
+                    else if (classes.includes('fa-hand-rock')) this.openArcade({ game: 'rps_arena' });
+                    else if (classes.includes('fa-circle-nodes')) this.openArcade({ game: 'connect_four' });
                     else if (classes.includes('fa-brain')) this.launchGame('memory_match');
-                    else if (classes.includes('fa-dice')) window.location.href = 'games.html';
-                    else window.location.href = 'games.html';
+                    else if (classes.includes('fa-dice')) this.openArcade({ game: 'dice_duel' });
+                    else this.openArcade();
                 });
             });
         },
@@ -339,7 +339,7 @@
         // ==========================================
         launchGame(gameType) {
             if (!this.GAMES[gameType]) {
-                window.location.href = 'games.html';
+                if (this.openArcade) this.openArcade(); else window.location.href = 'games.html';
                 return;
             }
 
@@ -387,8 +387,8 @@
 
         createInlineGameArea(game) {
             // Fallback if admin panel modal not available
-            const section = document.getElementById('games');
-            if (!section) return;
+            const existing = document.getElementById('inline-game-overlay');
+            if (existing) existing.remove();
             const overlay = document.createElement('div');
             overlay.id = 'inline-game-overlay';
             overlay.className = 'fixed inset-0 z-[8000] bg-brand-dark/80 backdrop-blur-xl flex items-center justify-center p-4';
@@ -1333,7 +1333,7 @@
                         <button onclick="GamesModule.exitGame()" class="px-6 py-3 border border-slate-200/60 dark:border-white/[0.08] rounded-xl font-bold text-xs hover:scale-105 transition-all">
                             Exit
                         </button>
-                        <a href="games.html" class="px-6 py-3 border border-brand-purple/30 text-brand-purple rounded-xl font-bold text-xs hover:scale-105 transition-all inline-flex items-center">
+                        <a href="games.html" onclick="event.preventDefault();GamesModule.exitGame();GamesModule.openArcade();" class="px-6 py-3 border border-brand-purple/30 text-brand-purple rounded-xl font-bold text-xs hover:scale-105 transition-all inline-flex items-center">
                             <i class="fa-solid fa-gamepad mr-2"></i>Multiplayer
                         </a>
                     </div>
@@ -1389,4 +1389,1145 @@
         GamesModule.init();
     }
 
+})();
+
+// =====================================================================
+// UNITY ARCADE  -  multiplayer rooms + 10 live games   (games.js v6.0.0)
+//   * Rooms run over Supabase Realtime broadcast (no tables needed) and
+//     fall back to BroadcastChannel (same device / offline demo).
+//   * The host's browser is the referee: players send actions, the host
+//     validates them and pushes the new state to everybody.
+//   * A room closes when the host closes it, the host leaves / goes
+//     offline, or it has been idle for 15 minutes.  Closed codes are dead.
+// =====================================================================
+(function () {
+    'use strict';
+
+    const IDLE_MS = 15 * 60 * 1000;        // room closes after 15 min without activity
+    const MAX_LIFE_MS = 2 * 60 * 60 * 1000; // hard limit 2h
+    const HOST_TIMEOUT = 10000;             // players: no host heartbeat for 10 s => closed
+    const PLAYER_TIMEOUT = 12000;           // host: player silent for 12 s => dropped
+    const COLORS = ['#60a5fa', '#c084fc', '#f472b6', '#fb923c', '#4ade80', '#22d3ee', '#facc15', '#f87171'];
+    const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+
+    // ---------------- helpers ----------------
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+    const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const uid = () => 'p' + Math.random().toString(36).slice(2, 9);
+    const genCode = () => Array.from({ length: 5 }, () => CODE_CHARS[rnd(0, CODE_CHARS.length - 1)]).join('');
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const store = {
+        get(k, d) { try { const v = localStorage.getItem('unity_' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+        set(k, v) { try { localStorage.setItem('unity_' + k, JSON.stringify(v)); } catch (e) { /* silent */ } }
+    };
+    const GM = () => window.GamesModule || {};
+
+    // ---------------- extra question pool (Rotary + general) ----------------
+    const EXTRA_QUESTIONS = [
+        { q: 'Which avenue of service focuses on career growth?', options: ['Club Service', 'Professional Service', 'Community Service', 'International Service'], answer: 1 },
+        { q: 'Rotaract is a program of which organisation?', options: ['Lions Club', 'Rotary International', 'UNICEF', 'Red Cross'], answer: 1 },
+        { q: 'What colour is the Rotary wheel?', options: ['Silver', 'Gold & Royal Blue', 'Red & White', 'Green'], answer: 1 },
+        { q: 'How many teeth does the Rotary wheel have?', options: ['12', '20', '24', '32'], answer: 2 },
+        { q: 'Which planet is known as the Red Planet?', options: ['Venus', 'Mars', 'Jupiter', 'Mercury'], answer: 1 },
+        { q: 'What is the capital of Tamil Nadu?', options: ['Coimbatore', 'Madurai', 'Chennai', 'Salem'], answer: 2 },
+        { q: 'How many days are in a leap year?', options: ['364', '365', '366', '367'], answer: 2 },
+        { q: 'Which gas do plants absorb from the air?', options: ['Oxygen', 'Nitrogen', 'Carbon dioxide', 'Helium'], answer: 2 },
+        { q: 'Which is the largest ocean on Earth?', options: ['Atlantic', 'Indian', 'Arctic', 'Pacific'], answer: 3 },
+        { q: 'What is 12 x 12?', options: ['124', '132', '144', '154'], answer: 2 },
+        { q: 'Who wrote the Indian national anthem?', options: ['Bankim Chandra', 'Rabindranath Tagore', 'Sarojini Naidu', 'Subramania Bharati'], answer: 1 },
+        { q: 'Which river flows through Coimbatore?', options: ['Noyyal', 'Ganga', 'Godavari', 'Narmada'], answer: 0 }
+    ];
+
+    // =====================================================================
+    // GAME DEFINITIONS  (host-side logic + shared render)
+    //   init(ctx)            -> state
+    //   act(st, pid, a, ctx) -> mutate state (host only)
+    //   render(st, me, ctx)  -> html string (every client)
+    //   onState(st, me)      -> optional hook on clients
+    //   drop(st, pid, ctx)   -> optional, a player left mid-game
+    // `ctx.secret` is host-only data (answers, hidden cards, ...).
+    // =====================================================================
+    const baseState = (ctx, extra) => {
+        const order = ctx.players.map(p => p.id);
+        const names = {}, score = {};
+        ctx.players.forEach(p => { names[p.id] = p.name; score[p.id] = 0; });
+        return Object.assign({ order, names, score, gone: {}, over: false, msg: '', deadline: 0 }, extra || {});
+    };
+    const alive = st => st.order.filter(id => !st.gone[id]);
+    const nextAlive = (st, idx) => { const n = st.order.length; for (let k = 1; k <= n; k++) { const j = (idx + k) % n; if (!st.gone[st.order[j]]) return j; } return idx; };
+    const colorOf = (st, id) => COLORS[Math.max(0, st.order.indexOf(id)) % COLORS.length];
+    const chip = (st, id, extra) => `<span class="uxa-chip" style="--c:${colorOf(st, id)}">${esc(st.names[id] || '?')}${extra ? ' ' + extra : ''}</span>`;
+    const cd = ts => ts ? `<span class="uxa-cd" data-cd="${ts}">--</span>` : '';
+    const strip = (st, me) => `<div class="uxa-strip">${st.order.map(id => `<div class="uxa-pill ${id === me ? 'me' : ''} ${st.gone[id] ? 'gone' : ''}" style="--c:${colorOf(st, id)}"><b>${esc(st.names[id])}</b><span>${st.score[id] || 0}</span></div>`).join('')}</div>`;
+
+    const GAMES = {};
+
+    // ---------- 1. CONNECT FOUR ----------
+    GAMES.connect_four = {
+        id: 'connect_four', name: 'Connect Four', icon: 'fa-circle-nodes', color: '#60a5fa', min: 2, max: 2,
+        desc: 'Drop discs and line up four before your rival does.',
+        init(ctx) {
+            return baseState(ctx, { board: Array(42).fill(-1), turn: 0, line: [], msg: '' });
+        },
+        act(st, pid, a) {
+            if (st.over || a.t !== 'drop' || st.order[st.turn] !== pid) return;
+            const c = clamp(parseInt(a.c, 10) || 0, 0, 6);
+            let r = -1;
+            for (let i = 5; i >= 0; i--) if (st.board[i * 7 + c] === -1) { r = i; break; }
+            if (r < 0) return;
+            st.board[r * 7 + c] = st.turn;
+            const line = findFour(st.board, r, c, st.turn);
+            if (line) { st.line = line; st.over = true; st.score[pid] = 1; st.msg = st.names[pid] + ' connected four!'; return; }
+            if (st.board.every(v => v !== -1)) { st.over = true; st.msg = 'Draw - the board is full.'; return; }
+            st.turn = nextAlive(st, st.turn);
+        },
+        drop(st, pid) {
+            const left = alive(st);
+            if (left.length === 1) { st.over = true; st.score[left[0]] = 1; st.msg = st.names[pid] + ' left - ' + st.names[left[0]] + ' wins.'; }
+        },
+        render(st, me) {
+            const myTurn = !st.over && st.order[st.turn] === me;
+            let cols = '';
+            for (let c = 0; c < 7; c++) {
+                let cells = '';
+                for (let r = 0; r < 6; r++) {
+                    const v = st.board[r * 7 + c];
+                    const win = st.line.includes(r * 7 + c);
+                    cells += `<i class="c4-cell ${v >= 0 ? 'on' : ''} ${win ? 'win' : ''}" style="${v >= 0 ? '--c:' + COLORS[v] : ''}"></i>`;
+                }
+                cols += `<button class="c4-col" ${myTurn ? '' : 'disabled'} data-a='${JSON.stringify({ t: 'drop', c })}'>${cells}</button>`;
+            }
+            const who = st.over ? st.msg : (myTurn ? 'Your turn - pick a column' : 'Waiting for ' + esc(st.names[st.order[st.turn]]) + '...');
+            return `<div class="uxa-note">${who}</div><div class="c4-board">${cols}</div>
+                <div class="uxa-legend">${st.order.map((id, i) => `<span><i class="c4-dot" style="--c:${COLORS[i]}"></i>${esc(st.names[id])}</span>`).join('')}</div>`;
+        }
+    };
+    function findFour(b, r, c, p) {
+        const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+        for (const [dr, dc] of dirs) {
+            const cells = [r * 7 + c];
+            for (const s of [1, -1]) {
+                let i = r + dr * s, j = c + dc * s;
+                while (i >= 0 && i < 6 && j >= 0 && j < 7 && b[i * 7 + j] === p) { cells.push(i * 7 + j); i += dr * s; j += dc * s; }
+            }
+            if (cells.length >= 4) return cells;
+        }
+        return null;
+    }
+
+    // ---------- 2. ROCK PAPER SCISSORS ARENA ----------
+    const RPS = { r: ['Rock', 'fa-hand-back-fist'], p: ['Paper', 'fa-hand'], s: ['Scissors', 'fa-hand-scissors'] };
+    const RPS_BEATS = { r: 's', s: 'p', p: 'r' };
+    GAMES.rps_arena = {
+        id: 'rps_arena', name: 'RPS Arena', icon: 'fa-hand-scissors', color: '#c084fc', min: 2, max: 8,
+        desc: '5 rounds. Beat as many opponents as you can each round.',
+        init(ctx) {
+            const st = baseState(ctx, { round: 1, total: 5, phase: 'pick', picked: {}, reveal: null, gain: {} });
+            ctx.secret.picks = {};
+            st.deadline = Date.now() + 10000;
+            const r = st.round; ctx.later(10000, () => resolveRps(st, ctx, r));
+            return st;
+        },
+        act(st, pid, a, ctx) {
+            if (st.over || st.phase !== 'pick' || a.t !== 'pick' || !RPS[a.v] || st.gone[pid] || ctx.secret.picks[pid]) return;
+            ctx.secret.picks[pid] = a.v; st.picked[pid] = true;
+            if (alive(st).every(id => ctx.secret.picks[id])) resolveRps(st, ctx, st.round);
+        },
+        render(st, me) {
+            const mine = st.picked[me];
+            const btns = Object.keys(RPS).map(k => `<button class="rps-btn" ${st.phase !== 'pick' || mine ? 'disabled' : ''} data-a='${JSON.stringify({ t: 'pick', v: k })}'><i class="fa-solid ${RPS[k][1]}"></i><span>${RPS[k][0]}</span></button>`).join('');
+            let body = '';
+            if (st.phase === 'reveal' && st.reveal) {
+                body = `<div class="rps-reveal">${st.order.filter(id => st.reveal[id]).map(id => `<div class="rps-card" style="--c:${colorOf(st, id)}"><i class="fa-solid ${RPS[st.reveal[id]][1]}"></i><b>${esc(st.names[id])}</b><small>${RPS[st.reveal[id]][0]} ${st.gain[id] ? '<em>+' + st.gain[id] + '</em>' : ''}</small></div>`).join('')}</div>`;
+            } else {
+                body = `<div class="rps-pick">${btns}</div><div class="uxa-note">${mine ? 'Locked in - waiting for others (' + Object.keys(st.picked).length + '/' + alive(st).length + ')' : 'Choose your weapon'}</div>`;
+            }
+            return `<div class="uxa-note big">Round ${st.round} / ${st.total} ${cd(st.deadline)}</div>${body}${strip(st, me)}`;
+        },
+        drop(st, pid, ctx) { if (st.phase === 'pick' && alive(st).length && alive(st).every(id => ctx.secret.picks[id])) resolveRps(st, ctx, st.round); }
+    };
+    function resolveRps(st, ctx, round) {
+        if (st.over || st.phase !== 'pick' || st.round !== round) return;
+        const picks = ctx.secret.picks;
+        const ids = alive(st);
+        ids.forEach(id => { if (!picks[id]) picks[id] = ['r', 'p', 's'][rnd(0, 2)]; });
+        const gain = {};
+        ids.forEach(a => { gain[a] = 0; ids.forEach(b => { if (a !== b && RPS_BEATS[picks[a]] === picks[b]) gain[a]++; }); st.score[a] += gain[a]; });
+        st.reveal = Object.assign({}, picks); st.gain = gain; st.phase = 'reveal'; st.deadline = 0;
+        ctx.later(3200, () => {
+            if (round >= st.total) { st.over = true; st.msg = 'Arena closed!'; return; }
+            st.round = round + 1; st.phase = 'pick'; st.picked = {}; st.reveal = null; st.gain = {};
+            ctx.secret.picks = {}; st.deadline = Date.now() + 10000;
+            const r2 = st.round; ctx.later(10000, () => resolveRps(st, ctx, r2));
+        });
+        ctx.push();
+    }
+
+    // ---------- 3. DICE DUEL ----------
+    GAMES.dice_duel = {
+        id: 'dice_duel', name: 'Dice Duel', icon: 'fa-dice', color: '#f472b6', min: 2, max: 6,
+        desc: 'Roll two dice for 5 rounds. Doubles earn a +5 bonus!',
+        init(ctx) {
+            const st = baseState(ctx, { round: 1, total: 5, phase: 'roll', rolls: {}, win: [] });
+            st.deadline = Date.now() + 10000; const r = st.round; ctx.later(10000, () => finishDice(st, ctx, r));
+            return st;
+        },
+        act(st, pid, a, ctx) {
+            if (st.over || st.phase !== 'roll' || a.t !== 'roll' || st.gone[pid] || st.rolls[pid]) return;
+            st.rolls[pid] = [rnd(1, 6), rnd(1, 6)];
+            if (alive(st).every(id => st.rolls[id])) finishDice(st, ctx, st.round);
+        },
+        render(st, me) {
+            const die = n => `<i class="die d${n}">${'<b></b>'.repeat(n)}</i>`;
+            const rows = st.order.map(id => {
+                const r = st.rolls[id];
+                return `<div class="dice-row ${st.win.includes(id) ? 'win' : ''}" style="--c:${colorOf(st, id)}"><span>${esc(st.names[id])}${id === me ? ' (you)' : ''}</span><div class="dice-pair">${r ? die(r[0]) + die(r[1]) + `<em>${r[0] + r[1]}${r[0] === r[1] ? ' +5' : ''}</em>` : '<small>' + (st.phase === 'roll' ? 'waiting...' : 'skipped') + '</small>'}</div></div>`;
+            }).join('');
+            const canRoll = st.phase === 'roll' && !st.rolls[me] && !st.gone[me] && !st.over;
+            return `<div class="uxa-note big">Round ${st.round} / ${st.total} ${cd(st.deadline)}</div>${rows}
+                <div class="uxa-actions"><button class="uxa-btn primary" ${canRoll ? '' : 'disabled'} data-a='{"t":"roll"}'><i class="fa-solid fa-dice"></i> Roll the dice</button></div>${strip(st, me)}`;
+        }
+    };
+    function finishDice(st, ctx, round) {
+        if (st.over || st.phase !== 'roll' || st.round !== round) return;
+        alive(st).forEach(id => { if (!st.rolls[id]) st.rolls[id] = [rnd(1, 6), rnd(1, 6)]; });
+        let best = -1, win = [];
+        alive(st).forEach(id => {
+            const [a, b] = st.rolls[id]; const t = a + b + (a === b ? 5 : 0);
+            st.score[id] += t;
+            if (t > best) { best = t; win = [id]; } else if (t === best) win.push(id);
+        });
+        st.win = win; st.phase = 'show'; st.deadline = 0;
+        ctx.later(2800, () => {
+            if (round >= st.total) { st.over = true; st.msg = 'Highest total wins!'; return; }
+            st.round = round + 1; st.phase = 'roll'; st.rolls = {}; st.win = [];
+            st.deadline = Date.now() + 10000; const r2 = st.round; ctx.later(10000, () => finishDice(st, ctx, r2));
+        });
+        ctx.push();
+    }
+
+    // ---------- 4. QUIZ BATTLE ----------
+    GAMES.quiz_battle = {
+        id: 'quiz_battle', name: 'Quiz Battle', icon: 'fa-circle-question', color: '#facc15', min: 2, max: 8,
+        desc: '8 Rotary & general questions. Faster answers score more.',
+        init(ctx) {
+            const pool = shuffle((GM().TRIVIA_QUESTIONS || []).concat(EXTRA_QUESTIONS).filter(q => q && q.options && q.options.length === 4)).slice(0, 8);
+            ctx.secret.qs = pool;
+            const st = baseState(ctx, { idx: 0, total: pool.length, phase: 'ask', q: null, answered: {}, result: null });
+            quizAsk(st, ctx, 0);
+            return st;
+        },
+        act(st, pid, a, ctx) {
+            if (st.over || st.phase !== 'ask' || a.t !== 'ans' || st.gone[pid] || st.answered[pid] !== undefined) return;
+            const i = clamp(parseInt(a.v, 10), 0, 3);
+            st.answered[pid] = true; ctx.secret.picks[pid] = { i, at: Date.now() };
+            if (alive(st).every(id => st.answered[id])) quizReveal(st, ctx, st.idx);
+        },
+        render(st, me) {
+            if (!st.q) return '';
+            const done = st.phase !== 'ask';
+            const opts = st.q.options.map((o, i) => {
+                let cls = '';
+                if (done && st.result) { if (i === st.result.answer) cls = 'ok'; else if (st.result.picks[me] === i) cls = 'bad'; }
+                else if (st.answered[me] && st.mine === i) cls = 'sel';
+                return `<button class="quiz-opt ${cls}" ${done || st.answered[me] ? 'disabled' : ''} data-a='${JSON.stringify({ t: 'ans', v: i })}'><b>${'ABCD'[i]}</b>${esc(o)}</button>`;
+            }).join('');
+            const foot = done && st.result
+                ? `<div class="uxa-note">${st.order.filter(id => st.result.gain[id]).map(id => chip(st, id, '+' + st.result.gain[id])).join(' ') || 'Nobody got it!'}</div>`
+                : `<div class="uxa-note">${st.answered[me] ? 'Answer locked (' + Object.keys(st.answered).length + '/' + alive(st).length + ')' : 'Pick the right answer'}</div>`;
+            return `<div class="uxa-note big">Question ${st.idx + 1} / ${st.total} ${cd(st.deadline)}</div><div class="quiz-q">${esc(st.q.q)}</div><div class="quiz-grid">${opts}</div>${foot}${strip(st, me)}`;
+        },
+        drop(st, pid, ctx) { if (st.phase === 'ask' && alive(st).length && alive(st).every(id => st.answered[id])) quizReveal(st, ctx, st.idx); }
+    };
+    function quizAsk(st, ctx, idx) {
+        const q = ctx.secret.qs[idx];
+        st.idx = idx; st.phase = 'ask'; st.q = { q: q.q, options: q.options }; st.answered = {}; st.result = null;
+        ctx.secret.answer = q.answer; ctx.secret.picks = {};
+        st.deadline = Date.now() + 12000; st.t0 = Date.now();
+        ctx.later(12000, () => quizReveal(st, ctx, idx));
+    }
+    function quizReveal(st, ctx, idx) {
+        if (st.over || st.phase !== 'ask' || st.idx !== idx) return;
+        const picks = {}, gain = {};
+        alive(st).forEach(id => {
+            const p = ctx.secret.picks[id];
+            if (!p) return;
+            picks[id] = p.i;
+            if (p.i === ctx.secret.answer) { const left = Math.max(0, 12 - (p.at - st.t0) / 1000); gain[id] = 100 + Math.round(left * 8); st.score[id] += gain[id]; }
+        });
+        st.phase = 'reveal'; st.result = { answer: ctx.secret.answer, picks, gain }; st.deadline = 0;
+        ctx.later(3200, () => { if (idx + 1 >= st.total) { st.over = true; st.msg = 'Quiz complete!'; } else quizAsk(st, ctx, idx + 1); });
+        ctx.push();
+    }
+
+    // ---------- 5. MEMORY DUEL ----------
+    const EMOJI = ['🌟', '🎯', '🚀', '🎈', '🍀', '🔥', '🎵', '🦋', '🌈', '🍕', '⚡', '🎲'];
+    GAMES.memory_duel = {
+        id: 'memory_duel', name: 'Memory Duel', icon: 'fa-brain', color: '#22d3ee', min: 2, max: 4,
+        desc: 'Take turns flipping cards. Every match earns a point and another turn.',
+        init(ctx) {
+            const vals = shuffle(EMOJI.slice(0, 8).concat(EMOJI.slice(0, 8)));
+            ctx.secret.cards = vals;
+            return baseState(ctx, { turn: 0, show: Array(16).fill(''), matched: Array(16).fill(0), flipped: [], lock: false });
+        },
+        act(st, pid, a, ctx) {
+            if (st.over || a.t !== 'flip' || st.lock || st.order[st.turn] !== pid) return;
+            const i = parseInt(a.i, 10);
+            if (!(i >= 0 && i < 16) || st.matched[i] || st.flipped.includes(i)) return;
+            st.flipped.push(i); st.show[i] = ctx.secret.cards[i];
+            if (st.flipped.length < 2) return;
+            const [x, y] = st.flipped;
+            if (ctx.secret.cards[x] === ctx.secret.cards[y]) {
+                st.matched[x] = st.matched[y] = st.turn + 1; st.score[pid]++; st.flipped = [];
+                if (st.matched.every(Boolean)) { st.over = true; st.msg = 'All pairs found!'; }
+            } else {
+                st.lock = true;
+                ctx.later(1300, () => { st.show[x] = ''; st.show[y] = ''; st.flipped = []; st.lock = false; st.turn = nextAlive(st, st.turn); });
+            }
+        },
+        drop(st, pid, ctx) {
+            if (alive(st).length < 2) { st.over = true; st.msg = 'Everyone else left.'; return; }
+            if (st.order[st.turn] === pid) { st.turn = nextAlive(st, st.turn); }
+        },
+        render(st, me) {
+            const myTurn = !st.over && st.order[st.turn] === me && !st.lock;
+            const cards = st.show.map((v, i) => {
+                const m = st.matched[i];
+                return `<button class="mem-card ${v ? 'up' : ''} ${m ? 'done' : ''}" style="${m ? '--c:' + COLORS[m - 1] : ''}" ${myTurn && !v ? '' : 'disabled'} data-a='${JSON.stringify({ t: 'flip', i })}'><span>${v || '?'}</span></button>`;
+            }).join('');
+            const note = st.over ? esc(st.msg) : (st.order[st.turn] === me ? 'Your turn - flip two cards' : esc(st.names[st.order[st.turn]]) + ' is picking...');
+            return `<div class="uxa-note big">${note}</div><div class="mem-grid">${cards}</div>${strip(st, me)}`;
+        }
+    };
+
+    // ---------- 6. TYPING RACE LIVE ----------
+    GAMES.typing_live = {
+        id: 'typing_live', name: 'Typing Race Live', icon: 'fa-keyboard', color: '#a78bfa', min: 2, max: 8,
+        desc: 'Everyone types the same text. First to finish wins.',
+        init(ctx) {
+            const pool = (GM().TYPING_SENTENCES || ['Service Above Self is the motto of Rotary.', 'Together we can make the world a better place.']);
+            const target = shuffle(pool).slice(0, 2).join(' ');
+            const st = baseState(ctx, { target, prog: {}, finish: {}, startAt: Date.now() + 3500 });
+            st.deadline = st.startAt + 75000;
+            ctx.later(3600, () => {});   // wakes everybody up when the countdown ends
+            ctx.later(75000 + 3500, () => { if (!st.over) { st.over = true; st.msg = 'Time is up!'; typingScore(st); } });
+            return st;
+        },
+        act(st, pid, a) {
+            if (st.over || a.t !== 'prog' || st.gone[pid] || st.finish[pid] || Date.now() < st.startAt - 200) return;
+            const text = String(a.v || '').slice(0, st.target.length + 5);
+            let n = 0; while (n < text.length && text[n] === st.target[n]) n++;
+            st.prog[pid] = n;
+            if (n >= st.target.length) st.finish[pid] = Date.now() - st.startAt;
+            if (alive(st).every(id => st.finish[id])) { st.over = true; st.msg = 'Everyone finished!'; }
+            if (st.over) typingScore(st);
+        },
+        render(st, me) {
+            const mine = st.prog[me] || 0, T = st.target;
+            const started = hnow() >= st.startAt;
+            const bars = st.order.map(id => { const p = Math.round(((st.prog[id] || 0) / T.length) * 100); return `<div class="tr-bar" style="--c:${colorOf(st, id)}"><span>${esc(st.names[id])}${st.finish[id] ? ' 🏁 ' + (st.finish[id] / 1000).toFixed(1) + 's' : ''}</span><i><u style="width:${p}%"></u></i><em>${p}%</em></div>`; }).join('');
+            const text = `<span class="tr-ok">${esc(T.slice(0, mine))}</span><span class="tr-cur">${esc(T.slice(mine, mine + 1))}</span><span class="tr-rest">${esc(T.slice(mine + 1))}</span>`;
+            const done = st.finish[me] || st.over;
+            return `<div class="uxa-note big">${started ? (done ? 'Finished' : 'Type now!') : 'Get ready...'} ${cd(st.startAt > hnow() ? st.startAt : st.deadline)}</div>
+                <div class="tr-text">${text}</div>
+                <input id="tr-input" class="uxa-input" data-live="prog" autocomplete="off" autocapitalize="off" spellcheck="false" ${started && !done ? '' : 'disabled'} placeholder="${started ? 'Start typing the text above...' : 'Wait for the countdown'}">
+                <div class="tr-bars">${bars}</div>`;
+        },
+        onState(st, me) { if (hnow() >= st.startAt) { const i = document.getElementById('tr-input'); if (i && !i.disabled && document.activeElement !== i) i.focus(); } }
+    };
+    function typingScore(st) {
+        const fin = Object.keys(st.finish).sort((a, b) => st.finish[a] - st.finish[b]);
+        st.order.forEach(id => { const k = fin.indexOf(id); st.score[id] = k >= 0 ? 100 + (st.order.length - k) * 10 : Math.round(((st.prog[id] || 0) / st.target.length) * 80); });
+    }
+
+    // ---------- 7. REACTION SHOWDOWN ----------
+    GAMES.reaction_showdown = {
+        id: 'reaction_showdown', name: 'Reaction Showdown', icon: 'fa-bolt', color: '#fb923c', min: 2, max: 8,
+        desc: 'Wait for green, then tap first. Tap early and you lose points!',
+        init(ctx) {
+            const st = baseState(ctx, { round: 1, total: 5, phase: 'wait', ms: {}, early: {}, results: null });
+            reactStart(st, ctx, 1);
+            return st;
+        },
+        act(st, pid, a, ctx) {
+            if (st.over || st.gone[pid] || st.ms[pid] !== undefined || st.early[pid]) return;
+            if (st.phase === 'wait' && a.t === 'tap') { st.early[pid] = true; st.score[pid] -= 1; }
+            else if (st.phase === 'go' && a.t === 'tap') st.ms[pid] = clamp(Math.round(Number(a.ms) || 999), 90, 3000);
+            else return;
+            if (alive(st).every(id => st.ms[id] !== undefined || st.early[id])) reactEnd(st, ctx, st.round);
+        },
+        render(st, me) {
+            const mine = st.ms[me] !== undefined || st.early[me];
+            let cls = 'wait', label = 'WAIT...', sub = 'Do not tap until the pad turns green';
+            if (st.phase === 'go') { cls = 'go'; label = mine ? (st.ms[me] + ' ms') : 'TAP!'; sub = mine ? 'Locked in' : ''; }
+            if (st.phase === 'wait' && st.early[me]) { cls = 'early'; label = 'TOO EARLY'; sub = '-1 point'; }
+            if (st.phase === 'show') { cls = 'show'; label = 'Round results'; sub = ''; }
+            const res = st.results ? `<div class="rx-res">${st.results.map(r => `<span>${chip(st, r.id, r.early ? 'early (-1)' : r.ms + ' ms' + (r.pts ? ' +' + r.pts : ''))}</span>`).join('')}</div>` : '';
+            return `<div class="uxa-note big">Round ${st.round} / ${st.total}</div>
+                <button class="rx-pad ${cls}" ${st.phase === 'show' || (st.phase === 'go' && mine) ? 'disabled' : ''} data-react="1"><strong>${label}</strong><small>${sub}</small></button>${res}${strip(st, me)}`;
+        },
+        onState(st) { if (st.phase === 'go' && S) { const k = st.round; if (S.goRecv !== k) { S.goRecv = k; S.goAt = performance.now(); } } }
+    };
+    function reactStart(st, ctx, round) {
+        st.round = round; st.phase = 'wait'; st.ms = {}; st.early = {}; st.results = null;
+        ctx.later(rnd(2000, 5200), () => {
+            if (st.over || st.round !== round || st.phase !== 'wait') return;
+            st.phase = 'go'; st.goT = Date.now();
+            ctx.later(3200, () => reactEnd(st, ctx, round));
+        });
+    }
+    function reactEnd(st, ctx, round) {
+        if (st.over || st.round !== round || st.phase === 'show') return;
+        const valid = alive(st).filter(id => st.ms[id] !== undefined).sort((a, b) => st.ms[a] - st.ms[b]);
+        const pts = [3, 2, 1];
+        const results = [];
+        valid.forEach((id, i) => { const p = pts[i] || 0; st.score[id] += p; results.push({ id, ms: st.ms[id], pts: p }); });
+        alive(st).filter(id => st.early[id]).forEach(id => results.push({ id, early: true }));
+        st.results = results; st.phase = 'show';
+        ctx.later(3000, () => { if (round >= st.total) { st.over = true; st.msg = 'Fastest fingers win!'; } else reactStart(st, ctx, round + 1); });
+        ctx.push();
+    }
+
+    // ---------- 8 & 9. RACE GAMES (Math Duel, Word Scramble Race) ----------
+    function makeRace(cfg) {
+        return {
+            id: cfg.id, name: cfg.name, icon: cfg.icon, color: cfg.color, min: 2, max: 8, desc: cfg.desc,
+            init(ctx) {
+                const st = baseState(ctx, { idx: 0, total: cfg.total, phase: 'ask', prompt: '', hint: '', done: {}, order2: [], result: null });
+                raceAsk(st, ctx, 0, cfg);
+                return st;
+            },
+            act(st, pid, a, ctx) {
+                if (st.over || st.phase !== 'ask' || a.t !== 'guess' || st.gone[pid] || st.done[pid]) return;
+                const g = cfg.norm(a.v);
+                if (!g) return;
+                if (g === ctx.secret.answer) {
+                    const pts = [100, 60, 30, 10][st.order2.length] || 10;
+                    st.order2.push(pid); st.done[pid] = 'ok'; st.score[pid] += pts;
+                } else { st.done[pid] = 'bad'; st.score[pid] = Math.max(0, st.score[pid] - cfg.penalty); }
+                if (alive(st).every(id => st.done[id])) raceEnd(st, ctx, st.idx, cfg);
+            },
+            render(st, me) {
+                const mine = st.done[me];
+                const res = st.result ? `<div class="uxa-note">Answer: <b>${esc(st.result.answer)}</b> — ${st.order2.map((id, i) => chip(st, id, ['🥇', '🥈', '🥉', ''][i] || '')).join(' ') || 'nobody got it'}</div>` : '';
+                const status = st.phase !== 'ask' ? '' : (mine === 'ok' ? '<div class="uxa-note ok">Correct! Waiting for the others...</div>' : mine === 'bad' ? '<div class="uxa-note bad">Wrong - you are out for this one</div>' : '');
+                return `<div class="uxa-note big">${cfg.label} ${st.idx + 1} / ${st.total} ${cd(st.deadline)}</div>
+                    <div class="race-prompt">${esc(st.prompt)}</div>${st.hint ? '<div class="uxa-note">Hint: ' + esc(st.hint) + '</div>' : ''}
+                    <input id="race-input" class="uxa-input center" data-enter="guess" ${st.phase !== 'ask' || mine ? 'disabled' : ''} autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${cfg.ph}">
+                    <div class="uxa-actions"><button class="uxa-btn primary" ${st.phase !== 'ask' || mine ? 'disabled' : ''} data-submit="race-input" data-act="guess">Submit</button></div>${status}${res}${strip(st, me)}`;
+            },
+            onState(st) { const i = document.getElementById('race-input'); if (i && !i.disabled && document.activeElement !== i) i.focus(); },
+            drop(st, pid, ctx) { if (st.phase === 'ask' && alive(st).length && alive(st).every(id => st.done[id])) raceEnd(st, ctx, st.idx, cfg); }
+        };
+    }
+    function raceAsk(st, ctx, idx, cfg) {
+        const q = cfg.gen(ctx, idx);
+        st.idx = idx; st.phase = 'ask'; st.prompt = q.prompt; st.hint = ''; st.done = {}; st.order2 = []; st.result = null;
+        ctx.secret.answer = q.answer;
+        st.deadline = Date.now() + cfg.time * 1000;
+        if (cfg.hintAt) ctx.later(cfg.hintAt * 1000, () => { if (st.idx === idx && st.phase === 'ask') st.hint = q.answer.charAt(0).toUpperCase() + ' (' + q.answer.length + ' letters)'; });
+        ctx.later(cfg.time * 1000, () => raceEnd(st, ctx, idx, cfg));
+    }
+    function raceEnd(st, ctx, idx, cfg) {
+        if (st.over || st.phase !== 'ask' || st.idx !== idx) return;
+        st.phase = 'reveal'; st.result = { answer: String(ctx.secret.answer).toUpperCase() }; st.deadline = 0;
+        ctx.later(2600, () => { if (idx + 1 >= st.total) { st.over = true; st.msg = 'Race finished!'; } else raceAsk(st, ctx, idx + 1, cfg); });
+        ctx.push();
+    }
+    GAMES.math_duel = makeRace({
+        id: 'math_duel', name: 'Math Duel', icon: 'fa-calculator', color: '#4ade80', total: 8, time: 15, penalty: 10, label: 'Question', ph: 'Type the answer',
+        desc: 'First correct answer scores the most. A wrong answer costs 10 points.',
+        norm: v => { const n = String(v).trim(); return /^-?\d+$/.test(n) ? n : ''; },
+        gen(ctx, i) {
+            const lvl = i < 3 ? 1 : i < 6 ? 2 : 3; const ops = lvl === 1 ? ['+', '-'] : ['+', '-', '*'];
+            const op = ops[rnd(0, ops.length - 1)]; let a = rnd(5, 10 * lvl + 20), b = rnd(2, 9 * lvl + 6);
+            if (op === '-' && b > a) [a, b] = [b, a];
+            if (op === '*') { a = rnd(3, 9 + lvl * 2); b = rnd(3, 12); }
+            return { prompt: a + ' ' + (op === '*' ? '×' : op) + ' ' + b + ' = ?', answer: String(op === '+' ? a + b : op === '-' ? a - b : a * b) };
+        }
+    });
+    GAMES.word_race = makeRace({
+        id: 'word_race', name: 'Word Scramble Race', icon: 'fa-font', color: '#f97316', total: 6, time: 22, hintAt: 9, penalty: 15, label: 'Word', ph: 'Unscramble the word',
+        desc: 'Unscramble Rotary words faster than everyone else.',
+        norm: v => String(v).trim().toUpperCase().replace(/[^A-Z]/g, ''),
+        gen(ctx, i) {
+            if (!ctx.secret.words) ctx.secret.words = shuffle((GM().WORD_BANK || ['ROTARACT', 'SERVICE', 'LEADERSHIP', 'COMMUNITY', 'FELLOWSHIP', 'VOLUNTEER'])).slice(0, 6);
+            const w = ctx.secret.words[i]; let s = w;
+            for (let k = 0; k < 8 && s === w; k++) s = shuffle(w.split('')).join('');
+            return { prompt: s.split('').join(' '), answer: w };
+        }
+    });
+
+    // ---------- 10. NUMBER BOMB ----------
+    GAMES.number_bomb = {
+        id: 'number_bomb', name: 'Number Bomb', icon: 'fa-bomb', color: '#f87171', min: 2, max: 8,
+        desc: 'A bomb hides between 1 and 100. Take turns guessing - hit it and you explode!',
+        init(ctx) {
+            ctx.secret.bomb = rnd(1, 100);
+            const st = baseState(ctx, { lo: 0, hi: 101, turn: 0, log: [], boom: null });
+            bombTimer(st, ctx);
+            return st;
+        },
+        act(st, pid, a, ctx) {
+            if (st.over || a.t !== 'guess' || st.order[st.turn] !== pid) return;
+            const n = parseInt(a.v, 10);
+            if (!(n > st.lo && n < st.hi)) return;
+            bombGuess(st, ctx, pid, n);
+        },
+        drop(st, pid, ctx) {
+            const left = alive(st);
+            if (left.length === 1) { st.over = true; st.msg = 'Last player standing!'; st.rank = left.concat(st.order.filter(id => st.gone[id])); left.forEach(id => st.score[id] = 1); return; }
+            if (st.order[st.turn] === pid) { st.turn = nextAlive(st, st.turn); bombTimer(st, ctx); }
+        },
+        render(st, me) {
+            const mine = !st.over && st.order[st.turn] === me;
+            const log = st.log.slice(-5).map(l => `<span>${chip(st, l.id)} → <b>${l.n}</b></span>`).join('');
+            return `<div class="uxa-note big">${st.over ? esc(st.msg) : (mine ? 'Your turn!' : esc(st.names[st.order[st.turn]]) + ' is guessing...')} ${cd(st.deadline)}</div>
+                <div class="bomb-range"><span>${st.lo}</span><div class="bomb-core"><i class="fa-solid fa-bomb"></i><small>${st.boom ? 'BOOM at ' + st.boom.n : 'somewhere between'}</small></div><span>${st.hi}</span></div>
+                <div class="uxa-note">Pick a number from <b>${st.lo + 1}</b> to <b>${st.hi - 1}</b></div>
+                <input id="bomb-input" class="uxa-input center" type="number" inputmode="numeric" data-enter="guess" ${mine ? '' : 'disabled'} min="${st.lo + 1}" max="${st.hi - 1}" placeholder="${mine ? 'Your guess' : 'Waiting...'}">
+                <div class="uxa-actions"><button class="uxa-btn primary" ${mine ? '' : 'disabled'} data-submit="bomb-input" data-act="guess">Guess</button></div>
+                <div class="bomb-log">${log}</div>${strip(st, me)}`;
+        },
+        onState(st, me) { const i = document.getElementById('bomb-input'); if (i && !i.disabled && document.activeElement !== i) i.focus(); }
+    };
+    function bombGuess(st, ctx, pid, n) {
+        const bomb = ctx.secret.bomb;
+        st.log.push({ id: pid, n });
+        if (n === bomb) {
+            st.boom = { id: pid, n }; st.over = true; st.msg = '💥 ' + st.names[pid] + ' hit the bomb!';
+            st.order.forEach(id => { st.score[id] = id === pid ? 0 : 1; });
+            st.rank = st.order.filter(id => id !== pid).concat([pid]);
+            return;
+        }
+        if (n < bomb) st.lo = n; else st.hi = n;
+        if (st.hi - st.lo === 2) { /* only the bomb remains: next player is doomed but must still guess */ }
+        st.turn = nextAlive(st, st.turn); bombTimer(st, ctx);
+    }
+    function bombTimer(st, ctx) {
+        const turn = st.turn, lo = st.lo, hi = st.hi, pid = st.order[turn];
+        st.deadline = Date.now() + 20000;
+        ctx.later(20000, () => {
+            if (st.over || st.turn !== turn || st.lo !== lo || st.hi !== hi) return;
+            bombGuess(st, ctx, pid, rnd(st.lo + 1, st.hi - 1));
+        });
+    }
+
+    const ORDER = ['connect_four', 'rps_arena', 'dice_duel', 'quiz_battle', 'memory_duel', 'typing_live', 'reaction_showdown', 'math_duel', 'word_race', 'number_bomb'];
+
+    // =====================================================================
+    // SESSION / ROOM ENGINE
+    // =====================================================================
+    let S = null;          // active session (null = hub)
+    let UI = null;         // overlay element
+    let flash = '';        // banner shown on the hub (e.g. "Room closed")
+    let tickTimer = null;
+    const hnow = () => Date.now() + (S ? S.off || 0 : 0);
+
+    // ---------- transport ----------
+    function openTransport(code, onMsg, onMode) {
+        const name = 'unity-arcade-' + code;
+        const tx = { mode: 'local', ready: false, queue: [], ch: null, bc: null, client: null };
+        const client = window.DB || window.DB_ADMIN;
+        const useLocal = () => {
+            if (tx.bc || typeof BroadcastChannel === 'undefined') { tx.ready = true; flushQ(); return; }
+            tx.mode = 'local';
+            tx.bc = new BroadcastChannel(name);
+            tx.bc.onmessage = e => onMsg(e.data);
+            tx.ready = true; flushQ(); onMode && onMode('local');
+        };
+        const flushQ = () => { const q = tx.queue.splice(0); q.forEach(m => tx.send(m)); };
+        tx.send = (m) => {
+            if (!tx.ready) { tx.queue.push(m); return; }
+            m.r = code;
+            try {
+                if (tx.mode === 'cloud' && tx.ch) tx.ch.send({ type: 'broadcast', event: 'm', payload: m });
+                else if (tx.bc) tx.bc.postMessage(m);
+            } catch (e) { /* silent */ }
+        };
+        tx.close = () => {
+            try { if (tx.ch && client) client.removeChannel(tx.ch); } catch (e) { /* silent */ }
+            try { tx.bc && tx.bc.close(); } catch (e) { /* silent */ }
+            tx.ready = false; tx.ch = null; tx.bc = null;
+        };
+        if (client && typeof client.channel === 'function') {
+            try {
+                tx.client = client;
+                tx.ch = client.channel(name, { config: { broadcast: { self: false, ack: false } } });
+                tx.ch.on('broadcast', { event: 'm' }, p => onMsg(p && p.payload));
+                const fallback = setTimeout(() => { if (!tx.ready) { try { client.removeChannel(tx.ch); } catch (e) { /* silent */ } tx.ch = null; useLocal(); } }, 4500);
+                tx.ch.subscribe(status => {
+                    if (status === 'SUBSCRIBED') { clearTimeout(fallback); tx.mode = 'cloud'; tx.ready = true; flushQ(); onMode && onMode('cloud'); }
+                    else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                        if (!tx.ready) { clearTimeout(fallback); try { client.removeChannel(tx.ch); } catch (e) { /* silent */ } tx.ch = null; useLocal(); }
+                    }
+                });
+                return tx;
+            } catch (e) { tx.ch = null; }
+        }
+        useLocal();
+        return tx;
+    }
+
+    // ---------- session lifecycle ----------
+    function playerName() {
+        const el = UI && UI.querySelector('#uxa-name');
+        let n = (el && el.value || store.get('player_name', '') || (window.AuthManager && window.AuthManager.currentUser && (window.AuthManager.currentUser.full_name || window.AuthManager.currentUser.name)) || '').toString().trim();
+        if (!n) n = 'Player' + rnd(10, 99);
+        n = n.slice(0, 16);
+        store.set('player_name', n);
+        return n;
+    }
+    function newSession(code, isHost) {
+        const id = uid();
+        S = {
+            code, isHost, status: isHost ? 'ready' : 'joining', me: { id, name: playerName() }, hostId: isHost ? id : null,
+            players: [], gameId: null, phase: 'lobby', state: null, results: null, off: 0, tx: null,
+            lastHost: Date.now(), lastSeen: {}, timers: [], secret: {}, createdAt: Date.now(), closesAt: Date.now() + IDLE_MS,
+            chat: [], mode: '', timerSet: [], goRecv: 0, goAt: 0, error: ''
+        };
+        S.tx = openTransport(code, onMsg, mode => { setTimeout(() => { if (S) { S.mode = mode; render(); } }, 0); });
+        S.hb = setInterval(heartbeat, 2000);
+        S.ping = setInterval(() => { if (S && !S.isHost) S.tx.send({ t: 'ping', f: S.me.id }); }, 3000);
+        return S;
+    }
+    function createRoom(gameId) {
+        if (S) return;
+        const code = genCode();
+        newSession(code, true);
+        S.players = [{ id: S.me.id, name: S.me.name, ready: true }];
+        S.gameId = GAMES[gameId] ? gameId : ORDER[0];
+        S.hostId = S.me.id;
+        render();
+    }
+    function joinRoom(code) {
+        code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (code.length !== 5) { flash = 'Enter the 5-character room code.'; render(); return; }
+        if (S) return;
+        newSession(code, false);
+        let tries = 0;
+        const send = () => { if (S && S.status === 'joining') S.tx.send({ t: 'join', f: S.me.id, name: S.me.name }); };
+        send();
+        S.joinTimer = setInterval(() => {
+            if (!S || S.status !== 'joining') return;
+            if (++tries >= 4) { const c = S.code; teardown('Room ' + c + ' was not found - it may be closed.'); return; }
+            send();
+        }, 1300);
+        render();
+    }
+    function teardown(msg) {
+        if (!S) return;
+        clearInterval(S.hb); clearInterval(S.ping); clearInterval(S.joinTimer);
+        S.timers.forEach(clearTimeout);
+        try { S.tx.close(); } catch (e) { /* silent */ }
+        S = null; flash = msg || '';
+        render();
+    }
+    function closeRoom(reason) {
+        if (!S || !S.isHost) return;
+        S.tx.send({ t: 'closed', f: S.me.id, reason: (reason && reason !== 'You closed the room.') ? reason : 'The host closed the room.' });
+        const msg = reason || 'You closed the room.';
+        setTimeout(() => {}, 0);
+        teardown(msg);
+    }
+    function leaveRoom() {
+        if (!S) return;
+        if (S.isHost) { closeRoom('You closed the room.'); return; }
+        S.tx.send({ t: 'leave', f: S.me.id });
+        teardown('You left the room.');
+    }
+    function touch() { if (S && S.isHost) S.closesAt = Date.now() + IDLE_MS; }
+
+    function heartbeat() {
+        if (!S) return;
+        const now = Date.now();
+        if (S.isHost) {
+            if (now > S.closesAt) { closeRoom('Room closed after 15 minutes of inactivity.'); return; }
+            if (now - S.createdAt > MAX_LIFE_MS) { closeRoom('Room closed - 2 hour limit reached.'); return; }
+            S.players.filter(p => p.id !== S.me.id && now - (S.lastSeen[p.id] || now) > PLAYER_TIMEOUT).forEach(p => removePlayer(p.id, 'timed out'));
+            broadcastRoom();
+        } else if (S.status === 'in' && now - S.lastHost > HOST_TIMEOUT) {
+            teardown('Room closed - the host went offline.');
+        }
+    }
+
+    // ---------- messages ----------
+    function roomPayload() {
+        return { t: 'room', f: S.me.id, players: S.players, gameId: S.gameId, phase: S.phase, hostId: S.hostId, closesAt: S.closesAt, results: S.results, now: Date.now() };
+    }
+    function broadcastRoom() { if (S && S.isHost) { S.tx.send(roomPayload()); render(); } }
+    function pushState() {
+        if (!S || !S.isHost || !S.state) return;
+        S.state._now = Date.now();
+        S.tx.send({ t: 'state', f: S.me.id, s: S.state, now: Date.now() });
+        const G = GAMES[S.gameId]; if (G && G.onState) G.onState(S.state, S.me.id);
+        render();
+    }
+    function onMsg(m) {
+        if (!S || !m || m.r !== S.code || m.f === S.me.id) return;
+        if (m.to && m.to !== S.me.id) return;
+        if (S.isHost) hostHandle(m); else clientHandle(m);
+    }
+
+    function hostHandle(m) {
+        S.lastSeen[m.f] = Date.now();
+        switch (m.t) {
+            case 'join': {
+                const ex = S.players.find(p => p.id === m.f);
+                if (ex) { broadcastRoom(); return; }
+                if (S.phase === 'playing') { S.tx.send({ t: 'denied', f: S.me.id, to: m.f, reason: 'A game is already in progress.' }); return; }
+                if (S.players.length >= 8) { S.tx.send({ t: 'denied', f: S.me.id, to: m.f, reason: 'This room is full (8 players).' }); return; }
+                let name = String(m.name || 'Player').slice(0, 16), n = 2;
+                while (S.players.some(p => p.name === name)) name = String(m.name || 'Player').slice(0, 13) + ' ' + (n++);
+                S.players.push({ id: m.f, name, ready: false });
+                touch(); sysChat(name + ' joined'); broadcastRoom();
+                if (S.phase === 'results' && S.state) pushState();
+                break;
+            }
+            case 'ping': break;
+            case 'leave': removePlayer(m.f, 'left'); break;
+            case 'ready': { const p = S.players.find(x => x.id === m.f); if (p) { p.ready = !!m.v; touch(); broadcastRoom(); } break; }
+            case 'act': hostAct(m.f, m.a); break;
+            case 'chat': addChat(m.f, String(m.text || '').slice(0, 200)); break;
+        }
+    }
+    function clientHandle(m) {
+        switch (m.t) {
+            case 'room': {
+                S.lastHost = Date.now(); S.hostId = m.hostId;
+                S.players = m.players; S.gameId = m.gameId; S.phase = m.phase; S.closesAt = m.closesAt; S.results = m.results;
+                S.off = (m.now || Date.now()) - Date.now();
+                const inRoom = S.players.some(p => p.id === S.me.id);
+                if (S.status === 'joining' && inRoom) { S.status = 'in'; clearInterval(S.joinTimer); flash = ''; }
+                else if (S.status === 'in' && !inRoom) { teardown('You were removed from the room.'); return; }
+                if (S.phase === 'lobby') S.state = null;
+                render();
+                break;
+            }
+            case 'state': {
+                S.lastHost = Date.now(); S.state = m.s; S.off = (m.now || Date.now()) - Date.now();
+                const G = GAMES[S.gameId]; if (G && G.onState) G.onState(S.state, S.me.id);
+                render();
+                break;
+            }
+            case 'chat': pushChat(m); render(); break;
+            case 'denied': teardown(m.reason || 'Could not join the room.'); break;
+            case 'closed': teardown(m.reason || 'The host closed the room.'); break;
+        }
+    }
+    function removePlayer(id, why) {
+        const p = S.players.find(x => x.id === id); if (!p) return;
+        S.players = S.players.filter(x => x.id !== id);
+        sysChat(p.name + ' ' + why);
+        if (S.phase === 'playing' && S.state) {
+            S.state.gone[id] = true;
+            const G = GAMES[S.gameId];
+            if (alive(S.state).length < G.min) { S.state.over = true; S.state.msg = S.state.msg || 'Not enough players left.'; }
+            else if (G.drop) G.drop(S.state, id, makeCtx());
+            afterChange();
+        }
+        S.tx.send({ t: 'kick', f: S.me.id, to: id });
+        broadcastRoom();
+    }
+    function kick(id) { if (S && S.isHost && id !== S.me.id) { const p = S.players.find(x => x.id === id); S.tx.send({ t: 'denied', f: S.me.id, to: id, reason: 'The host removed you from the room.' }); removePlayer(id, 'was removed'); } }
+
+    // ---------- chat ----------
+    function pushChat(m) { S.chat.push({ n: m.n, text: m.text, c: m.c, sys: !!m.sys }); if (S.chat.length > 60) S.chat.shift(); }
+    function sysChat(text) { const m = { t: 'chat', f: S.me.id, n: '', text, sys: true }; pushChat(m); S.tx.send(m); }
+    function addChat(fromId, text) {
+        if (!text.trim()) return;
+        const p = S.players.find(x => x.id === fromId); if (!p) return;
+        const m = { t: 'chat', f: S.me.id, n: p.name, text, c: COLORS[S.players.indexOf(p) % COLORS.length] };
+        pushChat(m); S.tx.send(m); touch(); render();
+    }
+    function sendChat(text) {
+        text = String(text || '').trim().slice(0, 200); if (!text || !S) return;
+        if (S.isHost) addChat(S.me.id, text); else S.tx.send({ t: 'chat', f: S.me.id, text });
+    }
+
+    // ---------- game flow (host) ----------
+    function makeCtx() {
+        const players = S.state ? S.state.order.map(id => ({ id, name: S.state.names[id] })) : S.players.map(p => ({ id: p.id, name: p.name }));
+        return {
+            players, secret: S.secret,
+            later(ms, fn) { const t = setTimeout(() => { if (!S || S.phase !== 'playing') return; try { fn(); } catch (e) { console.error('[Arcade]', e); } afterChange(); }, ms); S.timers.push(t); return t; },
+            push() { /* state is pushed after the current step */ }
+        };
+    }
+    function startGame() {
+        if (!S || !S.isHost) return;
+        const G = GAMES[S.gameId];
+        const n = S.players.length;
+        if (n < G.min) { flashRoom('Need at least ' + G.min + ' players for ' + G.name + '.'); return; }
+        if (n > G.max) { flashRoom(G.name + ' supports up to ' + G.max + ' players - remove some or pick another game.'); return; }
+        if (S.players.some(p => !p.ready)) { flashRoom('Waiting for everyone to press Ready.'); return; }
+        S.timers.forEach(clearTimeout); S.timers = []; S.secret = {}; S.results = null;
+        S.phase = 'playing';
+        const ctx = { players: S.players.map(p => ({ id: p.id, name: p.name })), secret: S.secret };
+        const real = makeCtxFor(ctx.players);
+        S.state = G.init(real);
+        touch(); sysChat('Game started: ' + G.name);
+        S.tx.send(roomPayload());
+        afterChange();
+    }
+    function makeCtxFor(players) {
+        const c = makeCtx(); c.players = players; return c;
+    }
+    function hostAct(pid, a) {
+        if (!S || S.phase !== 'playing' || !S.state || !a) return;
+        const G = GAMES[S.gameId];
+        try { G.act(S.state, pid, a, makeCtx()); } catch (e) { console.error('[Arcade] act failed', e); }
+        touch(); afterChange();
+    }
+    function afterChange() {
+        if (!S || !S.isHost || !S.state) return;
+        if (S.state.over && S.phase === 'playing') finishGame(); else pushState();
+    }
+    function finishGame() {
+        S.timers.forEach(clearTimeout); S.timers = [];
+        const st = S.state;
+        const rankIds = st.rank ? st.rank.slice() : st.order.slice().sort((a, b) => (st.score[b] || 0) - (st.score[a] || 0));
+        const rank = rankIds.map(id => ({ id, name: st.names[id], score: st.score[id] || 0, gone: !!st.gone[id] }));
+        const top = rank.length ? rank[0].score : 0;
+        const noWinner = !st.rank && top <= 0;
+        const winners = noWinner ? [] : (st.rank ? [rank[0].id] : rank.filter(r => r.score === top && !r.gone).map(r => r.id));
+        S.results = { rank, winners, msg: st.msg || '' };
+        S.phase = 'results';
+        winners.forEach(id => { if (id === S.me.id) { const w = store.get('arcade_wins', {}); w[S.gameId] = (w[S.gameId] || 0) + 1; store.set('arcade_wins', w); } });
+        S.tx.send(roomPayload());
+        pushState();
+        touch();
+    }
+    function again() { if (S && S.isHost && S.phase === 'results') { S.players.forEach(p => { if (p.id !== S.me.id) p.ready = true; }); startGame(); } }
+    function toLobby() {
+        if (!S || !S.isHost) return;
+        S.timers.forEach(clearTimeout); S.timers = [];
+        S.phase = 'lobby'; S.state = null; S.results = null; S.players.forEach(p => { p.ready = p.id === S.me.id; });
+        broadcastRoom();
+    }
+    function selectGame(id) { if (S && S.isHost && S.phase === 'lobby' && GAMES[id]) { S.gameId = id; S.players.forEach(p => { p.ready = p.id === S.me.id; }); touch(); broadcastRoom(); } }
+    function flashRoom(msg) { if (!S) return; S.error = msg; render(); clearTimeout(S.errT); S.errT = setTimeout(() => { if (S) { S.error = ''; render(); } }, 3500); }
+    function toggleReady() { if (!S || S.isHost) return; const me = S.players.find(p => p.id === S.me.id); const v = !(me && me.ready); S.tx.send({ t: 'ready', f: S.me.id, v }); if (me) me.ready = v; render(); }
+    function sendAct(a) {
+        if (!S || S.phase !== 'playing') return;
+        if (S.isHost) hostAct(S.me.id, a); else S.tx.send({ t: 'act', f: S.me.id, a });
+    }
+
+    // =====================================================================
+    // UI
+    // =====================================================================
+    const SOLO = () => GM().GAMES || {};
+
+    function ensureUI() {
+        if (UI && document.body.contains(UI)) return UI;
+        injectCSS();
+        UI = document.createElement('div');
+        UI.id = 'ux-arcade';
+        UI.setAttribute('role', 'dialog');
+        UI.setAttribute('aria-label', 'Unity Arcade');
+        UI.innerHTML = '<div class="uxa-orb a"></div><div class="uxa-orb b"></div><div class="uxa-orb c"></div><div class="uxa-shell"><div class="uxa-head"></div><div class="uxa-main"></div><div class="uxa-chat"></div></div>';
+        document.body.appendChild(UI);
+        UI.addEventListener('click', onClick);
+        UI.addEventListener('keydown', onKey);
+        UI.addEventListener('input', onInput);
+        tickTimer = setInterval(tick, 250);
+        return UI;
+    }
+    function tick() {
+        if (!UI) return;
+        UI.querySelectorAll('[data-cd]').forEach(el => {
+            const left = Math.max(0, Math.ceil((Number(el.getAttribute('data-cd')) - hnow()) / 1000));
+            el.textContent = left + 's';
+            el.classList.toggle('hot', left <= 3);
+        });
+        const idle = UI.querySelector('[data-idle]');
+        if (idle && S) { const l = Math.max(0, Math.round((S.closesAt - Date.now()) / 1000)); idle.textContent = Math.floor(l / 60) + ':' + String(l % 60).padStart(2, '0'); }
+    }
+    function openArcade(opts) {
+        opts = opts || {};
+        ensureUI(); UI.classList.add('open'); document.body.classList.add('uxa-lock');
+        render();
+        if (opts.code) setTimeout(() => joinRoom(opts.code), 50);
+        else if (opts.game && GAMES[opts.game]) setTimeout(() => createRoom(opts.game), 50);
+    }
+    function closeArcade(force) {
+        if (S && !force && !confirm(S.isHost ? 'Leaving will close the room for everyone. Continue?' : 'Leave this room?')) return;
+        if (S) leaveRoom();
+        if (UI) UI.classList.remove('open');
+        document.body.classList.remove('uxa-lock');
+        flash = '';
+        if (/games\.html$/i.test(location.pathname)) { location.href = 'index.html#games'; }
+    }
+
+    // ---------- events ----------
+    function onClick(e) {
+        const t = e.target.closest('[data-a],[data-react],[data-submit],[data-ux]');
+        if (!t || t.disabled) return;
+        if (t.hasAttribute('data-a')) { try { sendAct(JSON.parse(t.getAttribute('data-a'))); } catch (er) { /* silent */ } return; }
+        if (t.hasAttribute('data-react')) {
+            const st = S && S.state; if (!st) return;
+            if (st.phase === 'go') sendAct({ t: 'tap', ms: Math.round(performance.now() - (S.goAt || performance.now())) });
+            else if (st.phase === 'wait') sendAct({ t: 'tap' });
+            return;
+        }
+        if (t.hasAttribute('data-submit')) {
+            const i = UI.querySelector('#' + t.getAttribute('data-submit'));
+            if (i && i.value !== '') { sendAct({ t: t.getAttribute('data-act'), v: i.value }); i.value = ''; }
+            return;
+        }
+        const [cmd, arg] = t.getAttribute('data-ux').split(':');
+        switch (cmd) {
+            case 'create': createRoom(arg); break;
+            case 'join': joinRoom((UI.querySelector('#uxa-code') || {}).value); break;
+            case 'solo': closeArcade(true); if (GM().launchGame) GM().launchGame(arg); break;
+            case 'close': closeArcade(); break;
+            case 'leave': closeArcade(); break;
+            case 'closeroom': if (confirm('Close this room for everyone?')) closeRoom('You closed the room.'); break;
+            case 'select': selectGame(arg); break;
+            case 'ready': toggleReady(); break;
+            case 'start': startGame(); break;
+            case 'again': again(); break;
+            case 'lobby': toLobby(); break;
+            case 'kick': kick(arg); break;
+            case 'copy': copyCode(); break;
+            case 'link': copyLink(); break;
+            case 'chat': { const i = UI.querySelector('#uxa-chat-in'); if (i) { sendChat(i.value); i.value = ''; i.focus(); } break; }
+            case 'togglechat': UI.classList.toggle('chat-open'); break;
+        }
+    }
+    function copyCode() { if (!S) return; try { navigator.clipboard.writeText(S.code); flashRoom('Room code copied'); } catch (e) { flashRoom('Code: ' + S.code); } }
+    function copyLink() {
+        if (!S) return;
+        const base = location.origin + location.pathname.replace(/[^/]*$/, '') + 'games.html?room=' + S.code;
+        try { navigator.clipboard.writeText(base); flashRoom('Invite link copied'); } catch (e) { flashRoom(base); }
+    }
+    function onKey(e) {
+        const t = e.target;
+        if (e.key === 'Enter' && t.id === 'uxa-chat-in') { sendChat(t.value); t.value = ''; return; }
+        if (e.key === 'Enter' && t.id === 'uxa-code') { joinRoom(t.value); return; }
+        if (e.key === 'Enter' && t.hasAttribute && t.hasAttribute('data-enter')) {
+            if (t.value !== '') { sendAct({ t: t.getAttribute('data-enter'), v: t.value }); t.value = ''; }
+        }
+    }
+    let liveT = 0;
+    function onInput(e) {
+        const t = e.target;
+        if (t.id === 'uxa-code') { t.value = t.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5); return; }
+        if (t.hasAttribute && t.hasAttribute('data-live')) {
+            const now = Date.now(), v = t.value, act = t.getAttribute('data-live');
+            clearTimeout(t._lt);
+            if (now - liveT > 110) { liveT = now; sendAct({ t: act, v }); }
+            else t._lt = setTimeout(() => { liveT = Date.now(); sendAct({ t: act, v: t.value }); }, 120);
+        }
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && UI && UI.classList.contains('open') && !/games\.html$/i.test(location.pathname)) closeArcade(); });
+    window.addEventListener('pagehide', () => { if (S) { try { if (S.isHost) S.tx.send({ t: 'closed', f: S.me.id, reason: 'The host left the page.' }); else S.tx.send({ t: 'leave', f: S.me.id }); } catch (e) { /* silent */ } } });
+
+    // ---------- views ----------
+    function render() {
+        if (!UI) return;
+        const head = UI.querySelector('.uxa-head'), main = UI.querySelector('.uxa-main'), chat = UI.querySelector('.uxa-chat');
+        // keep typing state across re-renders
+        const ae = document.activeElement;
+        const keep = ae && UI.contains(ae) && ae.id ? { id: ae.id, v: ae.value, s: ae.selectionStart, e: ae.selectionEnd } : null;
+        const keepScroll = main.scrollTop;
+
+        head.innerHTML = viewHead();
+        if (!S) main.innerHTML = viewHub();
+        else if (S.status === 'joining') main.innerHTML = `<div class="uxa-center"><div class="uxa-spin"></div><h3>Joining room ${esc(S.code)}...</h3><p>Looking for the host</p><button class="uxa-btn" data-ux="leave">Cancel</button></div>`;
+        else if (S.phase === 'lobby') main.innerHTML = viewLobby();
+        else if (S.phase === 'playing') main.innerHTML = viewGame();
+        else main.innerHTML = viewResults();
+        chat.innerHTML = viewChat();
+        const cl = chat.querySelector('#uxa-chat-log'); if (cl) cl.scrollTop = cl.scrollHeight;
+        main.scrollTop = keepScroll;
+
+        if (keep) {
+            const el = UI.querySelector('#' + keep.id);
+            if (el && !el.disabled) { if (el.type !== 'number' || keep.v !== '') el.value = keep.v; el.focus(); try { el.setSelectionRange(keep.s, keep.e); } catch (er) { /* number inputs */ } }
+        }
+        tick();
+    }
+    function viewHead() {
+        if (!S) return `<div class="uxa-logo"><i class="fa-solid fa-gamepad"></i><div><b>Unity Arcade</b><small>Multiplayer rooms &bull; 10 live games</small></div></div><button class="uxa-x" data-ux="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>`;
+        const G = GAMES[S.gameId] || {};
+        return `<div class="uxa-logo"><i class="fa-solid ${G.icon || 'fa-gamepad'}" style="color:${G.color || '#60a5fa'}"></i><div><b>${esc(G.name || 'Room')}</b><small>${S.status === 'joining' ? 'Joining...' : S.players.length + ' player' + (S.players.length === 1 ? '' : 's') + (S.mode === 'local' ? ' &bull; local mode' : '')}</small></div></div>
+            <div class="uxa-roominfo"><button class="uxa-code" data-ux="copy" title="Copy room code">${esc(S.code)} <i class="fa-regular fa-copy"></i></button>
+            <span class="uxa-idle" title="Room auto-closes when idle"><i class="fa-regular fa-clock"></i> <span data-idle>--</span></span></div>
+            <div class="uxa-headbtns"><button class="uxa-btn ghost" data-ux="togglechat"><i class="fa-regular fa-comments"></i></button>
+            ${S.isHost ? '<button class="uxa-btn danger" data-ux="closeroom"><i class="fa-solid fa-lock"></i> Close room</button>' : '<button class="uxa-btn ghost" data-ux="leave"><i class="fa-solid fa-right-from-bracket"></i> Leave</button>'}</div>`;
+    }
+    function viewHub() {
+        const wins = store.get('arcade_wins', {});
+        const mp = ORDER.map(id => { const g = GAMES[id]; return `<button class="uxa-game" style="--c:${g.color}" data-ux="create:${id}"><i class="fa-solid ${g.icon}"></i><b>${esc(g.name)}</b><small>${g.min}-${g.max} players</small><p>${esc(g.desc)}</p>${wins[id] ? '<em>🏆 ' + wins[id] + '</em>' : ''}</button>`; }).join('');
+        const solo = Object.keys(SOLO()).map(k => { const g = SOLO()[k]; return `<button class="uxa-solo" style="--c:${g.color}" data-ux="solo:${k}"><i class="fa-solid ${g.icon}"></i><span>${esc(g.name)}</span></button>`; }).join('');
+        return `${flash ? `<div class="uxa-banner">${esc(flash)}</div>` : ''}
+            <div class="uxa-panel row">
+                <label class="uxa-field"><span>Your name</span><input id="uxa-name" class="uxa-input" maxlength="16" value="${esc(store.get('player_name', ''))}" placeholder="Enter a nickname"></label>
+                <label class="uxa-field"><span>Have a room code?</span><div class="uxa-join"><input id="uxa-code" class="uxa-input code" maxlength="5" placeholder="ABCDE" autocomplete="off"><button class="uxa-btn primary" data-ux="join">Join</button></div></label>
+            </div>
+            <h4 class="uxa-h">Start a multiplayer room <small>pick a game - you become the host</small></h4>
+            <div class="uxa-games">${mp}</div>
+            <h4 class="uxa-h">Solo games <small>play alone, no room needed</small></h4>
+            <div class="uxa-solos">${solo}</div>`;
+    }
+    function viewLobby() {
+        const G = GAMES[S.gameId] || GAMES[ORDER[0]];
+        const rows = S.players.map((p, i) => `<div class="uxa-prow" style="--c:${COLORS[i % COLORS.length]}"><i class="uxa-av">${esc(p.name.charAt(0).toUpperCase())}</i><b>${esc(p.name)}${p.id === S.me.id ? ' <em>(you)</em>' : ''}</b>
+            ${p.id === S.hostId ? '<span class="uxa-tag host"><i class="fa-solid fa-crown"></i> Host</span>' : `<span class="uxa-tag ${p.ready ? 'ok' : ''}">${p.ready ? 'Ready' : 'Not ready'}</span>`}
+            ${S.isHost && p.id !== S.me.id ? `<button class="uxa-mini" data-ux="kick:${p.id}" title="Remove"><i class="fa-solid fa-user-xmark"></i></button>` : ''}</div>`).join('');
+        const picker = S.isHost ? `<h4 class="uxa-h">Choose the game</h4><div class="uxa-pick">${ORDER.map(id => { const g = GAMES[id]; return `<button class="uxa-chipbtn ${id === S.gameId ? 'on' : ''}" style="--c:${g.color}" data-ux="select:${id}"><i class="fa-solid ${g.icon}"></i>${esc(g.name)}</button>`; }).join('')}</div>` : '';
+        const me = S.players.find(p => p.id === S.me.id) || {};
+        const action = S.isHost
+            ? `<button class="uxa-btn primary big" data-ux="start"><i class="fa-solid fa-play"></i> Start game</button><button class="uxa-btn ghost" data-ux="link"><i class="fa-solid fa-link"></i> Copy invite link</button>`
+            : `<button class="uxa-btn ${me.ready ? '' : 'primary'} big" data-ux="ready">${me.ready ? '<i class="fa-solid fa-check"></i> Ready - tap to undo' : 'I am ready'}</button>`;
+        return `${S.error ? `<div class="uxa-banner">${esc(S.error)}</div>` : ''}
+            <div class="uxa-lobby"><div class="uxa-panel"><h3 style="color:${G.color}"><i class="fa-solid ${G.icon}"></i> ${esc(G.name)}</h3><p>${esc(G.desc)}</p><p class="uxa-sub">${G.min}-${G.max} players &bull; share code <b>${esc(S.code)}</b> with friends</p>${picker}</div>
+            <div class="uxa-panel"><h4 class="uxa-h">Players (${S.players.length})</h4><div class="uxa-plist">${rows}</div><div class="uxa-actions">${action}</div></div></div>`;
+    }
+    function viewGame() {
+        const G = GAMES[S.gameId] || GAMES[ORDER[0]];
+        if (!S.state) return '<div class="uxa-center"><div class="uxa-spin"></div><h3>Loading game...</h3></div>';
+        const spectator = !S.state.order.includes(S.me.id);
+        return `<div class="uxa-arena" style="--gc:${G.color}">${spectator ? '<div class="uxa-note">You are watching this round</div>' : ''}${G.render(S.state, S.me.id)}</div>`;
+    }
+    function viewResults() {
+        const R = S.results || { rank: [], winners: [], msg: '' };
+        const G = GAMES[S.gameId] || GAMES[ORDER[0]];
+        const medals = ['🥇', '🥈', '🥉'];
+        const rows = R.rank.map((r, i) => `<div class="uxa-res ${R.winners.includes(r.id) ? 'win' : ''}" style="--c:${COLORS[Math.max(0, (S.state && S.state.order.indexOf(r.id)) || 0) % COLORS.length]}"><span class="pos">${medals[i] || i + 1}</span><b>${esc(r.name)}${r.id === S.me.id ? ' <em>(you)</em>' : ''}</b><span class="sc">${r.score} pts</span></div>`).join('');
+        const title = R.winners.length ? (R.winners.length > 1 ? 'It is a tie!' : esc((R.rank.find(r => r.id === R.winners[0]) || {}).name) + ' wins!') : 'Draw';
+        const act = S.isHost
+            ? `<button class="uxa-btn primary big" data-ux="again"><i class="fa-solid fa-rotate-right"></i> Play again</button><button class="uxa-btn" data-ux="lobby"><i class="fa-solid fa-gamepad"></i> Change game</button><button class="uxa-btn danger" data-ux="closeroom"><i class="fa-solid fa-lock"></i> Close room</button>`
+            : `<div class="uxa-note">Waiting for the host to choose what is next...</div><button class="uxa-btn ghost" data-ux="leave">Leave room</button>`;
+        return `<div class="uxa-results"><div class="uxa-trophy"><i class="fa-solid fa-trophy"></i></div><h2>${title}</h2><p class="uxa-sub">${esc(G.name)}${R.msg ? ' - ' + esc(R.msg) : ''}</p><div class="uxa-reslist">${rows}</div><div class="uxa-actions">${act}</div></div>`;
+    }
+    function viewChat() {
+        if (!S || S.status === 'joining') return '';
+        const log = S.chat.slice(-30).map(c => c.sys ? `<div class="sys">${esc(c.text)}</div>` : `<div><b style="color:${c.c || '#93c5fd'}">${esc(c.n)}:</b> ${esc(c.text)}</div>`).join('');
+        return `<div class="uxa-chatlog" id="uxa-chat-log">${log || '<div class="sys">Say hi to your room 👋</div>'}</div><div class="uxa-chatrow"><input id="uxa-chat-in" class="uxa-input" maxlength="200" placeholder="Message the room..." autocomplete="off"><button class="uxa-btn primary" data-ux="chat"><i class="fa-solid fa-paper-plane"></i></button></div>`;
+    }
+
+    // ---------- styles (glass) ----------
+    function injectCSS() {
+        if (document.getElementById('uxa-styles')) return;
+        const st = document.createElement('style');
+        st.id = 'uxa-styles';
+        st.textContent = `
+body.uxa-lock{overflow:hidden}
+#ux-arcade{position:fixed;inset:0;z-index:9500;display:none;align-items:center;justify-content:center;padding:14px;color:#eaf1fb;font-family:Poppins,system-ui,sans-serif;
+ background:radial-gradient(60rem 40rem at 15% 0%,rgba(26,115,232,.45),transparent 60%),radial-gradient(50rem 40rem at 100% 100%,rgba(124,58,237,.45),transparent 60%),rgba(4,9,24,.82);
+ -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%)}
+#ux-arcade.open{display:flex}
+#ux-arcade *{box-sizing:border-box}
+.uxa-orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;pointer-events:none;animation:uxaFloat 18s ease-in-out infinite alternate}
+.uxa-orb.a{width:340px;height:340px;background:#1a73e8;left:6%;top:10%}.uxa-orb.b{width:300px;height:300px;background:#7c3aed;right:8%;bottom:8%;animation-delay:-6s}.uxa-orb.c{width:220px;height:220px;background:#06b6d4;right:30%;top:6%;animation-delay:-11s}
+@keyframes uxaFloat{to{transform:translate(40px,-30px) scale(1.15)}}
+.uxa-shell{position:relative;width:min(1040px,100%);height:min(780px,100%);display:flex;flex-direction:column;border-radius:30px;overflow:hidden;
+ background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.05) 55%,rgba(255,255,255,.09));border:1px solid rgba(255,255,255,.26);
+ box-shadow:0 1px 0 rgba(255,255,255,.45) inset,0 -1px 0 rgba(255,255,255,.08) inset,0 40px 90px -30px rgba(0,0,0,.7),0 0 0 1px rgba(20,60,160,.2);
+ -webkit-backdrop-filter:blur(34px) saturate(190%);backdrop-filter:blur(34px) saturate(190%)}
+.uxa-shell::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.18),transparent 22%)}
+.uxa-head{position:relative;display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.14);flex-wrap:wrap}
+.uxa-logo{display:flex;align-items:center;gap:12px;margin-right:auto}.uxa-logo>i{font-size:22px;color:#60a5fa;width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22)}
+.uxa-logo b{display:block;font-size:15px;font-weight:800}.uxa-logo small{font-size:10px;color:#9db1cf;font-weight:600}
+.uxa-x{width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;cursor:pointer}.uxa-x:hover{background:rgba(255,255,255,.18)}
+.uxa-roominfo{display:flex;align-items:center;gap:10px}.uxa-code{font:800 15px/1 ui-monospace,monospace;letter-spacing:.18em;padding:10px 14px;border-radius:12px;border:1px dashed rgba(255,255,255,.4);background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
+.uxa-idle{font-size:10px;color:#9db1cf;font-weight:700}
+.uxa-headbtns{display:flex;gap:8px}
+.uxa-main{position:relative;flex:1;overflow:auto;padding:18px;scrollbar-width:thin}
+.uxa-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:14px;border:1px solid rgba(255,255,255,.28);background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.06));color:#fff;font:700 12px Poppins,sans-serif;cursor:pointer;transition:transform .15s,box-shadow .2s,background .2s}
+.uxa-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 24px -10px rgba(0,0,0,.6)}.uxa-btn:disabled{opacity:.45;cursor:not-allowed}
+.uxa-btn.primary{background:linear-gradient(180deg,rgba(255,255,255,.3),transparent 55%),linear-gradient(135deg,#1a73e8,#7c3aed);border-color:rgba(255,255,255,.45);box-shadow:0 12px 26px -10px rgba(76,70,235,.8)}
+.uxa-btn.danger{background:linear-gradient(180deg,rgba(255,255,255,.22),transparent 55%),linear-gradient(135deg,#ef4444,#be123c);border-color:rgba(255,255,255,.35)}
+.uxa-btn.ghost{background:rgba(255,255,255,.06)}.uxa-btn.big{padding:14px 26px;font-size:13px}
+.uxa-input{width:100%;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.1);color:#fff;font:600 13px Poppins,sans-serif;outline:none}
+.uxa-input:focus{border-color:#60a5fa;box-shadow:0 0 0 4px rgba(96,165,250,.22)}.uxa-input::placeholder{color:#8aa0c4}.uxa-input.code{font-family:ui-monospace,monospace;letter-spacing:.3em;text-align:center;text-transform:uppercase}.uxa-input.center{text-align:center;font-size:18px}
+.uxa-panel{padding:16px;border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.2);box-shadow:0 1px 0 rgba(255,255,255,.3) inset;margin-bottom:14px}
+.uxa-panel.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.uxa-panel h3{margin:0 0 6px;font-size:18px;font-weight:800}.uxa-panel p{margin:0 0 6px;font-size:12px;color:#c3d1ea}.uxa-sub{font-size:11px;color:#9db1cf}
+.uxa-field{display:block}.uxa-field>span{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#9db1cf;margin-bottom:6px}.uxa-join{display:flex;gap:8px}
+.uxa-h{margin:18px 2px 10px;font-size:13px;font-weight:800;display:flex;align-items:baseline;gap:10px}.uxa-h small{font-size:10px;color:#9db1cf;font-weight:600}
+.uxa-games{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.uxa-game{position:relative;text-align:left;padding:16px;border-radius:22px;cursor:pointer;color:#fff;border:1px solid rgba(255,255,255,.22);background:linear-gradient(150deg,color-mix(in srgb,var(--c) 28%,transparent),rgba(255,255,255,.05) 60%);box-shadow:0 1px 0 rgba(255,255,255,.3) inset;transition:transform .25s,box-shadow .25s}
+.uxa-game:hover{transform:translateY(-4px);box-shadow:0 20px 40px -18px var(--c),0 1px 0 rgba(255,255,255,.4) inset}
+.uxa-game>i{font-size:22px;color:var(--c);width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);margin-bottom:10px}
+.uxa-game b{display:block;font-size:13px;font-weight:800}.uxa-game small{display:block;font-size:10px;color:#b4c4e2;font-weight:700;margin:2px 0 6px}.uxa-game p{font-size:10.5px;color:#c3d1ea;margin:0;line-height:1.45}.uxa-game em{position:absolute;right:12px;top:12px;font-style:normal;font-size:10px;font-weight:800}
+.uxa-solos{display:flex;flex-wrap:wrap;gap:8px}.uxa-solo{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.07);color:#fff;font:700 11px Poppins,sans-serif;cursor:pointer}.uxa-solo i{color:var(--c)}.uxa-solo:hover{background:rgba(255,255,255,.16)}
+.uxa-banner{margin-bottom:14px;padding:12px 16px;border-radius:16px;font-size:12px;font-weight:700;background:linear-gradient(135deg,rgba(250,204,21,.22),rgba(251,146,60,.14));border:1px solid rgba(250,204,21,.4);color:#fde68a}
+.uxa-center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:320px;text-align:center}.uxa-center p{color:#9db1cf;font-size:12px;margin:0}
+.uxa-spin{width:42px;height:42px;border-radius:50%;border:3px solid rgba(255,255,255,.2);border-top-color:#60a5fa;animation:uxaSpin .8s linear infinite}@keyframes uxaSpin{to{transform:rotate(360deg)}}
+.uxa-lobby{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;align-items:start}
+.uxa-pick{display:flex;flex-wrap:wrap;gap:8px}.uxa-chipbtn{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.07);color:#fff;font:700 11px Poppins,sans-serif;cursor:pointer}.uxa-chipbtn i{color:var(--c)}.uxa-chipbtn.on{background:color-mix(in srgb,var(--c) 30%,transparent);border-color:var(--c)}
+.uxa-plist{display:flex;flex-direction:column;gap:8px}.uxa-prow{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14)}
+.uxa-av{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font:800 13px Poppins;font-style:normal;background:var(--c);color:#06122b}.uxa-prow b{flex:1;font-size:12.5px}.uxa-prow em{font-style:normal;color:#9db1cf;font-weight:600;font-size:10px}
+.uxa-tag{font-size:9.5px;font-weight:800;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.1);color:#b4c4e2}.uxa-tag.ok{background:rgba(74,222,128,.2);color:#86efac}.uxa-tag.host{background:rgba(250,204,21,.2);color:#fde68a}
+.uxa-mini{width:30px;height:30px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(239,68,68,.2);color:#fecaca;cursor:pointer}
+.uxa-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:14px 0 4px}
+.uxa-arena{max-width:760px;margin:0 auto}
+.uxa-note{text-align:center;font-size:12px;font-weight:700;color:#c3d1ea;margin:8px 0}.uxa-note.big{font-size:15px;font-weight:800;color:#fff}.uxa-note.ok{color:#86efac}.uxa-note.bad{color:#fca5a5}
+.uxa-cd{display:inline-block;min-width:44px;margin-left:8px;padding:3px 10px;border-radius:999px;font-size:12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25)}.uxa-cd.hot{background:rgba(239,68,68,.3);color:#fecaca}
+.uxa-strip{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px}.uxa-pill{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-left:4px solid var(--c);font-size:11px}.uxa-pill b{font-weight:700}.uxa-pill span{font-weight:800;color:var(--c)}.uxa-pill.me{background:rgba(255,255,255,.16)}.uxa-pill.gone{opacity:.4;text-decoration:line-through}
+.uxa-chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:color-mix(in srgb,var(--c) 26%,transparent);border:1px solid var(--c)}
+.uxa-legend{display:flex;gap:16px;justify-content:center;font-size:11px;margin-top:10px}.uxa-legend span{display:flex;align-items:center;gap:6px}
+.c4-board{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;padding:12px;border-radius:24px;background:linear-gradient(160deg,rgba(26,115,232,.45),rgba(30,58,138,.55));border:1px solid rgba(255,255,255,.3);box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 24px 50px -24px rgba(0,0,0,.7);max-width:520px;margin:10px auto}
+.c4-col{display:flex;flex-direction:column;gap:6px;padding:4px;border-radius:14px;border:0;background:transparent;cursor:pointer}.c4-col:hover:not(:disabled){background:rgba(255,255,255,.12)}.c4-col:disabled{cursor:default}
+.c4-cell{display:block;aspect-ratio:1;border-radius:50%;background:rgba(3,10,30,.65);box-shadow:inset 0 3px 8px rgba(0,0,0,.6)}.c4-cell.on{background:radial-gradient(circle at 35% 30%,#fff8,var(--c) 40%,color-mix(in srgb,var(--c) 70%,#000));animation:c4drop .35s cubic-bezier(.3,1.4,.5,1)}.c4-cell.win{box-shadow:0 0 0 3px #fff,0 0 22px var(--c)}
+@keyframes c4drop{from{transform:translateY(-120px);opacity:.3}}.c4-dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--c)}
+.rps-pick,.rps-reveal{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:16px 0}.rps-btn{width:150px;padding:20px 10px;border-radius:24px;border:1px solid rgba(255,255,255,.28);background:linear-gradient(150deg,rgba(192,132,252,.3),rgba(255,255,255,.05));color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;font:800 13px Poppins}.rps-btn i{font-size:34px}.rps-btn:hover:not(:disabled){transform:translateY(-4px) scale(1.03)}.rps-btn:disabled{opacity:.45}
+.rps-card{min-width:104px;padding:14px 12px;border-radius:20px;text-align:center;background:color-mix(in srgb,var(--c) 22%,transparent);border:1px solid var(--c);animation:uxaPop .4s}.rps-card i{font-size:30px;display:block;margin-bottom:6px}.rps-card b{display:block;font-size:11px}.rps-card small{font-size:10px;color:#c3d1ea}.rps-card em{color:#86efac;font-style:normal;font-weight:800}
+@keyframes uxaPop{from{transform:scale(.6);opacity:0}}
+.dice-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;margin:8px 0;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-left:5px solid var(--c);font-size:12px;font-weight:700}.dice-row.win{background:rgba(250,204,21,.16);border-color:#facc15}
+.dice-pair{display:flex;align-items:center;gap:10px}.dice-pair em{font-style:normal;font-weight:800;color:#fde68a;margin-left:6px}.dice-pair small{color:#9db1cf}
+.die{position:relative;width:38px;height:38px;border-radius:10px;background:linear-gradient(145deg,#fff,#cbd5e1);box-shadow:0 4px 10px rgba(0,0,0,.4);display:inline-grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:6px;animation:uxaPop .35s}.die b{display:block;width:7px;height:7px;border-radius:50%;background:#0b1b3a;place-self:center}
+.die.d1 b{grid-area:2/2}.die.d2 b:nth-child(1){grid-area:1/1}.die.d2 b:nth-child(2){grid-area:3/3}.die.d3 b:nth-child(1){grid-area:1/1}.die.d3 b:nth-child(2){grid-area:2/2}.die.d3 b:nth-child(3){grid-area:3/3}
+.die.d4 b:nth-child(1){grid-area:1/1}.die.d4 b:nth-child(2){grid-area:1/3}.die.d4 b:nth-child(3){grid-area:3/1}.die.d4 b:nth-child(4){grid-area:3/3}
+.die.d5 b:nth-child(1){grid-area:1/1}.die.d5 b:nth-child(2){grid-area:1/3}.die.d5 b:nth-child(3){grid-area:2/2}.die.d5 b:nth-child(4){grid-area:3/1}.die.d5 b:nth-child(5){grid-area:3/3}
+.die.d6 b:nth-child(1){grid-area:1/1}.die.d6 b:nth-child(2){grid-area:2/1}.die.d6 b:nth-child(3){grid-area:3/1}.die.d6 b:nth-child(4){grid-area:1/3}.die.d6 b:nth-child(5){grid-area:2/3}.die.d6 b:nth-child(6){grid-area:3/3}
+.quiz-q{margin:12px 0;padding:18px;border-radius:20px;text-align:center;font-size:16px;font-weight:800;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2)}
+.quiz-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quiz-opt{display:flex;align-items:center;gap:10px;text-align:left;padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;font:700 12.5px Poppins;cursor:pointer}.quiz-opt b{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.15);flex:none}
+.quiz-opt:hover:not(:disabled){background:rgba(255,255,255,.18)}.quiz-opt.ok{background:rgba(74,222,128,.28);border-color:#4ade80}.quiz-opt.bad{background:rgba(239,68,68,.28);border-color:#f87171}.quiz-opt.sel{border-color:#60a5fa;background:rgba(96,165,250,.25)}.quiz-opt:disabled{cursor:default}
+.mem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:420px;margin:12px auto}.mem-card{aspect-ratio:1;border-radius:18px;border:1px solid rgba(255,255,255,.28);background:linear-gradient(150deg,rgba(34,211,238,.35),rgba(255,255,255,.06));color:#fff;font-size:28px;cursor:pointer;transition:transform .3s}.mem-card span{display:block}.mem-card.up{background:rgba(255,255,255,.92);transform:rotateY(0)}.mem-card.done{background:color-mix(in srgb,var(--c) 40%,#fff);box-shadow:0 0 18px var(--c)}.mem-card:disabled{cursor:default}.mem-card:hover:not(:disabled){transform:scale(1.06)}
+.tr-text{padding:16px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);font:600 16px/1.7 ui-monospace,monospace;margin:10px 0}.tr-ok{color:#86efac}.tr-cur{background:rgba(96,165,250,.5);border-radius:3px;color:#fff}.tr-rest{color:#b4c4e2}
+.tr-bars{margin-top:14px;display:flex;flex-direction:column;gap:8px}.tr-bar{display:grid;grid-template-columns:140px 1fr 44px;align-items:center;gap:10px;font-size:11px;font-weight:700}.tr-bar i{display:block;height:10px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}.tr-bar u{display:block;height:100%;background:var(--c);border-radius:99px;transition:width .25s}.tr-bar em{font-style:normal;color:#b4c4e2;text-align:right}
+.rx-pad{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;height:230px;margin:14px 0;border-radius:30px;border:1px solid rgba(255,255,255,.3);color:#fff;cursor:pointer;font-family:Poppins;box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 24px 50px -24px rgba(0,0,0,.7);transition:background .1s}
+.rx-pad strong{font-size:34px;font-weight:900;letter-spacing:.04em}.rx-pad small{font-size:12px;opacity:.85}.rx-pad.wait{background:linear-gradient(145deg,rgba(239,68,68,.65),rgba(127,29,29,.6))}.rx-pad.go{background:linear-gradient(145deg,rgba(34,197,94,.85),rgba(21,128,61,.8));animation:uxaPop .15s}.rx-pad.early{background:linear-gradient(145deg,rgba(234,179,8,.7),rgba(120,53,15,.6))}.rx-pad.show{background:rgba(255,255,255,.1)}.rx-pad:disabled{cursor:default}
+.rx-res{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.race-prompt{margin:14px 0;padding:22px;border-radius:22px;text-align:center;font:900 34px Poppins;letter-spacing:.12em;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22)}
+.bomb-range{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0;font:900 28px Poppins}.bomb-core{flex:1;text-align:center;padding:16px;border-radius:24px;background:radial-gradient(circle,rgba(248,113,113,.35),rgba(255,255,255,.05));border:1px solid rgba(248,113,113,.5)}.bomb-core i{font-size:42px;color:#f87171;display:block;animation:uxaShake 1s infinite}.bomb-core small{font-size:10px;color:#fecaca;font-weight:700}
+@keyframes uxaShake{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg) scale(1.08)}}
+.bomb-log{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px;font-size:11px}
+.uxa-results{text-align:center;max-width:520px;margin:0 auto}.uxa-trophy{width:84px;height:84px;margin:6px auto 12px;border-radius:50%;display:grid;place-items:center;font-size:38px;color:#fff;background:linear-gradient(135deg,#facc15,#f97316);box-shadow:0 20px 40px -12px rgba(249,115,22,.7);animation:uxaPop .5s}.uxa-results h2{margin:0;font-size:24px;font-weight:900}
+.uxa-reslist{margin:16px 0;display:flex;flex-direction:column;gap:8px}.uxa-res{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-left:5px solid var(--c);text-align:left}.uxa-res.win{background:rgba(250,204,21,.16);border-color:#facc15}.uxa-res .pos{font-size:20px;min-width:30px}.uxa-res b{flex:1;font-size:13px}.uxa-res em{font-style:normal;color:#9db1cf;font-size:10px}.uxa-res .sc{font-weight:800;color:#fde68a}
+.uxa-chat{display:none;border-top:1px solid rgba(255,255,255,.14);padding:10px 14px;background:rgba(0,0,0,.18)}.chat-open .uxa-chat{display:block}.uxa-chatlog{max-height:120px;overflow:auto;font-size:11.5px;display:flex;flex-direction:column;gap:3px;margin-bottom:8px}.uxa-chatlog .sys{color:#9db1cf;font-style:italic}.uxa-chatrow{display:flex;gap:8px}
+@media (max-width:720px){#ux-arcade{padding:0}.uxa-shell{border-radius:0;height:100%}.uxa-panel.row,.uxa-lobby{grid-template-columns:1fr}.quiz-grid{grid-template-columns:1fr}.tr-bar{grid-template-columns:90px 1fr 38px}.race-prompt{font-size:24px}.rx-pad{height:190px}.uxa-head{padding:10px 12px}.uxa-main{padding:12px}}
+@media (prefers-reduced-motion:reduce){#ux-arcade *{animation:none!important;transition:none!important}}
+`;
+        document.head.appendChild(st);
+    }
+
+    // ---------- public API ----------
+    function bootArcade() {
+        const gm = window.GamesModule;
+        if (gm) {
+            gm.openArcade = openArcade;
+            gm.closeArcade = closeArcade;
+            gm.ARCADE_GAMES = GAMES;
+            gm.ARCADE_ORDER = ORDER;
+        }
+        window.UnityArcade = { open: openArcade, close: closeArcade, games: GAMES, order: ORDER };
+        // any element with data-arcade="open" (or ="game_id") opens the arcade
+        document.addEventListener('click', e => {
+            const t = e.target.closest && e.target.closest('[data-arcade]');
+            if (!t) return;
+            e.preventDefault();
+            const v = t.getAttribute('data-arcade');
+            openArcade(GAMES[v] ? { game: v } : {});
+        });
+        const q = new URLSearchParams(location.search);
+        const room = (q.get('room') || '').toUpperCase();
+        if (room.length === 5) openArcade({ code: room });
+        else if (/games\.html$/i.test(location.pathname) || q.has('arcade')) openArcade();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootArcade); else bootArcade();
 })();
