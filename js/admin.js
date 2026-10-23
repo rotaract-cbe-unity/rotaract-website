@@ -835,6 +835,7 @@
                                 ${this.renderTabButton('website', 'fa-globe', 'Website Content')}
                                 ${this.renderTabButton('integrations', 'fa-plug', 'Integrations & APIs')}
                                 ${this.renderTabButton('advanced', 'fa-code', 'Advanced / Raw')}
+                                ${userRole === 'super_admin' ? this.renderTabButton('reset', 'fa-triangle-exclamation', 'Reset Data') : ''}
                             </div>
 
                             <div id="settings-tab-content"></div>
@@ -872,7 +873,8 @@
                     officers: () => this.renderOfficersTab(),
                     website: () => this.renderWebsiteTab(),
                     integrations: () => this.renderIntegrationsTab(),
-                    advanced: () => this.renderAdvancedTab()
+                    advanced: () => this.renderAdvancedTab(),
+                    reset: () => this.renderResetTab()
                 };
                 const tabId = this.activeTab;
                 let html = tabs[tabId] ? tabs[tabId]() : '<p class="text-xs text-slate-400">Loading...</p>';
@@ -1404,6 +1406,118 @@
                         </div>
                     </div>
                 `;
+            },
+
+            // =========================================
+            // TAB 11: RESET DATA  (Super Admin only)
+            //   Wipes working data, never touches Site Settings.
+            // =========================================
+            RESET_GROUPS: [
+                { id: 'events',   icon: 'fa-calendar-days', label: 'Projects & events', desc: 'All projects, approvals, reports and event photos.', tables: ['event_photos', 'events'] },
+                { id: 'meetings', icon: 'fa-people-group',  label: 'Meetings', desc: 'All meetings and attendance records.', tables: ['meeting_attendance', 'meetings'] },
+                { id: 'treasury', icon: 'fa-wallet',        label: 'Treasury', desc: 'Every income / expense transaction.', tables: ['treasury'] },
+                { id: 'people',   icon: 'fa-users',         label: 'Members & admin-added people', desc: 'Every user added by an admin (the Super Admin account is always kept), membership applications, trainers, past presidents / secretaries.', tables: ['membership_applications', 'club_trainers', 'past_presidents', 'past_secretaries', 'users'] },
+                { id: 'content',  icon: 'fa-newspaper',     label: 'Admin-added content', desc: 'Bulletins, blood requests and joining benefits.', tables: ['bulletins', 'blood_requests', 'joining_benefits'] },
+                { id: 'logs',     icon: 'fa-clock-rotate-left', label: 'Logs & queues', desc: 'Email log / queue, activity log, upload log, resource monitor.', tables: ['email_queue', 'email_log', 'activity_log', 'upload_log', 'resource_monitor'] }
+            ],
+            RESET_KEPT: ['system_settings', 'website_sections', 'club_year_config', 'club_statistics', 'storage_providers', 'chatbot_knowledge', 'avenues'],
+
+            renderResetTab() {
+                if (window.AuthManager?.currentUser?.role !== 'super_admin') return AdminPanel.renderUnauthorized();
+                const groups = this.RESET_GROUPS.map(g => `
+                    <label class="reset-group">
+                        <input type="checkbox" class="reset-check" value="${g.id}" checked>
+                        <span class="reset-ico"><i class="fa-solid ${g.icon}"></i></span>
+                        <span class="reset-txt"><b>${g.label}</b><small>${g.desc}</small></span>
+                    </label>`).join('');
+                return `
+                    <div class="settings-section-card reset-zone">
+                        <div class="section-sticky-header">
+                            <div>
+                                <h3 class="text-sm font-black text-red-600"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Reset Data — Danger Zone</h3>
+                                <p class="text-[11px] text-slate-500 mt-1">Permanently erases the data below and returns the portal to a clean start. <b>Site Settings are never touched.</b> This cannot be undone.</p>
+                            </div>
+                        </div>
+                        <div class="reset-grid">${groups}</div>
+                        <div class="reset-kept">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span><b>Always kept:</b> site settings (identity, branding, contact, automation, access, officers, website, integrations, live-impact stats), website sections, club year configuration, storage providers, chatbot knowledge, avenues and your Super Admin account.</span>
+                        </div>
+                        <div class="reset-confirm">
+                            <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300">Type <code>RESET</code> to unlock the button</label>
+                            <input id="reset-confirm-input" class="settings-input" autocomplete="off" placeholder="RESET" oninput="AdminPanel.modules.settings.onResetInput(this)">
+                            <button id="reset-run-btn" class="btn-danger" disabled onclick="AdminPanel.modules.settings.runReset(this)"><i class="fa-solid fa-trash-can mr-1"></i> Erase selected data</button>
+                        </div>
+                        <div id="reset-report" class="reset-report"></div>
+                    </div>`;
+            },
+
+            onResetInput(input) {
+                const btn = document.getElementById('reset-run-btn');
+                if (btn) btn.disabled = String(input.value).trim() !== 'RESET';
+            },
+
+            async wipeTable(table) {
+                const db = window.DB_ADMIN;
+                // Delete every row. Try the usual primary keys in turn so tables with no "id" column still clear.
+                const filters = [q => q.not('id', 'is', null), q => q.not('created_at', 'is', null), q => q.not('key', 'is', null)];
+                let lastErr = null;
+                for (const f of filters) {
+                    let q = db.from(table).delete({ count: 'exact' });
+                    if (table === 'users') q = q.neq('role', 'super_admin');
+                    const { error, count } = await f(q);
+                    if (!error) return { ok: true, count: count ?? 0 };
+                    lastErr = error;
+                    if (!/column|does not exist|42703|PGRST204/i.test((error.message || '') + (error.code || ''))) break;
+                }
+                // A table that doesn't exist yet is not a failure.
+                if (lastErr && /does not exist|42P01|PGRST205|schema cache/i.test((lastErr.message || '') + (lastErr.code || ''))) return { ok: true, count: 0, missing: true };
+                return { ok: false, error: lastErr?.message || 'unknown error' };
+            },
+
+            async runReset(btn) {
+                const user = window.AuthManager?.currentUser;
+                if (!user || user.role !== 'super_admin') { window.AppToast?.error('Only the Super Admin can reset data.'); return; }
+                const input = document.getElementById('reset-confirm-input');
+                if (!input || input.value.trim() !== 'RESET') return;
+                const chosen = [...document.querySelectorAll('.reset-check:checked')].map(c => c.value);
+                if (!chosen.length) { window.AppToast?.warning('Select at least one data group.'); return; }
+                const names = this.RESET_GROUPS.filter(g => chosen.includes(g.id)).map(g => g.label).join(', ');
+                if (!confirm('LAST WARNING\n\nErase: ' + names + '\n\nThis permanently deletes the data and cannot be undone. Continue?')) return;
+
+                btn.disabled = true;
+                const report = document.getElementById('reset-report');
+                const lines = [];
+                const paint = () => { if (report) report.innerHTML = lines.join(''); };
+                let failures = 0;
+                const done = {};
+                for (const g of this.RESET_GROUPS.filter(x => chosen.includes(x.id))) {
+                    for (const t of g.tables) {
+                        lines.push(`<div class="reset-line"><i class="fa-solid fa-spinner fa-spin"></i> Clearing <b>${t}</b>…</div>`); paint();
+                        const r = await this.wipeTable(t);
+                        lines.pop();
+                        if (r.ok) { done[t] = r.count; lines.push(`<div class="reset-line ok"><i class="fa-solid fa-circle-check"></i> <b>${t}</b> — ${r.missing ? 'table not found (skipped)' : r.count + ' row(s) removed'}</div>`); }
+                        else { failures++; lines.push(`<div class="reset-line bad"><i class="fa-solid fa-circle-xmark"></i> <b>${t}</b> — ${AdminPanel.esc(r.error)}</div>`); }
+                        paint();
+                    }
+                }
+                // Local copies (treasury cache, game scores etc.) — site-setting caches are kept.
+                try {
+                    const keep = /settings|theme|dark|session|auth|player_name/i;
+                    Object.keys(localStorage).filter(k => k.startsWith('unity_') && !keep.test(k)).forEach(k => localStorage.removeItem(k));
+                } catch (e) { /* silent */ }
+                try { window.UnityStats?.invalidate?.(); } catch (e) { /* silent */ }
+
+                // One audit entry so the reset itself is traceable.
+                try { await AdminPanel.logActivity('DATA_RESET', 'system', null, { groups: chosen, rows: done, failures }); } catch (e) { /* silent */ }
+
+                lines.push(failures
+                    ? `<div class="reset-line bad"><b>Finished with ${failures} problem(s).</b> Check that your Supabase policy allows deleting from the tables above, then run it again.</div>`
+                    : `<div class="reset-line ok"><b>Reset complete.</b> Site settings were left untouched. Reloading the portal…</div>`);
+                paint();
+                window.AppToast?.[failures ? 'warning' : 'success'](failures ? 'Reset finished with errors.' : 'All selected data erased.');
+                input.value = '';
+                if (!failures) setTimeout(() => location.reload(), 2200); else btn.disabled = false;
             },
 
             // =========================================
