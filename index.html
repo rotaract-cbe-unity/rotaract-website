@@ -94,7 +94,7 @@
                 <a href="#members" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-blue dark:hover:text-white hover:bg-brand-blue/5 dark:hover:bg-white/5 transition-all">Members</a>
                 <a href="#bulletin" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-blue dark:hover:text-white hover:bg-brand-blue/5 dark:hover:bg-white/5 transition-all">Bulletins</a>
                 <a href="#blood-portal" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-red-500 hover:bg-red-500/5 transition-all"><i class="fa-solid fa-droplet mr-1 text-[10px]"></i>Blood</a>
-                <a href="games.html" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-brand-purple hover:bg-brand-purple/5 transition-all"><i class="fa-solid fa-gamepad mr-1 text-[10px]"></i>Games</a>
+                <a href="games.html" data-arcade="open" class="nav-link px-3.5 py-2 rounded-xl text-[13px] font-semibold text-brand-purple hover:bg-brand-purple/5 transition-all"><i class="fa-solid fa-gamepad mr-1 text-[10px]"></i>Games</a>
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
@@ -131,7 +131,7 @@
                 <a href="#members" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-blue/5 dark:hover:bg-white/5 hover:text-brand-blue transition-all"><i class="fa-solid fa-users w-5 text-center text-[11px] text-slate-400"></i>Members</a>
                 <a href="#bulletin" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-blue/5 dark:hover:bg-white/5 hover:text-brand-blue transition-all"><i class="fa-solid fa-newspaper w-5 text-center text-[11px] text-slate-400"></i>Bulletins</a>
                 <a href="#blood-portal" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-500/5 transition-all"><i class="fa-solid fa-droplet w-5 text-center text-[11px]"></i>Emergency Blood</a>
-                <a href="games.html" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-brand-purple hover:bg-brand-purple/5 transition-all"><i class="fa-solid fa-gamepad w-5 text-center text-[11px]"></i>Games</a>
+                <a href="games.html" data-arcade="open" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-brand-purple hover:bg-brand-purple/5 transition-all"><i class="fa-solid fa-gamepad w-5 text-center text-[11px]"></i>Games</a>
                 <div class="h-px bg-slate-200/50 dark:bg-white/[0.06] my-3"></div>
                 <a href="#join-us" class="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-brand-blue to-brand-purple"><i class="fa-solid fa-user-plus text-[10px]"></i>Join Our Family</a>
                 <button id="mobile-portal-btn" class="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold border border-brand-blue/20 text-brand-blue dark:text-blue-400 mt-1"><i class="fa-solid fa-user-shield text-[10px]"></i>Admin Portal</button>
@@ -437,7 +437,7 @@
         <div class="text-center max-w-2xl mx-auto mb-16 reveal">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-purple/5 dark:bg-brand-purple/10 border border-brand-purple/10 text-brand-purple text-[11px] font-bold uppercase tracking-[2px]"><i class="fa-solid fa-gamepad text-[10px]"></i>Recreation</span>
             <h2 class="text-3xl sm:text-4xl font-black tracking-tight mt-4">Unity Game Zone</h2>
-            <p class="text-slate-500 dark:text-slate-400 text-sm mt-3">Play multiplayer games with fellow Rotaractors during downtime.</p>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-3">Create a room, share the code and play 10 live multiplayer games with fellow Rotaractors - rooms close automatically when the host leaves.</p>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-8">
             <div class="game-card"><i class="fa-solid fa-table-cells game-icon text-brand-blue block"></i><p class="text-xs font-bold">Tic Tac Toe</p></div>
@@ -447,8 +447,8 @@
             <div class="game-card"><i class="fa-solid fa-dice game-icon text-indigo-500 block"></i><p class="text-xs font-bold">Dice Duel</p></div>
         </div>
         <div class="text-center">
-            <a href="games.html" class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-brand-purple to-brand-blue shadow-xl shadow-brand-purple/20 hover:shadow-brand-purple/40 hover:scale-[1.02] transition-all">
-                <i class="fa-solid fa-gamepad text-xs"></i>Open Full Game Zone
+            <a href="games.html" data-arcade="open" class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-brand-purple to-brand-blue shadow-xl shadow-brand-purple/20 hover:shadow-brand-purple/40 hover:scale-[1.02] transition-all">
+                <i class="fa-solid fa-gamepad text-xs"></i>Open Multiplayer Arcade
             </a>
         </div>
     </div>
