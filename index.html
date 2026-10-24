@@ -8,16 +8,21 @@
     <meta name="theme-color" content="#1a73e8">
     <meta property="og:title" content="Rotaract Club of Coimbatore Unity">
     <meta property="og:image" content="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png">
-    <title>Rotaract Club of Coimbatore Unity</title>
+    <title data-site-title>Rotaract Club of Coimbatore Unity</title>
 
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/duoy1cje9/image/upload/w_32,h_32,c_fill/v1783501797/unity_standard_colour_mkz1k7.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <style id="unity-brand-vars">:root{--b-blue:26 115 232;--b-purple:124 58 237;--b-cyan:6 182 212;--b-dark:5 10 24;--b-darker:2 5 16}</style>
+    <script>
+    /* Restore the last saved brand colours before first paint (no colour flash). */
+    try{var __b=JSON.parse(localStorage.getItem('unity_brand_vars')||'null');if(__b){var __r=document.documentElement;for(var __k in __b){__r.style.setProperty(__k,__b[__k]);}}}catch(e){}
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-    tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Poppins','system-ui','sans-serif']},colors:{brand:{blue:'#1a73e8',dark:'#050a18',darker:'#020510',light:'#f0f6ff',purple:'#7c3aed',cyan:'#06b6d4'}},animation:{'float-slow':'floatSlow 20s ease-in-out infinite','float-medium':'floatMedium 15s ease-in-out infinite','float-fast':'floatFast 10s ease-in-out infinite','gradient-x':'gradientX 8s ease infinite'},keyframes:{floatSlow:{'0%,100%':{transform:'translate(0,0)'},'33%':{transform:'translate(30px,-50px)'},'66%':{transform:'translate(-20px,20px)'}},floatMedium:{'0%,100%':{transform:'translate(0,0) scale(1)'},'50%':{transform:'translate(-40px,30px) scale(1.05)'}},floatFast:{'0%,100%':{transform:'translateY(0)'},'50%':{transform:'translateY(-20px)'}},gradientX:{'0%,100%':{backgroundPosition:'0% 50%'},'50%':{backgroundPosition:'100% 50%'}}}}}}
+    tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Poppins','system-ui','sans-serif']},colors:{brand:{blue:'rgb(var(--b-blue) / <alpha-value>)',dark:'rgb(var(--b-dark) / <alpha-value>)',darker:'rgb(var(--b-darker) / <alpha-value>)',light:'#f0f6ff',purple:'rgb(var(--b-purple) / <alpha-value>)',cyan:'rgb(var(--b-cyan) / <alpha-value>)'}},animation:{'float-slow':'floatSlow 20s ease-in-out infinite','float-medium':'floatMedium 15s ease-in-out infinite','float-fast':'floatFast 10s ease-in-out infinite','gradient-x':'gradientX 8s ease infinite'},keyframes:{floatSlow:{'0%,100%':{transform:'translate(0,0)'},'33%':{transform:'translate(30px,-50px)'},'66%':{transform:'translate(-20px,20px)'}},floatMedium:{'0%,100%':{transform:'translate(0,0) scale(1)'},'50%':{transform:'translate(-40px,30px) scale(1.05)'}},floatFast:{'0%,100%':{transform:'translateY(0)'},'50%':{transform:'translateY(-20px)'}},gradientX:{'0%,100%':{backgroundPosition:'0% 50%'},'50%':{backgroundPosition:'100% 50%'}}}}}}
     </script>
     <!-- Site CSS. Expected layout:  index.html  +  css/styles.css, css/admin.css  +  js/*.js
          If the files were uploaded flat (next to index.html) the onerror fallbacks below still find them. -->
@@ -48,7 +53,7 @@
      ================================================================ -->
 <div id="global-loader" class="fixed inset-0 z-[9999] bg-brand-dark flex items-center justify-center">
     <div class="flex flex-col items-center gap-5 w-64">
-        <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" class="h-14 w-auto animate-pulse" alt="Rotaract Club of Coimbatore Unity">
+        <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" data-logo="white" class="h-14 w-auto animate-pulse" alt="Rotaract Club of Coimbatore Unity">
         <div class="w-full space-y-2">
             <div class="flex justify-between text-[9px] text-slate-500 uppercase tracking-[3px] font-semibold">
                 <span>Initializing</span>
@@ -78,11 +83,11 @@
         <div class="flex items-center justify-between h-20 lg:h-[84px]">
             <a href="#home" class="flex items-center gap-3 relative z-10">
                 <div class="relative h-11 w-11 flex-shrink-0">
-                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png" class="absolute inset-0 h-full w-auto object-contain transition-opacity duration-500 dark:opacity-0 opacity-100" alt="Rotaract Club of Coimbatore Unity">
-                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" class="absolute inset-0 h-full w-auto object-contain transition-opacity duration-500 dark:opacity-100 opacity-0" alt="Rotaract Club of Coimbatore Unity">
+                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png" data-logo="colour" class="absolute inset-0 h-full w-auto object-contain transition-opacity duration-500 dark:opacity-0 opacity-100" alt="Rotaract Club of Coimbatore Unity">
+                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" data-logo="white" class="absolute inset-0 h-full w-auto object-contain transition-opacity duration-500 dark:opacity-100 opacity-0" alt="Rotaract Club of Coimbatore Unity">
                 </div>
                 <div class="hidden sm:block">
-                    <span class="text-[15px] lg:text-base font-extrabold tracking-tight leading-none bg-gradient-to-r from-brand-blue via-brand-purple to-brand-cyan bg-[length:200%_auto] bg-clip-text text-transparent animate-gradient-x">Rotaract Club of Coimbatore Unity</span>
+                    <span class="text-[15px] lg:text-base font-extrabold tracking-tight leading-none bg-gradient-to-r from-brand-blue via-brand-purple to-brand-cyan bg-[length:200%_auto] bg-clip-text text-transparent animate-gradient-x" data-site="club_name">Rotaract Club of Coimbatore Unity</span>
                 </div>
             </a>
 
@@ -148,31 +153,31 @@
         <div class="flex-1 space-y-6 sm:space-y-8 text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
             <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/60 dark:bg-white/[0.06] backdrop-blur-xl border border-slate-200/50 dark:border-white/[0.08]">
                 <div class="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></div>
-                <span class="text-[11px] font-bold text-brand-blue dark:text-blue-400 uppercase tracking-[2px]">Club ID: 91594</span>
+                <span class="text-[11px] font-bold text-brand-blue dark:text-blue-400 uppercase tracking-[2px]" data-site="club_id_label">Club ID: 91594</span>
                 <span class="w-px h-3 bg-slate-300 dark:bg-slate-700"></span>
-                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-[2px]">Est. 21.04.2014</span>
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-[2px]" data-site="charter_label">Est. 21.04.2014</span>
             </div>
-            <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] xl:text-6xl font-black leading-[1.08] tracking-tight">
+            <h1 data-site="hero_heading" class="text-4xl sm:text-5xl lg:text-[3.5rem] xl:text-6xl font-black leading-[1.08] tracking-tight">
                 <span class="text-slate-900 dark:text-white">Rotaract Club of</span><br>
                 <span class="bg-gradient-to-r from-brand-blue via-brand-purple to-brand-cyan bg-[length:200%_auto] bg-clip-text text-transparent animate-gradient-x">Coimbatore Unity</span>
             </h1>
-            <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-[15px] lg:text-base leading-relaxed max-w-xl mx-auto lg:mx-0">
-                <span class="font-semibold text-slate-700 dark:text-slate-300">Family of Rotary Club of Coimbatore East.</span>
-                Building transformative youth leadership, sustainable community impact, and meaningful professional connections across
-                <span class="font-semibold text-brand-blue">Rotary International District 3206</span>
-                <span class="text-slate-400">(Coimbatore | Palakkad)</span>.
+            <p data-site="hero_tagline_block" class="text-slate-500 dark:text-slate-400 text-sm sm:text-[15px] lg:text-base leading-relaxed max-w-xl mx-auto lg:mx-0">
+                <span class="font-semibold text-slate-700 dark:text-slate-300" data-site="sponsor_line">Family of Rotary Club of Coimbatore East.</span>
+                <span data-site="hero_tagline">Building transformative youth leadership, sustainable community impact, and meaningful professional connections</span><span data-site="hero_tail"> across
+                <span class="font-semibold text-brand-blue" data-site="district_line">Rotary International District 3206</span>
+                <span class="text-slate-400" data-site="region_line">(Coimbatore | Palakkad)</span>.</span>
             </p>
             <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center lg:justify-start pt-2">
                 <a href="#join-us" class="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-brand-blue to-brand-purple shadow-xl shadow-brand-blue/20 hover:shadow-brand-blue/40 hover:scale-[1.02] transition-all">
-                    <i class="fa-solid fa-hand-holding-heart text-xs group-hover:scale-125 transition-transform"></i>Join Our Movement
+                    <i class="fa-solid fa-hand-holding-heart text-xs group-hover:scale-125 transition-transform"></i><span data-site="cta_primary_label">Join Our Movement</span>
                 </a>
                 <a href="#projects" class="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl text-sm font-bold bg-white/60 dark:bg-white/[0.06] backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] text-slate-700 dark:text-slate-200 hover:border-brand-blue/30 hover:shadow-xl transition-all">
-                    <i class="fa-solid fa-rocket text-brand-blue text-xs group-hover:-translate-y-0.5 transition-transform"></i>Explore Projects
+                    <i class="fa-solid fa-rocket text-brand-blue text-xs group-hover:-translate-y-0.5 transition-transform"></i><span data-site="cta_secondary_label">Explore Projects</span>
                 </a>
             </div>
             <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 pt-4">
                 <div class="flex items-center gap-2 text-[11px] font-semibold text-slate-400"><i class="fa-solid fa-shield-halved text-brand-blue text-[10px]"></i>Chartered Club</div>
-                <div class="flex items-center gap-2 text-[11px] font-semibold text-slate-400"><i class="fa-solid fa-globe text-brand-purple text-[10px]"></i>District 3206</div>
+                <div class="flex items-center gap-2 text-[11px] font-semibold text-slate-400"><i class="fa-solid fa-globe text-brand-purple text-[10px]"></i><span data-site="district_chip">District 3206</span></div>
                 <div class="flex items-center gap-2 text-[11px] font-semibold text-slate-400"><i class="fa-solid fa-award text-brand-cyan text-[10px]"></i>11+ Years of Service</div>
             </div>
         </div>
@@ -231,7 +236,7 @@
         <div class="text-center max-w-3xl mx-auto mb-16 space-y-4 reveal">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-blue/5 dark:bg-brand-blue/10 border border-brand-blue/10 text-brand-blue text-[11px] font-bold uppercase tracking-[2px]"><i class="fa-solid fa-handshake-angle text-[10px]"></i>Why Rotaract</span>
             <h2 class="text-3xl sm:text-4xl lg:text-[2.75rem] font-black tracking-tight">The Rewards of Joining Unity</h2>
-            <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-[15px] leading-relaxed">Rotaract empowers youth to build professional capabilities, grow dynamic leadership networks, support humanitarian activities, and make lifelong connections.</p>
+            <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-[15px] leading-relaxed" data-site="about_section_text">Rotaract empowers youth to build professional capabilities, grow dynamic leadership networks, support humanitarian activities, and make lifelong connections.</p>
         </div>
         <div id="benefits-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 stagger-children"></div>
     </div>
@@ -388,8 +393,8 @@
         <div class="join-shell reveal-scale">
             <div class="join-aside">
                 <div class="join-aside-inner">
-                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" class="join-logo" alt="Rotaract Club of Coimbatore Unity">
-                    <p class="join-club">Rotaract Club of Coimbatore Unity</p>
+                    <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" data-logo="white" class="join-logo" alt="Rotaract Club of Coimbatore Unity">
+                    <p class="join-club" data-site="club_name">Rotaract Club of Coimbatore Unity</p>
                     <h2 class="join-title">Become a Part of Unity Team</h2>
                     <p class="join-lead">Step forward to write your story of leadership and service.</p>
                     <ul class="join-perks">
@@ -463,24 +468,27 @@
             <div class="space-y-5">
                 <div class="flex items-center gap-3">
                     <div class="relative h-12 w-12">
-                        <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png" class="absolute inset-0 h-full w-auto dark:opacity-0 opacity-100 transition-opacity" alt="">
-                        <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" class="absolute inset-0 h-full w-auto dark:opacity-100 opacity-0 transition-opacity" alt="">
+                        <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501797/unity_standard_colour_mkz1k7.png" data-logo="colour" class="absolute inset-0 h-full w-auto dark:opacity-0 opacity-100 transition-opacity" alt="">
+                        <img src="https://res.cloudinary.com/duoy1cje9/image/upload/v1783501798/unity_standard_white_bzcxtn.png" data-logo="white" class="absolute inset-0 h-full w-auto dark:opacity-100 opacity-0 transition-opacity" alt="">
                     </div>
-                    <div><h3 class="text-base font-extrabold">Rotaract Club of Coimbatore Unity</h3><p class="text-[10px] text-slate-400 font-semibold">Service Above Self</p></div>
+                    <div><h3 class="text-base font-extrabold" data-site="club_name">Rotaract Club of Coimbatore Unity</h3><p class="text-[10px] text-slate-400 font-semibold" data-site="club_tagline">Service Above Self</p></div>
                 </div>
-                <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">Family of Rotary Club of Coimbatore East. Rendering impact across Rotary International District 3206 (Coimbatore | Palakkad) since 2014.</p>
+                <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed" data-site="footer_about">Family of Rotary Club of Coimbatore East. Rendering impact across Rotary International District 3206 (Coimbatore | Palakkad) since 2014.</p>
                 <div class="flex gap-2">
-                    <a href="#" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-brands fa-instagram text-sm"></i></a>
-                    <a href="#" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-brands fa-facebook text-sm"></i></a>
-                    <a href="#" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-brands fa-linkedin text-sm"></i></a>
-                    <a href="mailto:rc.cbeunity@gmail.com" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-solid fa-envelope text-sm"></i></a>
+                    <a href="#" data-social="instagram" aria-label="Instagram" rel="noopener" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-brands fa-instagram text-sm"></i></a>
+                    <a href="#" data-social="facebook" aria-label="Facebook" rel="noopener" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-brands fa-facebook text-sm"></i></a>
+                    <a href="#" data-social="linkedin" aria-label="Linkedin" rel="noopener" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-brands fa-linkedin text-sm"></i></a>
+                    <a href="#" data-social="twitter" aria-label="X / Twitter" rel="noopener" hidden class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-brands fa-x-twitter text-sm"></i></a>
+                    <a href="#" data-social="youtube" aria-label="YouTube" rel="noopener" hidden class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-brands fa-youtube text-sm"></i></a>
+                    <a href="mailto:rc.cbeunity@gmail.com" data-site-mail aria-label="Email" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-brand-blue hover:border-brand-blue/30 transition-all"><i class="fa-solid fa-envelope text-sm"></i></a>
                 </div>
             </div>
             <div class="space-y-5">
                 <h4 class="text-xs font-extrabold uppercase tracking-[2px] text-brand-blue">Contact</h4>
                 <div class="space-y-4 text-xs">
-                    <div class="flex items-start gap-3"><div class="w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fa-solid fa-location-dot text-brand-blue text-[10px]"></i></div><div><p class="font-bold">Headquarters</p><p class="text-slate-500 dark:text-slate-400">Coimbatore, Tamil Nadu, India</p></div></div>
-                    <div class="flex items-start gap-3"><div class="w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fa-solid fa-envelope text-brand-blue text-[10px]"></i></div><div><p class="font-bold">Email</p><p class="text-slate-500 dark:text-slate-400">rc.cbeunity@gmail.com</p></div></div>
+                    <div class="flex items-start gap-3"><div class="w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fa-solid fa-location-dot text-brand-blue text-[10px]"></i></div><div><p class="font-bold">Headquarters</p><p class="text-slate-500 dark:text-slate-400" data-site="contact_address">Coimbatore, Tamil Nadu, India</p></div></div>
+                    <div class="flex items-start gap-3"><div class="w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fa-solid fa-envelope text-brand-blue text-[10px]"></i></div><div><p class="font-bold">Email</p><p class="text-slate-500 dark:text-slate-400" data-site="contact_email">rc.cbeunity@gmail.com</p></div></div>
+                    <div class="flex items-start gap-3" data-site-row="contact_phone" hidden><div class="w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fa-solid fa-phone text-brand-blue text-[10px]"></i></div><div><p class="font-bold">Phone</p><p class="text-slate-500 dark:text-slate-400" data-site="contact_phone"></p></div></div>
                 </div>
             </div>
             <div class="space-y-4">
@@ -491,8 +499,8 @@
             </div>
         </div>
         <div class="pt-8 border-t border-slate-200/50 dark:border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-400 font-medium">
-            <p>2026-27 Rotaract Club of Coimbatore Unity. All rights reserved.</p>
-            <p>Club ID: 91594 | Charter: 21.04.2014 | Rotary International District 3206</p>
+            <p data-site="footer_copyright">2026-27 Rotaract Club of Coimbatore Unity. All rights reserved.</p>
+            <p data-site="footer_meta">Club ID: 91594 | Charter: 21.04.2014 | Rotary International District 3206</p>
         </div>
     </div>
 </footer>
