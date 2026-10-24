@@ -268,13 +268,25 @@
         _cache: {},
         _loaded: false,
 
-        async loadAll() {
-            const cached = Cache.get('site_settings');
+        async loadAll(force) {
+            const cached = force ? null : Cache.get('site_settings');
             if (cached) {
                 this._cache = cached;
                 this._loaded = true;
+                // Show cached values instantly, then silently revalidate so saved changes always arrive.
+                if (!this._revalidating) {
+                    this._revalidating = true;
+                    this._fetch().then(changed => { if (changed && window.SiteConfig) window.SiteConfig.apply(); })
+                        .catch(() => {}).then(() => { this._revalidating = false; });
+                }
                 return cached;
             }
+            await this._fetch();
+            return this._cache;
+        },
+
+        // Returns true when the data changed. A failed request keeps the values already loaded.
+        async _fetch() {
             try {
                 const { data, error } = await supabaseAdmin
                     .from('system_settings')
@@ -282,19 +294,16 @@
                 if (error) throw error;
                 const map = {};
                 (data || []).forEach(r => {
-                    map[r.key] = {
-                        value: r.value,
-                        type: r.data_type,
-                        category: r.category
-                    };
+                    map[r.key] = { value: r.value, type: r.data_type, category: r.category };
                 });
+                const changed = JSON.stringify(map) !== JSON.stringify(this._cache);
                 this._cache = map;
                 this._loaded = true;
-                Cache.set('site_settings', map, 30);
-                return map;
+                Cache.set('site_settings', map, 10);
+                return changed;
             } catch (e) {
-                console.warn('[Settings] Load failed:', e.message);
-                return {};
+                console.warn('[Settings] Load failed:', e && e.message);
+                return false;
             }
         },
 
@@ -302,7 +311,7 @@
             fallback = fallback !== undefined ? fallback : '';
             if (!this._cache[key]) return fallback;
             const val = this._cache[key].value;
-            if (this._cache[key].type === 'boolean') return val === 'true';
+            if (this._cache[key].type === 'boolean') return String(val).toLowerCase() === 'true';
             if (this._cache[key].type === 'number') return parseFloat(val) || 0;
             return val || fallback;
         },
@@ -1730,8 +1739,8 @@
                     'Contact: ' + fd.get('contact_person') + ' (' + fd.get('contact_phone') + ')\n\n' +
                     'Sent via Rotaract Club of Coimbatore Unity'
                 );
-                const p1 = Settings.get('blood_request_whatsapp_1', '9789903206');
-                const p2 = Settings.get('blood_request_whatsapp_2', '9789953206');
+                const p1 = String(Settings.get('blood_desk_phone_1') || Settings.get('blood_request_whatsapp_1', '9789903206')).replace(/\D/g, '').slice(-10);
+                const p2 = String(Settings.get('blood_desk_phone_2') || Settings.get('blood_request_whatsapp_2', '9789953206')).replace(/\D/g, '').slice(-10);
                 window.open('https://wa.me/91' + p1 + '?text=' + msg, '_blank');
                 setTimeout(() => window.open('https://wa.me/91' + p2 + '?text=' + msg, '_blank'), 1500);
                 Toast.success('Emergency alerts triggered!');
@@ -1929,16 +1938,245 @@
     }
 
     function updateFooterData() {
-        const email = Settings.get('club_email', 'rc.cbeunity@gmail.com');
-        const mapUrl = Settings.get('map_embed_url');
-        document.querySelectorAll('a[href="mailto:rc.cbeunity@gmail.com"]').forEach(l => {
-            l.href = 'mailto:' + email;
-        });
-        if (mapUrl) {
-            const iframe = document.querySelector('footer iframe');
-            if (iframe) iframe.src = mapUrl;
-        }
+        SiteConfig.apply();
     }
+
+    // ==========================================
+    // 16b. SITE CONFIG - applies saved Site Settings to the public page, live
+    // ==========================================
+    const SiteConfig = {
+        _timer: null,
+        _bc: null,
+        _started: false,
+
+        val(key) { const c = Settings._cache[key]; return c && c.value != null ? String(c.value).trim() : ''; },
+        flag(key, def) {
+            const v = this.val(key);
+            return v === '' ? def : v.toLowerCase() === 'true';
+        },
+
+        hex(v) {
+            v = String(v || '').trim();
+            if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v[1] + v[1] + v[2] + v[2] + v[3] + v[3];
+            return /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : '';
+        },
+        rgb(h) { return [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)); },
+        mix(h, other, t) {
+            const a = this.rgb(h), b = other === 'w' ? [255, 255, 255] : [0, 0, 0];
+            return '#' + a.map((c, i) => Math.round(c + (b[i] - c) * t).toString(16).padStart(2, '0')).join('');
+        },
+
+        url(v) {
+            v = String(v || '').trim();
+            if (!v) return '';
+            if (/^https?:\/\//i.test(v)) return v;
+            if (/^[a-z0-9-]+(\.[a-z0-9-]+)+(\/.*)?$/i.test(v)) return 'https://' + v;
+            return '';
+        },
+
+        set(el, text) { if (el && el.textContent !== text) el.textContent = text; },
+        show(el, on) { if (!el) return; el.hidden = !on; el.style.display = on ? '' : 'none'; },
+
+        // Hide/restore without fighting the website_sections table.
+        toggleSection(sel, on) {
+            document.querySelectorAll(sel).forEach(el => {
+                if (!on) { if (el.style.display !== 'none') { el.dataset.scHidden = '1'; el.style.display = 'none'; } }
+                else if (el.dataset.scHidden) { el.style.display = ''; delete el.dataset.scHidden; }
+            });
+        },
+
+        applyColors() {
+            const root = document.documentElement;
+            const map = [['color_primary', 'blue'], ['color_secondary', 'purple'], ['color_accent', 'cyan']];
+            const vars = {};
+            map.forEach(([key, name]) => {
+                const h = this.hex(this.val(key));
+                if (!h) return;
+                vars['--b-' + name] = this.rgb(h).join(' ');
+                vars['--' + name] = h;
+                vars['--' + name + '-light'] = this.mix(h, 'w', 0.28);
+                vars['--' + name + '-dark'] = this.mix(h, 'b', 0.22);
+                if (name === 'blue') { vars['--blue-50'] = this.mix(h, 'w', 0.94); vars['--blue-100'] = this.mix(h, 'w', 0.86); }
+            });
+            const dark = this.hex(this.val('color_dark'));
+            if (dark) { vars['--b-dark'] = this.rgb(dark).join(' '); vars['--b-darker'] = this.rgb(this.mix(dark, 'b', 0.55)).join(' '); }
+            // Clear anything that is no longer customised, then set the rest.
+            ['--b-blue', '--b-purple', '--b-cyan', '--b-dark', '--b-darker', '--blue', '--purple', '--cyan', '--blue-light', '--blue-dark',
+                '--purple-light', '--purple-dark', '--cyan-light', '--cyan-dark', '--blue-50', '--blue-100'].forEach(k => { if (!(k in vars)) root.style.removeProperty(k); });
+            Object.keys(vars).forEach(k => root.style.setProperty(k, vars[k]));
+            try {
+                if (Object.keys(vars).length) localStorage.setItem('unity_brand_vars', JSON.stringify(vars));
+                else localStorage.removeItem('unity_brand_vars');
+            } catch (e) { /* storage unavailable */ }
+            const m = document.querySelector('meta[name="theme-color"]');
+            if (m && vars['--blue']) m.setAttribute('content', vars['--blue']);
+        },
+
+        applyLogos() {
+            const colour = this.url(this.val('logo_colour')), white = this.url(this.val('logo_white'));
+            document.querySelectorAll('img[data-logo]').forEach(img => {
+                const want = img.dataset.logo === 'white' ? white : colour;
+                if (!img.dataset.orig) img.dataset.orig = img.getAttribute('src') || '';
+                const target = want || img.dataset.orig;
+                if (img.getAttribute('src') !== target) {
+                    img.onerror = () => { img.onerror = null; img.src = img.dataset.orig; };
+                    img.src = target;
+                }
+            });
+            if (colour) {
+                const og = document.querySelector('meta[property="og:image"]');
+                if (og) og.setAttribute('content', colour);
+                const ic = document.querySelector('link[rel="icon"]');
+                if (ic && !ic.dataset.orig) ic.dataset.orig = ic.href;
+                if (ic) ic.href = colour;
+            }
+        },
+
+        applyText() {
+            const v = k => this.val(k);
+            const $ = k => document.querySelectorAll('[data-site="' + k + '"]');
+            const name = v('club_name'), tag = v('club_tagline'), sponsor = v('sponsor_club').replace(/\.$/, '');
+            const id = v('club_id'), ri = v('ri_district'), region = v('district_region');
+            let charter = v('charter_date');
+            const cm = charter.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+            if (cm) charter = cm[1].padStart(2, '0') + '.' + cm[2].padStart(2, '0') + '.' + cm[3];
+
+            if (name) {
+                $('club_name').forEach(el => this.set(el, name));
+                document.title = name;
+                const og = document.querySelector('meta[property="og:title"]');
+                if (og) og.setAttribute('content', name);
+                document.querySelectorAll('img[data-logo]').forEach(i => i.setAttribute('alt', name));
+            }
+            if (tag) $('club_tagline').forEach(el => this.set(el, tag));
+            if (sponsor) $('sponsor_line').forEach(el => this.set(el, sponsor + '.'));
+            if (id) $('club_id_label').forEach(el => this.set(el, 'Club ID: ' + id));
+            if (charter) $('charter_label').forEach(el => this.set(el, 'Est. ' + charter));
+            if (ri) {
+                $('district_line').forEach(el => this.set(el, 'Rotary International District ' + ri));
+                $('district_chip').forEach(el => this.set(el, 'District ' + ri));
+            }
+            if (region) $('region_line').forEach(el => this.set(el, '(' + region + ')'));
+
+            const hh = v('hero_heading');
+            if (hh) $('hero_heading').forEach(el => {
+                let a, b;
+                if (/[\n|]/.test(hh)) { const parts = hh.split(/\s*[\n|]\s*/).filter(Boolean); a = parts.shift(); b = parts.join(' '); }
+                else { const w = hh.split(/\s+/); if (w.length > 2) { b = w.slice(-2).join(' '); a = w.slice(0, -2).join(' '); } else { a = ''; b = hh; } }
+                const key = a + '\u0001' + b;
+                if (el.dataset.sc === key) return;
+                el.dataset.sc = key;
+                const grad = el.querySelector('span:last-of-type');
+                const first = el.querySelector('span:first-of-type');
+                if (first && grad && first !== grad) { first.textContent = a; grad.textContent = b; const br = el.querySelector('br'); if (br) br.style.display = a ? '' : 'none'; }
+                else el.textContent = hh;
+            });
+
+            const tl = v('hero_tagline').replace(/\.\s*$/, '');
+            if (tl) {
+                $('hero_tagline').forEach(el => this.set(el, tl));
+                const tailOn = !/district/i.test(tl);
+                $('hero_tail').forEach(el => { el.style.display = tailOn ? '' : 'none'; });
+                if (!tailOn) $('hero_tagline').forEach(el => this.set(el, v('hero_tagline')));
+            }
+            ['cta_primary_label', 'cta_secondary_label', 'about_section_text', 'footer_copyright', 'contact_address'].forEach(k => {
+                const x = v(k); if (x) $(k).forEach(el => this.set(el, x));
+            });
+            if (sponsor || ri || region) {
+                const yr = (charter.match(/(\d{4})$/) || [])[1];
+                $('footer_about').forEach(el => this.set(el, (sponsor || 'Family of Rotary Club of Coimbatore East') + '. Rendering impact across Rotary International District ' + (ri || '3206') + ' (' + (region || 'Coimbatore | Palakkad') + ')' + (yr ? ' since ' + yr : '') + '.'));
+            }
+            if (id || charter || ri) $('footer_meta').forEach(el => this.set(el, 'Club ID: ' + (id || '91594') + ' | Charter: ' + (charter || '21.04.2014') + ' | Rotary International District ' + (ri || '3206')));
+        },
+
+        applyContact() {
+            const mail = this.val('contact_email') || this.val('club_email');
+            if (mail) {
+                document.querySelectorAll('[data-site="contact_email"]').forEach(el => this.set(el, mail));
+                document.querySelectorAll('a[href^="mailto:"]').forEach(a => { a.href = 'mailto:' + mail; });
+            }
+            const phone = this.val('contact_phone');
+            document.querySelectorAll('[data-site="contact_phone"]').forEach(el => this.set(el, phone));
+            document.querySelectorAll('[data-site-row="contact_phone"]').forEach(el => this.show(el, !!phone));
+
+            ['instagram', 'facebook', 'linkedin', 'twitter', 'youtube'].forEach(n => {
+                const u = this.url(this.val('social_' + n));
+                document.querySelectorAll('a[data-social="' + n + '"]').forEach(a => {
+                    if (u) { a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+                    this.show(a, !!u);
+                });
+            });
+
+            let map = this.val('map_embed_url');
+            const m = map.match(/src=["']([^"']+)["']/i);
+            if (m) map = m[1];
+            map = this.url(map);
+            const fr = document.querySelector('footer iframe');
+            if (fr && map && fr.getAttribute('src') !== map) fr.src = map;
+        },
+
+        applyToggles() {
+            this.toggleSection('#blood-portal, a[href="#blood-portal"]', this.flag('show_blood_section', true));
+            this.toggleSection('#games, a[href="#games"], a[href="games.html"], a[data-arcade]', this.flag('show_games_section', true));
+            this.toggleSection('#chatbot-container', this.flag('show_chatbot', true));
+            const open = this.flag('enable_membership_apps', true);
+            document.querySelectorAll('#join-us form').forEach(f => {
+                f.querySelectorAll('input, select, textarea, button').forEach(el => {
+                    if (!open) { if (!el.disabled) { el.disabled = true; el.dataset.scOff = '1'; } }
+                    else if (el.dataset.scOff) { el.disabled = false; delete el.dataset.scOff; }
+                });
+                let n = f.querySelector('.sc-closed-note');
+                if (!open && !n) {
+                    n = document.createElement('div');
+                    n.className = 'sc-closed-note';
+                    n.setAttribute('role', 'status');
+                    n.textContent = 'Membership applications are currently closed. Please check back soon.';
+                    f.insertBefore(n, f.firstChild);
+                } else if (open && n) n.remove();
+            });
+        },
+
+        apply() {
+            ['applyColors', 'applyLogos', 'applyText', 'applyContact', 'applyToggles'].forEach(fn => {
+                try { this[fn](); } catch (e) { console.warn('[SiteConfig] ' + fn + ' failed:', e && e.message); }
+            });
+            try { document.dispatchEvent(new CustomEvent('unity:settings-applied')); } catch (e) { /* ignore */ }
+        },
+
+        async refresh() {
+            Cache.remove('site_settings');
+            await Settings.loadAll(true);
+            this.apply();
+        },
+
+        queue() {
+            clearTimeout(this._timer);
+            this._timer = setTimeout(() => this.refresh().catch(() => {}), 350);
+        },
+
+        // Called by the admin portal after a save so every open tab updates immediately.
+        notify() {
+            this.apply();
+            try { localStorage.setItem('unity_settings_ping', String(Date.now())); } catch (e) { /* ignore */ }
+            try { if (this._bc) this._bc.postMessage('changed'); } catch (e) { /* ignore */ }
+        },
+
+        init() {
+            this.apply();
+            if (this._started) return;
+            this._started = true;
+            window.addEventListener('storage', e => { if (e.key === 'unity_settings_ping') this.queue(); });
+            try { this._bc = new BroadcastChannel('unity-settings'); this._bc.onmessage = () => this.queue(); } catch (e) { /* unsupported */ }
+            try {
+                supabaseClient.channel('unity-settings-live')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'system_settings' }, () => this.queue())
+                    .subscribe();
+            } catch (e) { /* realtime optional */ }
+            document.addEventListener('visibilitychange', () => { if (!document.hidden) this.queue(); });
+            setInterval(() => { if (!document.hidden) this.queue(); }, 90000);
+        }
+    };
+    window.SiteConfig = SiteConfig;
 
     // ==========================================
     // 17. SECRETARY & ROLE HELPERS
@@ -2395,6 +2633,7 @@
             { name: 'Toast', fn: () => Toast.init() },
             { name: 'Navigation', fn: () => Navigation.init() },
             { name: 'Settings', fn: () => Settings.loadAll() },
+            { name: 'Site Config', fn: () => SiteConfig.init() },
             { name: 'Upload Engine', fn: () => Uploader.init() },
             { name: 'Statistics', fn: () => loadStatistics() },
             { name: 'Benefits', fn: () => loadBenefits() },
