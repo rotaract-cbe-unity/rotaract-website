@@ -2219,6 +2219,36 @@
     // =====================================================================
     const SOLO = () => GM().GAMES || {};
 
+    // ---------- themes ----------
+    const THEMES = {
+        aurora:   { n: 'Aurora',   a: '#1a73e8', b: '#7c3aed', c: '#06b6d4' },
+        sunset:   { n: 'Sunset',   a: '#f97316', b: '#e11d48', c: '#facc15' },
+        forest:   { n: 'Forest',   a: '#16a34a', b: '#0d9488', c: '#84cc16' },
+        ocean:    { n: 'Ocean',    a: '#0ea5e9', b: '#2563eb', c: '#22d3ee' },
+        neon:     { n: 'Neon',     a: '#d946ef', b: '#22d3ee', c: '#a3e635' },
+        rose:     { n: 'Rose',     a: '#ec4899', b: '#8b5cf6', c: '#fb7185' },
+        graphite: { n: 'Graphite', a: '#94a3b8', b: '#475569', c: '#e2e8f0' },
+        light:    { n: 'Frost',    a: '#2563eb', b: '#7c3aed', c: '#06b6d4', light: true }
+    };
+    let themeId = store.get('arcade_theme', 'auto');
+    let themeOpen = false;
+    function resolveTheme() {
+        if (themeId === 'auto') return document.documentElement.classList.contains('dark') ? 'aurora' : 'light';
+        return THEMES[themeId] ? themeId : 'aurora';
+    }
+    function applyTheme() { if (UI) UI.setAttribute('data-theme', resolveTheme()); }
+    function setTheme(id) {
+        themeId = (id === 'auto' || THEMES[id]) ? id : 'auto';
+        store.set('arcade_theme', themeId);
+        themeOpen = false;
+        applyTheme(); render();
+    }
+    function viewThemes() {
+        if (!themeOpen) return '';
+        const cur = themeId;
+        const sw = Object.keys(THEMES).map(k => { const t = THEMES[k]; return `<button class="uxa-sw ${cur === k ? 'on' : ''}" data-ux="theme:${k}" style="--a:${t.a};--b:${t.b}" aria-label="${t.n} theme"><i></i><span>${t.n}</span></button>`; }).join('');
+        return `<div class="uxa-themes" role="menu"><b>Theme</b><div class="uxa-swgrid"><button class="uxa-sw ${cur === 'auto' ? 'on' : ''}" data-ux="theme:auto" style="--a:#1a73e8;--b:#e2e8f0" aria-label="Match site theme"><i></i><span>Auto</span></button>${sw}</div></div>`;
+    }
     function ensureUI() {
         if (UI && document.body.contains(UI)) return UI;
         injectCSS();
@@ -2228,6 +2258,8 @@
         UI.setAttribute('aria-label', 'Unity Arcade');
         UI.innerHTML = '<div class="uxa-orb a"></div><div class="uxa-orb b"></div><div class="uxa-orb c"></div><div class="uxa-shell"><div class="uxa-head"></div><div class="uxa-main"></div><div class="uxa-chat"></div></div>';
         document.body.appendChild(UI);
+        applyTheme();
+        try { new MutationObserver(() => { if (themeId === 'auto') applyTheme(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] }); } catch (e) { /* optional */ }
         UI.addEventListener('click', onClick);
         UI.addEventListener('keydown', onKey);
         UI.addEventListener('input', onInput);
@@ -2262,6 +2294,7 @@
 
     // ---------- events ----------
     function onClick(e) {
+        if (themeOpen && !e.target.closest('.uxa-themes') && !e.target.closest('[data-ux="themes"]')) { themeOpen = false; render(); }
         const t = e.target.closest('[data-a],[data-react],[data-submit],[data-ux]');
         if (!t || t.disabled) return;
         if (t.hasAttribute('data-a')) { try { sendAct(JSON.parse(t.getAttribute('data-a'))); } catch (er) { /* silent */ } return; }
@@ -2294,6 +2327,8 @@
             case 'link': copyLink(); break;
             case 'chat': { const i = UI.querySelector('#uxa-chat-in'); if (i) { sendChat(i.value); i.value = ''; i.focus(); } break; }
             case 'togglechat': UI.classList.toggle('chat-open'); break;
+            case 'themes': themeOpen = !themeOpen; render(); break;
+            case 'theme': setTheme(arg); break;
         }
     }
     function copyCode() { if (!S) return; try { navigator.clipboard.writeText(S.code); flashRoom('Room code copied'); } catch (e) { flashRoom('Code: ' + S.code); } }
@@ -2350,13 +2385,13 @@
         tick();
     }
     function viewHead() {
-        if (!S) return `<div class="uxa-logo"><i class="fa-solid fa-gamepad"></i><div><b>Unity Arcade</b><small>Multiplayer rooms &bull; 10 live games</small></div></div><button class="uxa-x" data-ux="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>`;
+        if (!S) return `<div class="uxa-logo"><i class="fa-solid fa-gamepad"></i><div><b>Unity Arcade</b><small>Multiplayer rooms &bull; 10 live games</small></div></div><button class="uxa-x" data-ux="themes" aria-label="Change theme" title="Theme"><i class="fa-solid fa-palette"></i></button><button class="uxa-x" data-ux="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>${viewThemes()}`;
         const G = GAMES[S.gameId] || {};
         return `<div class="uxa-logo"><i class="fa-solid ${G.icon || 'fa-gamepad'}" style="color:${G.color || '#60a5fa'}"></i><div><b>${esc(G.name || 'Room')}</b><small>${S.status === 'joining' ? 'Joining...' : S.players.length + ' player' + (S.players.length === 1 ? '' : 's') + (S.mode === 'local' ? ' &bull; local mode' : '')}</small></div></div>
             <div class="uxa-roominfo"><button class="uxa-code" data-ux="copy" title="Copy room code">${esc(S.code)} <i class="fa-regular fa-copy"></i></button>
             <span class="uxa-idle" title="Room auto-closes when idle"><i class="fa-regular fa-clock"></i> <span data-idle>--</span></span></div>
-            <div class="uxa-headbtns"><button class="uxa-btn ghost" data-ux="togglechat"><i class="fa-regular fa-comments"></i></button>
-            ${S.isHost ? '<button class="uxa-btn danger" data-ux="closeroom"><i class="fa-solid fa-lock"></i> Close room</button>' : '<button class="uxa-btn ghost" data-ux="leave"><i class="fa-solid fa-right-from-bracket"></i> Leave</button>'}</div>`;
+            <div class="uxa-headbtns"><button class="uxa-btn ghost" data-ux="themes" aria-label="Change theme" title="Theme"><i class="fa-solid fa-palette"></i></button><button class="uxa-btn ghost" data-ux="togglechat"><i class="fa-regular fa-comments"></i></button>
+            ${S.isHost ? '<button class="uxa-btn danger" data-ux="closeroom"><i class="fa-solid fa-lock"></i> Close room</button>' : '<button class="uxa-btn ghost" data-ux="leave"><i class="fa-solid fa-right-from-bracket"></i> Leave</button>'}</div>${viewThemes()}`;
     }
     function viewHub() {
         const wins = store.get('arcade_wins', {});
@@ -2407,6 +2442,48 @@
         if (!S || S.status === 'joining') return '';
         const log = S.chat.slice(-30).map(c => c.sys ? `<div class="sys">${esc(c.text)}</div>` : `<div><b style="color:${c.c || '#93c5fd'}">${esc(c.n)}:</b> ${esc(c.text)}</div>`).join('');
         return `<div class="uxa-chatlog" id="uxa-chat-log">${log || '<div class="sys">Say hi to your room 👋</div>'}</div><div class="uxa-chatrow"><input id="uxa-chat-in" class="uxa-input" maxlength="200" placeholder="Message the room..." autocomplete="off"><button class="uxa-btn primary" data-ux="chat"><i class="fa-solid fa-paper-plane"></i></button></div>`;
+    }
+
+    // ---------- theme CSS (generated per theme) ----------
+    function themeCSS() {
+        const rgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)).join(',');
+        let css = `
+.uxa-head{z-index:3}
+.uxa-themes{position:absolute;right:14px;top:calc(100% + 6px);z-index:20;width:min(300px,calc(100% - 28px));padding:12px;border-radius:20px;background:rgba(15,23,42,.78);border:1px solid rgba(255,255,255,.28);box-shadow:0 24px 60px -20px rgba(0,0,0,.7),0 1px 0 rgba(255,255,255,.3) inset;-webkit-backdrop-filter:blur(26px) saturate(180%);backdrop-filter:blur(26px) saturate(180%)}
+.uxa-themes>b{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin:0 2px 8px;color:#c3d1ea}
+.uxa-swgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.uxa-sw{display:flex;flex-direction:column;align-items:center;gap:6px;padding:9px 4px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;font:700 10.5px Poppins,sans-serif}
+.uxa-sw i{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--a),var(--b));box-shadow:0 0 0 2px rgba(255,255,255,.35),0 8px 16px -6px var(--a)}
+.uxa-sw:hover{background:rgba(255,255,255,.14)}
+.uxa-sw.on{border-color:#fff;background:rgba(255,255,255,.18)}.uxa-sw.on i{box-shadow:0 0 0 3px #fff,0 8px 16px -6px var(--a)}
+`;
+        Object.keys(THEMES).forEach(id => {
+            const t = THEMES[id], T = '#ux-arcade[data-theme="' + id + '"]';
+            css += `${T}{background:radial-gradient(60rem 40rem at 15% 0%,rgba(${rgb(t.a)},${t.light ? .35 : .45}),transparent 60%),radial-gradient(50rem 40rem at 100% 100%,rgba(${rgb(t.b)},${t.light ? .3 : .45}),transparent 60%),${t.light ? 'rgba(226,236,252,.8)' : 'rgba(4,9,24,.82)'}}
+${T} .uxa-orb.a{background:${t.a}}${T} .uxa-orb.b{background:${t.b}}${T} .uxa-orb.c{background:${t.c}}
+${T} .uxa-btn.primary{background:linear-gradient(180deg,rgba(255,255,255,.3),transparent 55%),linear-gradient(135deg,${t.a},${t.b})}
+${T} .uxa-logo>i,${T} .uxa-spin{color:${t.a}}${T} .uxa-spin{border-top-color:${t.a}}
+${T} .uxa-input:focus{border-color:${t.a};box-shadow:0 0 0 4px rgba(${rgb(t.a)},.25)}
+`;
+        });
+        const L = '#ux-arcade[data-theme="light"]';
+        css += `
+${L}{color:#0f172a}
+${L} .uxa-shell{background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(255,255,255,.46) 55%,rgba(255,255,255,.62));border-color:rgba(255,255,255,.95);box-shadow:0 1px 0 #fff inset,0 40px 90px -30px rgba(30,41,90,.35),0 0 0 1px rgba(37,99,235,.12)}
+${L} .uxa-shell::before{background:linear-gradient(180deg,rgba(255,255,255,.6),transparent 24%)}
+${L} .uxa-head,${L} .uxa-chat{border-color:rgba(15,23,42,.1)}${L} .uxa-chat{background:rgba(255,255,255,.4)}
+${L} .uxa-panel,${L} .uxa-prow,${L} .uxa-res,${L} .dice-row,${L} .quiz-q,${L} .quiz-opt,${L} .tr-text,${L} .race-prompt,${L} .uxa-pill,${L} .uxa-solo,${L} .uxa-chipbtn,${L} .uxa-x,${L} .uxa-code,${L} .uxa-input,${L} .mem-card,${L} .rps-btn,${L} .uxa-banner{background:rgba(255,255,255,.62);border-color:rgba(15,23,42,.14);color:#0f172a;box-shadow:0 1px 0 #fff inset,0 8px 20px -14px rgba(30,41,90,.4)}
+${L} .uxa-btn:not(.primary):not(.danger){background:rgba(255,255,255,.7);border-color:rgba(15,23,42,.16);color:#0f172a}
+${L} .uxa-panel p,${L} .uxa-sub,${L} .uxa-logo small,${L} .uxa-idle,${L} .uxa-field>span,${L} .uxa-h small,${L} .uxa-game small,${L} .uxa-game p,${L} .uxa-center p,${L} .uxa-note,${L} .dice-pair small,${L} .uxa-tag{color:#475569}
+${L} .uxa-game{color:#0f172a;background:linear-gradient(150deg,rgba(255,255,255,.8),rgba(255,255,255,.45));border-color:rgba(15,23,42,.12)}
+${L} .uxa-note.big,${L} .uxa-logo b,${L} .uxa-h,${L} .uxa-panel h3{color:#0f172a}
+${L} .uxa-note.ok{color:#15803d}${L} .uxa-note.bad{color:#b91c1c}
+${L} .uxa-input::placeholder{color:#64748b}${L} .uxa-input{background:rgba(255,255,255,.85)}
+${L} .uxa-themes{background:rgba(255,255,255,.85);border-color:rgba(15,23,42,.14)}${L} .uxa-themes>b{color:#475569}
+${L} .uxa-sw{background:rgba(255,255,255,.7);border-color:rgba(15,23,42,.14);color:#0f172a}${L} .uxa-sw.on{border-color:#2563eb}
+${L} .uxa-chip,${L} .uxa-pill b,${L} .uxa-res b,${L} .uxa-prow b{color:#0f172a}
+`;
+        return css;
     }
 
     // ---------- styles (glass) ----------
@@ -2502,7 +2579,7 @@ body.uxa-lock{overflow:hidden}
 .uxa-chat{display:none;border-top:1px solid rgba(255,255,255,.14);padding:10px 14px;background:rgba(0,0,0,.18)}.chat-open .uxa-chat{display:block}.uxa-chatlog{max-height:120px;overflow:auto;font-size:11.5px;display:flex;flex-direction:column;gap:3px;margin-bottom:8px}.uxa-chatlog .sys{color:#9db1cf;font-style:italic}.uxa-chatrow{display:flex;gap:8px}
 @media (max-width:720px){#ux-arcade{padding:0}.uxa-shell{border-radius:0;height:100%}.uxa-panel.row,.uxa-lobby{grid-template-columns:1fr}.quiz-grid{grid-template-columns:1fr}.tr-bar{grid-template-columns:90px 1fr 38px}.race-prompt{font-size:24px}.rx-pad{height:190px}.uxa-head{padding:10px 12px}.uxa-main{padding:12px}}
 @media (prefers-reduced-motion:reduce){#ux-arcade *{animation:none!important;transition:none!important}}
-`;
+`+themeCSS();
         document.head.appendChild(st);
     }
 
