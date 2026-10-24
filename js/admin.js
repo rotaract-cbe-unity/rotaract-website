@@ -1,7 +1,7 @@
 // ============================================
 // ROTARACT CLUB OF COIMBATORE UNITY
 // COMPLETE ADVANCED ADMIN PORTAL SYSTEM
-// File: js/admin.js | Version: 16.0.0 (Team Chat, Reset Data, live site settings)
+// File: js/admin.js | Version: 16.1.0 (Team Chat, Reset Data, live site settings)
 // All Sessions Built-In | Full CRUD | Reports Engine
 // ULTRA-POWERFUL SITE SETTINGS CONTROL
 // ============================================
@@ -16,12 +16,38 @@
     // ================================================================
     const ChatApp = (function () {
         const LS = 'unity_chat_';
-        const EMOJIS = ['😀','😁','😂','🤣','😊','😍','😘','😎','🤔','😢','😭','😡','👍','👎','👏','🙏','🙌','💪','🔥','🎉','❤️','💙','✅','❌','⭐','💯','👀','🤝','📌','📅','📎','🎯','🌟','🚀','☕','🍕','🎂','🩸','🏆','💡'];
-        const QUICK = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
-        const DEFAULT_TEMPLATES = ['Thanks! 👍', 'On it ✅', 'Noted, will update shortly.', 'Meeting in 10 minutes — please join.', 'Please share the latest report.', 'Approved ✅'];
+        // Premium icon set (Font Awesome) - used for reactions, stickers and message previews
+        const RX = {
+            like: { i: 'fa-thumbs-up', c: '#2563eb', n: 'Like' }, love: { i: 'fa-heart', c: '#e11d48', n: 'Love' }, laugh: { i: 'fa-face-laugh-squint', c: '#f59e0b', n: 'Haha' },
+            wow: { i: 'fa-face-surprise', c: '#f59e0b', n: 'Wow' }, sad: { i: 'fa-face-sad-tear', c: '#64748b', n: 'Sad' }, thanks: { i: 'fa-hands-praying', c: '#7c3aed', n: 'Thanks' },
+            helpful: { i: 'fa-lightbulb', c: '#eab308', n: 'Helpful' }, done: { i: 'fa-circle-check', c: '#16a34a', n: 'Done' }
+        };
+        const QUICK = ['like', 'love', 'laugh', 'wow', 'sad', 'thanks', 'helpful'];
+        const STICKERS = [
+            ['smile', 'fa-face-smile', '#f59e0b'], ['grin', 'fa-face-grin-beam', '#f59e0b'], ['joy', 'fa-face-grin-tears', '#f59e0b'], ['wink', 'fa-face-grin-wink', '#f59e0b'], ['cool', 'fa-face-grin-stars', '#f59e0b'], ['hearteyes', 'fa-face-grin-hearts', '#e11d48'],
+            ['kiss', 'fa-face-kiss-wink-heart', '#e11d48'], ['meh', 'fa-face-meh', '#64748b'], ['cry', 'fa-face-sad-cry', '#3b82f6'], ['angry', 'fa-face-angry', '#dc2626'], ['roll', 'fa-face-rolling-eyes', '#64748b'], ['tired', 'fa-face-tired', '#64748b'],
+            ['like', 'fa-thumbs-up', '#2563eb'], ['dislike', 'fa-thumbs-down', '#64748b'], ['clap', 'fa-hands-clapping', '#f59e0b'], ['pray', 'fa-hands-praying', '#7c3aed'], ['handshake', 'fa-handshake', '#0ea5e9'], ['muscle', 'fa-dumbbell', '#475569'],
+            ['peace', 'fa-hand-peace', '#f59e0b'], ['wave', 'fa-hand', '#f59e0b'], ['point', 'fa-hand-point-right', '#f59e0b'], ['fist', 'fa-hand-fist', '#f59e0b'],
+            ['heart', 'fa-heart', '#e11d48'], ['star', 'fa-star', '#f59e0b'], ['fire', 'fa-fire', '#f97316'], ['bolt', 'fa-bolt', '#eab308'], ['sparkle', 'fa-wand-magic-sparkles', '#a855f7'], ['gem', 'fa-gem', '#06b6d4'],
+            ['trophy', 'fa-trophy', '#eab308'], ['medal', 'fa-medal', '#f59e0b'], ['crown', 'fa-crown', '#eab308'], ['rocket', 'fa-rocket', '#7c3aed'], ['target', 'fa-bullseye', '#dc2626'], ['idea', 'fa-lightbulb', '#eab308'],
+            ['check', 'fa-circle-check', '#16a34a'], ['cross', 'fa-circle-xmark', '#dc2626'], ['warn', 'fa-triangle-exclamation', '#f59e0b'], ['info', 'fa-circle-info', '#2563eb'], ['question', 'fa-circle-question', '#7c3aed'], ['flag', 'fa-flag', '#dc2626'],
+            ['bell', 'fa-bell', '#f59e0b'], ['calendar', 'fa-calendar-check', '#2563eb'], ['clock', 'fa-clock', '#64748b'], ['pin', 'fa-thumbtack', '#dc2626'], ['clip', 'fa-paperclip', '#64748b'], ['mail', 'fa-envelope', '#2563eb'],
+            ['phone', 'fa-phone', '#16a34a'], ['location', 'fa-location-dot', '#dc2626'], ['camera', 'fa-camera', '#475569'], ['music', 'fa-music', '#a855f7'], ['gift', 'fa-gift', '#ec4899'], ['cake', 'fa-cake-candles', '#ec4899'],
+            ['coffee', 'fa-mug-hot', '#92400e'], ['pizza', 'fa-pizza-slice', '#f97316'], ['blood', 'fa-droplet', '#dc2626'], ['sun', 'fa-sun', '#f59e0b'], ['moon', 'fa-moon', '#6366f1'], ['leaf', 'fa-seedling', '#16a34a'],
+            ['eyes', 'fa-eye', '#475569'], ['party', 'fa-champagne-glasses', '#f59e0b'], ['book', 'fa-book-open', '#2563eb'], ['money', 'fa-sack-dollar', '#16a34a']
+        ];
+        const STK = {}; STICKERS.forEach(s => { STK[s[0]] = { i: s[1], c: s[2] }; });
+        const DEFAULT_TEMPLATES = [':like: Thanks!', ':check: On it', 'Noted, will update shortly.', 'Meeting in 10 minutes — please join.', 'Please share the latest report.', ':check: Approved'];
         const EDIT_WINDOW = 30 * 60 * 1000;
 
         const esc = s => AdminPanel.esc(s);
+        function rxIcon(k) { const r = RX[k]; return r ? '<i class="fa-solid ' + r.i + '" style="color:' + r.c + '"></i>' : esc(k); }
+        function tokens(h) {
+            return String(h).replace(/:([a-z0-9_]{2,20}):/g, (m, n) => {
+                const s = STK[n] || RX[n]; if (!s) return m;
+                return '<i class="fa-solid ' + s.i + ' tc-st" style="color:' + s.c + '" title=":' + n + ':"></i>';
+            });
+        }
         const uuid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
         const nowIso = () => new Date().toISOString();
         const ls = {
@@ -38,6 +64,17 @@
         const DBRepo = {
             name: 'db',
             async probe() { must(await sb().from('chat_rooms').select('id').limit(1)); must(await sb().from('chat_messages').select('id').limit(1)); must(await sb().from('chat_members').select('id').limit(1)); },
+            async ext() { try { must(await sb().from('chat_rep').select('user_id').limit(1)); must(await sb().from('chat_members').select('muted_until,notify').limit(1)); return true; } catch (e) { return false; } },
+            async reps() { return must(await sb().from('chat_rep').select('*').limit(500)) || []; },
+            async bumpRep(uid, name, d) {
+                try {
+                    const res = await sb().rpc('chat_rep_bump', { p_user: uid, p_name: name || '', p_points: d.points || 0, p_msgs: d.msgs || 0, p_reactions: d.reactions || 0, p_helpful: d.helpful || 0, p_kudos: d.kudos || 0, p_tasks: d.tasks_done || 0 });
+                    if (!res.error && res.data) return Array.isArray(res.data) ? res.data[0] : res.data;
+                } catch (e) { /* fall back to read-modify-write */ }
+                const cur = (must(await sb().from('chat_rep').select('*').eq('user_id', uid).limit(1)) || [])[0] || { user_id: uid, user_name: name, points: 0, msgs: 0, reactions: 0, helpful: 0, kudos: 0, tasks_done: 0 };
+                const row = { user_id: uid, user_name: name || cur.user_name, points: Math.max(0, (cur.points || 0) + (d.points || 0)), msgs: (cur.msgs || 0) + (d.msgs || 0), reactions: (cur.reactions || 0) + (d.reactions || 0), helpful: (cur.helpful || 0) + (d.helpful || 0), kudos: (cur.kudos || 0) + (d.kudos || 0), tasks_done: (cur.tasks_done || 0) + (d.tasks_done || 0), updated_at: nowIso() };
+                must(await sb().from('chat_rep').upsert(row, { onConflict: 'user_id' })); return row;
+            },
             async myMemberships(uid) { return must(await sb().from('chat_members').select('*').eq('user_id', uid)) || []; },
             async rooms(ids) { return ids.length ? (must(await sb().from('chat_rooms').select('*').in('id', ids)) || []) : []; },
             async members(ids) { return ids.length ? (must(await sb().from('chat_members').select('*').in('room_id', ids)) || []) : []; },
@@ -71,6 +108,14 @@
             _load() { return ls.get('local_db', { rooms: [], members: [], messages: [] }); },
             _save(d) { ls.set('local_db', d); },
             async probe() { /* always available */ },
+            async ext() { return true; },
+            async reps() { return this._load().rep || []; },
+            async bumpRep(uid, name, d) {
+                const db = this._load(); db.rep = db.rep || [];
+                let cur = db.rep.find(x => x.user_id === uid); if (!cur) { cur = { user_id: uid, user_name: name, points: 0, msgs: 0, reactions: 0, helpful: 0, kudos: 0, tasks_done: 0 }; db.rep.push(cur); }
+                cur.user_name = name || cur.user_name; cur.points = Math.max(0, cur.points + (d.points || 0)); ['msgs', 'reactions', 'helpful', 'kudos', 'tasks_done'].forEach(k => { cur[k] = (cur[k] || 0) + (d[k] || 0); }); cur.updated_at = nowIso();
+                this._save(db); return Object.assign({}, cur);
+            },
             async myMemberships(uid) { return this._load().members.filter(m => m.user_id === uid); },
             async rooms(ids) { return this._load().rooms.filter(r => ids.includes(r.id)); },
             async members(ids) { return this._load().members.filter(m => ids.includes(m.room_id)); },
@@ -109,14 +154,15 @@
             reply: null, editing: null, urgent: false, drafts: ls.get('drafts', {}),
             typing: {}, seen: ls.get('seen', {}), presence: {},
             menu: null, modal: null, info: false, searching: false, searchHits: null,
-            prefs: Object.assign({ sound: true, desktop: false }, ls.get('prefs', {})),
+            prefs: Object.assign({ sound: true, desktop: false, tone: 'soft', wall: 'default', fs: 'm', pins: [], dnd: { on: false, from: '22:00', to: '07:00', urgent: true } }, ls.get('prefs', {})),
+            rep: new Map(), notifs: ls.get('notifs', []), reminders: ls.get('reminders', []), ext: true, lastRepMsg: 0,
             templates: ls.get('templates', DEFAULT_TEMPLATES.slice()),
             unreadAt: null, timers: [], net: null, bc: null, lastTyping: 0, rec: null,
             lastPoll: 0, lastDeliv: 0, scheduled: [], starredIds: new Set(), setupError: ''
         };
 
         Object.defineProperty(TC, 'mounted', { get() { return !!(this.root && this.root.isConnected); }, set() { /* derived */ } });
-        const SETUP_SQL = "-- ============================================================\n-- UNITY ADMIN TEAM CHAT  -  run ONCE in Supabase > SQL Editor\n-- Safe to re-run (uses IF NOT EXISTS).\n-- ============================================================\ncreate table if not exists public.chat_rooms (\n  id uuid primary key default gen_random_uuid(),\n  name text not null default 'New group',\n  description text default '',\n  kind text not null default 'group',            -- group | dm\n  created_by text,\n  only_admins_send boolean not null default false,\n  disappearing_secs integer not null default 0,  -- 0 = off\n  pinned_message_id text,\n  is_archived boolean not null default false,\n  created_at timestamptz not null default now()\n);\n\ncreate table if not exists public.chat_members (\n  id uuid primary key default gen_random_uuid(),\n  room_id uuid not null references public.chat_rooms(id) on delete cascade,\n  user_id text not null,\n  user_name text,\n  role text not null default 'member',           -- admin | member\n  joined_at timestamptz not null default now(),\n  last_read_at timestamptz not null default now(),\n  last_delivered_at timestamptz not null default now(),\n  muted boolean not null default false,\n  archived boolean not null default false,\n  cleared_at timestamptz,\n  unique (room_id, user_id)\n);\n\ncreate table if not exists public.chat_messages (\n  id uuid primary key,\n  room_id uuid not null references public.chat_rooms(id) on delete cascade,\n  sender_id text not null,\n  sender_name text,\n  kind text not null default 'text',             -- text | image | file | voice | poll | card | system\n  body text default '',\n  reply_to text,\n  attachment jsonb,\n  poll jsonb,\n  reactions jsonb not null default '{}'::jsonb,\n  starred_by jsonb not null default '[]'::jsonb,\n  deleted_for jsonb not null default '[]'::jsonb,\n  deleted_all boolean not null default false,\n  forwarded boolean not null default false,\n  mentions jsonb not null default '[]'::jsonb,\n  priority text not null default 'normal',       -- normal | urgent\n  status text not null default 'sent',           -- sent | scheduled\n  scheduled_for timestamptz,\n  expires_at timestamptz,\n  edited_at timestamptz,\n  created_at timestamptz not null default now()\n);\n\ncreate index if not exists chat_members_user_idx   on public.chat_members (user_id);\ncreate index if not exists chat_members_room_idx   on public.chat_members (room_id);\ncreate index if not exists chat_messages_room_idx  on public.chat_messages (room_id, created_at desc);\ncreate index if not exists chat_messages_sched_idx on public.chat_messages (sender_id, status);\n\n-- The portal talks to Supabase with the service key, so RLS is not needed.\n-- If you turned RLS on for these tables, add policies or run:\nalter table public.chat_rooms    disable row level security;\nalter table public.chat_members  disable row level security;\nalter table public.chat_messages disable row level security;\n";
+        const SETUP_SQL = "-- ============================================================\n-- UNITY ADMIN TEAM CHAT  -  run ONCE in Supabase > SQL Editor\n-- Safe to re-run (uses IF NOT EXISTS).\n-- ============================================================\ncreate table if not exists public.chat_rooms (\n  id uuid primary key default gen_random_uuid(),\n  name text not null default 'New group',\n  description text default '',\n  kind text not null default 'group',            -- group | dm\n  created_by text,\n  only_admins_send boolean not null default false,\n  disappearing_secs integer not null default 0,  -- 0 = off\n  pinned_message_id text,\n  is_archived boolean not null default false,\n  created_at timestamptz not null default now()\n);\n\ncreate table if not exists public.chat_members (\n  id uuid primary key default gen_random_uuid(),\n  room_id uuid not null references public.chat_rooms(id) on delete cascade,\n  user_id text not null,\n  user_name text,\n  role text not null default 'member',           -- admin | member\n  joined_at timestamptz not null default now(),\n  last_read_at timestamptz not null default now(),\n  last_delivered_at timestamptz not null default now(),\n  muted boolean not null default false,\n  archived boolean not null default false,\n  cleared_at timestamptz,\n  unique (room_id, user_id)\n);\n\ncreate table if not exists public.chat_messages (\n  id uuid primary key,\n  room_id uuid not null references public.chat_rooms(id) on delete cascade,\n  sender_id text not null,\n  sender_name text,\n  kind text not null default 'text',             -- text | image | file | voice | poll | card | task | location | system\n  body text default '',\n  reply_to text,\n  attachment jsonb,\n  poll jsonb,\n  reactions jsonb not null default '{}'::jsonb,\n  starred_by jsonb not null default '[]'::jsonb,\n  deleted_for jsonb not null default '[]'::jsonb,\n  deleted_all boolean not null default false,\n  forwarded boolean not null default false,\n  mentions jsonb not null default '[]'::jsonb,\n  priority text not null default 'normal',       -- normal | urgent\n  status text not null default 'sent',           -- sent | scheduled\n  scheduled_for timestamptz,\n  expires_at timestamptz,\n  edited_at timestamptz,\n  created_at timestamptz not null default now()\n);\n\ncreate index if not exists chat_members_user_idx   on public.chat_members (user_id);\ncreate index if not exists chat_members_room_idx   on public.chat_members (room_id);\ncreate index if not exists chat_messages_room_idx  on public.chat_messages (room_id, created_at desc);\ncreate index if not exists chat_messages_sched_idx on public.chat_messages (sender_id, status);\n\n-- ---- v2 upgrade: timed mute, notify mode, reputation ----\nalter table public.chat_members add column if not exists muted_until timestamptz;\nalter table public.chat_members add column if not exists notify text not null default 'all';   -- all | mentions\n\ncreate table if not exists public.chat_rep (\n  user_id text primary key,\n  user_name text,\n  points integer not null default 0,\n  msgs integer not null default 0,\n  reactions integer not null default 0,\n  helpful integer not null default 0,\n  kudos integer not null default 0,\n  tasks_done integer not null default 0,\n  updated_at timestamptz not null default now()\n);\nalter table public.chat_rep disable row level security;\n\n-- atomic reputation counter (used by the portal; it falls back to a plain update if missing)\ncreate or replace function public.chat_rep_bump(p_user text, p_name text, p_points int, p_msgs int, p_reactions int, p_helpful int, p_kudos int, p_tasks int)\nreturns public.chat_rep language sql as $$\n  insert into public.chat_rep as r (user_id, user_name, points, msgs, reactions, helpful, kudos, tasks_done, updated_at)\n  values (p_user, p_name, greatest(0, p_points), p_msgs, p_reactions, p_helpful, p_kudos, p_tasks, now())\n  on conflict (user_id) do update set\n    user_name = coalesce(excluded.user_name, r.user_name),\n    points = greatest(0, r.points + p_points), msgs = r.msgs + p_msgs, reactions = r.reactions + p_reactions,\n    helpful = r.helpful + p_helpful, kudos = r.kudos + p_kudos, tasks_done = r.tasks_done + p_tasks, updated_at = now()\n  returning r.*;\n$$;\n\n-- The portal talks to Supabase with the service key, so RLS is not needed.\n-- If you turned RLS on for these tables, add policies or run:\nalter table public.chat_rooms    disable row level security;\nalter table public.chat_members  disable row level security;\nalter table public.chat_messages disable row level security;\n";
 
         function meId() { return TC.me ? TC.me.id : null; }
         function person(uid) {
@@ -139,7 +185,7 @@
         function isAdmin(id) { const m = myMember(id); return !!(m && m.role === 'admin') || (TC.me && TC.me.role === 'super_admin' && !!m); }
         function roomTitle(r) {
             if (!r) return '';
-            if (r.kind === 'dm') { const o = roomMembers(r.id).find(m => m.user_id !== meId()); return o ? person(o.user_id).name : (r.name || 'Chat'); }
+            if (r.kind === 'dm') { const o = roomMembers(r.id).find(m => m.user_id !== meId()); if (o) return person(o.user_id).name; return roomMembers(r.id).length === 1 ? 'Saved notes' : (r.name || 'Chat'); }
             return r.name || 'Group';
         }
         function roomPhoto(r) { if (r && r.kind === 'dm') { const o = roomMembers(r.id).find(m => m.user_id !== meId()); return o ? person(o.user_id).photo : ''; } return ''; }
@@ -164,7 +210,7 @@
             const t = mm.last_read_at || '';
             return list(id).filter(m => m.sender_id !== meId() && m.kind !== 'system' && m.created_at > t && visible(m)).length;
         }
-        function totalUnread() { let n = 0; TC.rooms.forEach((r, id) => { const mm = myMember(id); if (mm && !mm.archived && !mm.muted) n += unreadCount(id); }); return n; }
+        function totalUnread() { let n = 0; TC.rooms.forEach((r, id) => { const mm = myMember(id); if (mm && !mm.archived && !isMuted(mm)) n += unreadCount(id); }); return n; }
         function mentionedMe(m) { return (m.mentions || []).some(x => x && x.id === meId()); }
 
         function fmtTime(iso) { try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
@@ -181,19 +227,30 @@
             if (dayKey(iso) === dayKey(new Date(Date.now() - 864e5).toISOString())) return 'Yesterday';
             return new Date(iso).toLocaleDateString([], { day: '2-digit', month: '2-digit', year: '2-digit' });
         }
-        function preview(m) {
+        const KIND_ICON = { image: 'fa-image', file: 'fa-file-lines', voice: 'fa-microphone', poll: 'fa-chart-simple', card: 'fa-link', task: 'fa-list-check', location: 'fa-location-dot' };
+        function previewBody(m) {
             if (!m) return '';
-            if (m.deleted_all) return '🚫 This message was deleted';
-            const who = m.sender_id === meId() ? 'You: ' : '';
+            if (m.deleted_all) return 'This message was deleted';
+            const a = m.attachment || {};
             switch (m.kind) {
-                case 'image': return who + '📷 ' + (m.body || 'Photo');
-                case 'file': return who + '📎 ' + ((m.attachment && m.attachment.name) || 'File');
-                case 'voice': return who + '🎤 Voice message';
-                case 'poll': return who + '📊 ' + ((m.poll && m.poll.q) || 'Poll');
-                case 'card': return who + '🔗 ' + ((m.attachment && m.attachment.title) || 'Shared item');
-                case 'system': return m.body || '';
-                default: return who + (m.body || '');
+                case 'image': return m.body || 'Photo';
+                case 'file': return a.name || 'File';
+                case 'voice': return 'Voice message';
+                case 'poll': return (m.poll && m.poll.q) || 'Poll';
+                case 'card': return a.title || 'Shared item';
+                case 'task': return a.title || 'Task';
+                case 'location': return 'Location';
+                default: return m.body || '';
             }
+        }
+        // plain text (toasts, exports)
+        function preview(m) { if (!m) return ''; return (m.kind !== 'system' && m.sender_id === meId() && !m.deleted_all ? 'You: ' : '') + previewBody(m).replace(/:([a-z0-9_]{2,20}):/g, (x, n) => (STK[n] || RX[n]) ? '' : x); }
+        // rich HTML (lists, quotes) with an icon instead of an emoji
+        function pv(m, strip) {
+            if (!m) return '';
+            const pre = !strip && m.kind !== 'system' && m.sender_id === meId() && !m.deleted_all ? 'You: ' : '';
+            const ic = m.deleted_all ? 'fa-ban' : KIND_ICON[m.kind];
+            return esc(pre) + (ic ? '<i class="fa-solid ' + ic + ' tc-pvi"></i> ' : '') + tokens(esc(previewBody(m)));
         }
         function say(type, msg) { try { if (window.AppToast && AppToast[type]) AppToast[type](msg); else console.log('[chat]', msg); } catch (e) { /* ignore */ } }
 
@@ -252,6 +309,9 @@
                         if (TC.activeId === p.room && TC.mounted) renderMessages(false);
                         break;
                     }
+                    case 'rep': if (p.row && p.row.user_id) TC.rep.set(p.row.user_id, p.row); break;
+                    case 'kudos': if ((p.to || []).includes(meId())) { pushNotif({ id: 'k-' + Date.now(), type: 'kudos', room: TC.activeId || '', msg: '', by: p.by || 'Someone', text: 'Thanks for your help!', at: nowIso(), read: false }); if (!inQuiet()) { beep(false); showToast({ title: (p.by || 'Someone') + ' sent you kudos', icon: 'fa-heart', color: '#ec4899', html: 'Your reputation just went up +10.', kind: 'kudos' }); } } break;
+                    case 'ping': if ((p.to || []).includes(meId()) && !inQuiet()) { beep(false); showToast({ title: p.title || 'Update', icon: 'fa-circle-check', color: '#16a34a', html: esc(p.text || ''), room: p.room || '' }); } break;
                     case 'room': if ((p.to || []).includes(meId()) || TC.rooms.has(p.room)) scheduleReload(); break;
                     default: break;
                 }
@@ -265,40 +325,192 @@
             badge();
         }
 
-        // ---------------------------------------------------------------
-        // Notifications
-        // ---------------------------------------------------------------
         let audioCtx = null;
-        function beep(urgent) {
-            if (!TC.prefs.sound) return;
+        // ---------------------------------------------------------------
+        // Reputation  (points, levels, badges, kudos, leaderboard)
+        // ---------------------------------------------------------------
+        const LEVELS = [
+            { min: 0, n: 'Newcomer', i: 'fa-seedling', c: '#64748b' }, { min: 50, n: 'Contributor', i: 'fa-star', c: '#0ea5e9' }, { min: 150, n: 'Active Member', i: 'fa-bolt', c: '#f59e0b' },
+            { min: 350, n: 'Trusted', i: 'fa-shield-heart', c: '#16a34a' }, { min: 700, n: 'Champion', i: 'fa-trophy', c: '#a855f7' }, { min: 1500, n: 'Legend', i: 'fa-crown', c: '#eab308' }
+        ];
+        const BADGES = [
+            { n: 'Helper', i: 'fa-hand-holding-heart', d: '5 helpful votes', t: r => r.helpful >= 5 }, { n: 'Conversation starter', i: 'fa-comments', d: '100 messages', t: r => r.msgs >= 100 },
+            { n: 'Appreciated', i: 'fa-heart', d: '3 kudos received', t: r => r.kudos >= 3 }, { n: 'Task master', i: 'fa-list-check', d: '5 tasks completed', t: r => (r.tasks_done || 0) >= 5 }, { n: 'Well liked', i: 'fa-thumbs-up', d: '20 reactions', t: r => r.reactions >= 20 }
+        ];
+        function levelOf(p) { let l = LEVELS[0]; LEVELS.forEach(x => { if (p >= x.min) l = x; }); return { l, next: LEVELS.find(x => x.min > p) || null }; }
+        function repRow(uid) { return TC.rep.get(uid) || { user_id: uid, user_name: person(uid).name, points: 0, msgs: 0, reactions: 0, helpful: 0, kudos: 0, tasks_done: 0 }; }
+        function repBadge(uid) { const r = repRow(uid), l = levelOf(r.points).l; return '<i class="fa-solid ' + l.i + ' tc-lvl" style="color:' + l.c + '" title="' + esc(l.n + ' · ' + r.points + ' pts') + '"></i>'; }
+        async function bumpRep(uid, d) {
+            if (!uid || !TC.repo) return;
+            try {
+                const row = await TC.repo.bumpRep(uid, person(uid).name, d);
+                if (row) { TC.rep.set(uid, row); emit({ t: 'rep', row }); }
+            } catch (e) { /* reputation is best effort */ }
+        }
+        function awardOnce(key) {
+            const a = ls.get('awarded', {}); if (a[key]) return false;
+            a[key] = 1; const ks = Object.keys(a); if (ks.length > 600) ks.slice(0, 200).forEach(k => delete a[k]);
+            ls.set('awarded', a); return true;
+        }
+        async function giveKudos(uid) {
+            if (!uid || uid === meId()) return false;
+            const g = ls.get('kudos', {}), today = new Date().toISOString().slice(0, 10);
+            if (g[uid] === today) { say('info', 'You already sent kudos to ' + person(uid).name + ' today.'); return false; }
+            g[uid] = today; ls.set('kudos', g);
+            await bumpRep(uid, { points: 10, kudos: 1 });
+            emit({ t: 'kudos', to: [uid], by: TC.me.name });
+            say('success', 'Kudos sent to ' + person(uid).name); return true;
+        }
+
+        // ---------------------------------------------------------------
+        // Notification engine
+        // ---------------------------------------------------------------
+        function isMuted(mm) { return !!(mm && (mm.muted || (mm.muted_until && new Date(mm.muted_until).getTime() > Date.now()))); }
+        function muteLabel(mm) {
+            if (!mm) return 'Off';
+            if (mm.muted) return 'Muted always';
+            if (mm.muted_until && new Date(mm.muted_until).getTime() > Date.now()) return 'Muted until ' + new Date(mm.muted_until).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+            return (mm.notify === 'mentions') ? 'Mentions & urgent only' : 'All messages';
+        }
+        function inQuiet() {
+            const d = TC.prefs.dnd; if (!d || !d.on) return false;
+            const f = String(d.from || '22:00').split(':').map(Number), t = String(d.to || '07:00').split(':').map(Number), n = new Date();
+            const cur = n.getHours() * 60 + n.getMinutes(), a = f[0] * 60 + (f[1] || 0), b = t[0] * 60 + (t[1] || 0);
+            return a <= b ? (cur >= a && cur < b) : (cur >= a || cur < b);
+        }
+        function pushNotif(n) {
+            if (TC.notifs.some(x => x.id === n.id)) return;
+            TC.notifs.unshift(n); TC.notifs = TC.notifs.slice(0, 60); ls.set('notifs', TC.notifs); updateBell();
+        }
+        function unreadNotifs() { return TC.notifs.filter(n => !n.read).length; }
+        function updateBell() {
+            const b = TC.root && TC.root.querySelector('#tc-bell-n'); if (!b) return;
+            const n = unreadNotifs(); b.textContent = n > 9 ? '9+' : n; b.style.display = n ? '' : 'none';
+        }
+        let baseTitle = null;
+        function updateTitle(n) {
+            try {
+                const cur = document.title.replace(/^\(\d+\+?\)\s/, ''); baseTitle = cur;
+                document.title = (n > 0 ? '(' + (n > 99 ? '99+' : n) + ') ' : '') + cur;
+            } catch (e) { /* ignore */ }
+        }
+        const TONES = { soft: [[660, 0, .22]], chime: [[880, 0, .14], [1320, .14, .2]], pop: [[520, 0, .09], [780, .09, .1]], bell: [[1046, 0, .3], [784, .12, .3]] };
+        function beep(urgent, force) {
+            if (!TC.prefs.sound && !force) return;
             try {
                 audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-                o.type = 'sine'; o.frequency.value = urgent ? 880 : 660;
-                g.gain.setValueAtTime(.0001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(.12, audioCtx.currentTime + .02); g.gain.exponentialRampToValueAtTime(.0001, audioCtx.currentTime + (urgent ? .5 : .22));
-                o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + (urgent ? .52 : .24));
-            } catch (e) { /* audio blocked until user gesture */ }
+                const seq = urgent ? [[880, 0, .16], [880, .22, .16], [1175, .44, .3]] : (TONES[TC.prefs.tone] || TONES.soft), t0 = audioCtx.currentTime;
+                seq.forEach(s => {
+                    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                    o.type = TC.prefs.tone === 'pop' ? 'triangle' : 'sine'; o.frequency.value = s[0];
+                    g.gain.setValueAtTime(.0001, t0 + s[1]); g.gain.exponentialRampToValueAtTime(.13, t0 + s[1] + .02); g.gain.exponentialRampToValueAtTime(.0001, t0 + s[1] + s[2]);
+                    o.connect(g); g.connect(audioCtx.destination); o.start(t0 + s[1]); o.stop(t0 + s[1] + s[2] + .02);
+                });
+            } catch (e) { /* audio blocked until a user gesture */ }
+        }
+        function toastHost() {
+            let h = document.getElementById('tc-toasts');
+            if (!h) { h = document.createElement('div'); h.id = 'tc-toasts'; h.className = 'tc-toasts'; h.setAttribute('role', 'status'); h.setAttribute('aria-live', 'polite'); document.body.appendChild(h); h.addEventListener('click', onToastClick); h.addEventListener('keydown', e => { if (e.target.classList && e.target.classList.contains('tc-toast-in') && e.key === 'Enter') { e.preventDefault(); toastSend(e.target.closest('.tc-toast')); } }); }
+            return h;
+        }
+        function showToast(o) {
+            const h = toastHost(), el = document.createElement('div');
+            el.className = 'tc-toast' + (o.urgent ? ' urgent' : '') + (o.kind ? ' ' + o.kind : '');
+            el.setAttribute('data-room', o.room || ''); el.setAttribute('data-msg', o.msg || '');
+            el.innerHTML = (o.icon ? '<span class="tc-toast-ic" style="--c:' + o.color + '"><i class="fa-solid ' + o.icon + '"></i></span>' : avatar(o.name || '?', o.photo || '', 38)) +
+                '<div class="tc-toast-b"><b>' + esc(o.title) + '</b><span>' + o.html + '</span><div class="tc-toast-a">' + (o.room ? '<button data-act="open">Open</button>' : '') + (o.reply ? '<button data-act="reply">Reply</button>' : '') + (o.mute ? '<button data-act="mute">Mute</button>' : '') + '</div>' +
+                '<div class="tc-toast-r" style="display:none"><input class="tc-toast-in" maxlength="1000" placeholder="Type a reply…"><button data-act="sendreply" aria-label="Send reply"><i class="fa-solid fa-paper-plane"></i></button></div></div><button class="tc-toast-x" data-act="x" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></button>';
+            h.appendChild(el);
+            while (h.children.length > 4) h.firstChild.remove();
+            if (!o.urgent) { const arm = ms => { clearTimeout(el._t); el._t = setTimeout(() => el.remove(), ms); }; arm(8000); el.addEventListener('mouseenter', () => clearTimeout(el._t)); el.addEventListener('focusin', () => clearTimeout(el._t)); el.addEventListener('mouseleave', () => { if (!el.querySelector('.tc-toast-in:focus')) arm(4000); }); }
+            return el;
+        }
+        function toastSend(el) {
+            if (!el) return; const inp = el.querySelector('.tc-toast-in'), room = el.getAttribute('data-room'), v = inp ? inp.value.trim() : '';
+            if (!v || !room) return;
+            send({ roomId: room, body: v, kind: 'text', reply_to: el.getAttribute('data-msg') || null }).then(r => { if (r) { say('success', 'Reply sent'); el.remove(); } });
+        }
+        function onToastClick(e) {
+            const b = e.target.closest('[data-act]'), el = e.target.closest('.tc-toast'); if (!b || !el) return;
+            const act = b.getAttribute('data-act'), room = el.getAttribute('data-room');
+            if (act === 'x') el.remove();
+            else if (act === 'open') { el.remove(); gotoRoom(room, el.getAttribute('data-msg')); }
+            else if (act === 'reply') { const r = el.querySelector('.tc-toast-r'); r.style.display = 'flex'; const i = r.querySelector('input'); i.focus(); clearTimeout(el._t); }
+            else if (act === 'sendreply') toastSend(el);
+            else if (act === 'mute') { const mm = (TC.members.get(room) || []).find(x => x.user_id === meId()); if (mm) { setMine(room, { muted_until: new Date(Date.now() + 8 * 3600000).toISOString(), muted: false }); say('info', 'Muted for 8 hours'); } el.remove(); }
+        }
+        async function gotoRoom(id, msgId) {
+            try { const m = document.getElementById('admin-portal-modal'); if (m && m.classList.contains('hidden') && window.openAdminPortal) window.openAdminPortal(); } catch (e) { /* ignore */ }
+            if (!TC.mounted) { try { AdminPanel.navigateTo('chat'); } catch (e) { /* ignore */ } for (let i = 0; i < 25 && !TC.mounted; i++) await sleep(120); }
+            if (TC.rooms.has(id)) { await openRoom(id); if (msgId) jumpTo(msgId); }
+        }
+        function desktopNotify(title, body, tag, onclick) {
+            try {
+                if (TC.prefs.desktop && window.Notification && Notification.permission === 'granted' && document.hidden) {
+                    const n = new Notification(title, { body, tag }); n.onclick = () => { window.focus(); n.close(); if (onclick) onclick(); };
+                }
+            } catch (e) { /* ignore */ }
         }
         function onIncoming(m) {
             const mm = myMember(m.room_id);
             if (!mm || m.kind === 'system') return;
-            const urgent = m.priority === 'urgent', mention = mentionedMe(m);
-            if (mm.muted && !urgent && !mention) return;
+            const r = TC.rooms.get(m.room_id), urgent = m.priority === 'urgent', mention = mentionedMe(m);
+            const replyToMe = !!(m.reply_to && list(m.room_id).some(x => x.id === m.reply_to && x.sender_id === meId()));
+            const task = m.kind === 'task' && m.attachment && (m.attachment.assignees || []).includes(meId());
+            const important = urgent || mention || replyToMe || task;
+            const who = m.sender_name || person(m.sender_id).name, rt = r ? roomTitle(r) : 'Chat';
+            if (important) pushNotif({ id: m.id, type: urgent ? 'urgent' : task ? 'task' : mention ? 'mention' : 'reply', room: m.room_id, msg: m.id, by: who, text: previewBody(m).slice(0, 140), at: nowIso(), read: false });
+            if (isMuted(mm) && !urgent) return;
+            if (mm.notify === 'mentions' && !important) return;
+            const quiet = inQuiet() && !(urgent && (!TC.prefs.dnd || TC.prefs.dnd.urgent !== false));
             const here = TC.mounted && TC.activeId === m.room_id && !document.hidden;
-            if (here) { if (TC.prefs.sound) beep(false); return; }
-            const r = TC.rooms.get(m.room_id);
-            const who = m.sender_name || person(m.sender_id).name;
-            const text = (r && r.kind !== 'dm' ? roomTitle(r) + ' · ' : '') + who + ': ' + preview(m).replace(/^You: /, '');
+            if (quiet) return;
+            if (here) { beep(false); return; }
             beep(urgent);
-            if (urgent) say('warning', '🚨 URGENT — ' + text); else say('info', text.length > 110 ? text.slice(0, 107) + '…' : text);
-            try {
-                if (TC.prefs.desktop && window.Notification && Notification.permission === 'granted' && document.hidden) {
-                    const n = new Notification(urgent ? '🚨 Urgent — Team Chat' : 'Team Chat', { body: text, tag: 'tc-' + m.room_id });
-                    n.onclick = () => { window.focus(); AdminPanel.navigateTo('chat'); openRoom(m.room_id); n.close(); };
-                }
-            } catch (e) { /* ignore */ }
+            const label = urgent ? 'Urgent' : task ? 'Task assigned to you' : mention ? 'Mentioned you' : replyToMe ? 'Replied to you' : '';
+            showToast({ room: m.room_id, msg: m.id, title: (r && r.kind !== 'dm' ? rt + ' · ' : '') + who, name: who, photo: person(m.sender_id).photo, html: (label ? '<em class="tc-toast-tag">' + label + '</em> ' : '') + pv(m, true), urgent, reply: canSend(m.room_id), mute: !urgent });
+            desktopNotify((urgent ? 'Urgent — ' : '') + (r && r.kind !== 'dm' ? rt : who), (r && r.kind !== 'dm' ? who + ': ' : '') + previewBody(m).replace(/:[a-z0-9_]{2,20}:/g, '').slice(0, 140), 'tc-' + m.room_id, () => gotoRoom(m.room_id, m.id));
         }
-        function badge() { try { AdminPanel.updateBadge('chat', totalUnread()); } catch (e) { /* ignore */ } }
+        function badge() { try { const n = totalUnread(); AdminPanel.updateBadge('chat', n); updateTitle(n); updateBell(); } catch (e) { /* ignore */ } }
+
+        // reminders
+        function addReminder(m, at) {
+            TC.reminders.push({ id: uuid(), msg: m.id, room: m.room_id, at, text: previewBody(m).slice(0, 120), by: m.sender_name || person(m.sender_id).name });
+            ls.set('reminders', TC.reminders);
+        }
+        function checkReminders() {
+            const now = Date.now(), due = TC.reminders.filter(r => new Date(r.at).getTime() <= now);
+            if (!due.length) return;
+            TC.reminders = TC.reminders.filter(r => !due.includes(r)); ls.set('reminders', TC.reminders);
+            due.forEach(r => {
+                pushNotif({ id: 'rem-' + r.id, type: 'reminder', room: r.room, msg: r.msg, by: r.by, text: r.text, at: nowIso(), read: false });
+                if (!inQuiet()) {
+                    beep(false);
+                    showToast({ room: r.room, msg: r.msg, title: 'Reminder', icon: 'fa-bell', color: '#f59e0b', html: esc((r.by ? r.by + ': ' : '') + r.text), kind: 'reminder' });
+                    desktopNotify('Reminder', (r.by ? r.by + ': ' : '') + r.text, 'tc-rem-' + r.id, () => gotoRoom(r.room, r.msg));
+                }
+            });
+        }
+
+        // ---------------------------------------------------------------
+        // Tasks
+        // ---------------------------------------------------------------
+        function taskStats(a) {
+            const as = a.assignees || [], done = a.done || {};
+            const n = as.length ? as.filter(u => done[u]).length : Object.keys(done).length, total = as.length || 1;
+            return { n, total, all: as.length ? n === as.length : n >= 1 };
+        }
+        function canMarkTask(a) { const as = a.assignees || []; return !as.length || as.includes(meId()); }
+        async function toggleTask(m) {
+            const a = JSON.parse(JSON.stringify(m.attachment || {})); if (!canMarkTask(a)) { say('info', 'This task is assigned to someone else.'); return; }
+            a.done = a.done || {}; const had = !!a.done[meId()];
+            if (had) delete a.done[meId()]; else a.done[meId()] = nowIso();
+            await patchMsg(m, { attachment: a });
+            if (!had && awardOnce('task|' + m.id + '|' + meId())) bumpRep(meId(), { points: 4, tasks_done: 1 });
+            if (!had && m.sender_id !== meId()) pushNotifRemote(m.sender_id, 'Task done', TC.me.name + ' completed “' + (a.title || 'task') + '”');
+            renderMessages(false);
+        }
+        function pushNotifRemote(uid, title, text) { emit({ t: 'ping', to: [uid], title, text, room: TC.activeId }); }
 
         // ---------------------------------------------------------------
         // Loading
@@ -328,6 +540,7 @@
                     [...TC.msgs.keys()].forEach(k => { if (!TC.rooms.has(k)) TC.msgs.delete(k); });
                     recent.forEach(upsertMsg);
                     TC.scheduled = await TC.repo.scheduled(meId());
+                    try { if (TC.ext) TC.rep = new Map((await TC.repo.reps()).map(x => [x.user_id, x])); } catch (e) { /* reputation optional */ }
                     try { const st = await TC.repo.starred(meId(), ids); TC.starredIds = new Set(st.map(x => x.id)); st.forEach(upsertMsg); } catch (e) { /* optional */ }
                 } finally { loading = null; }
             })();
@@ -367,6 +580,7 @@
                 }
                 await loadDirectory();
                 if (!TC.repo) { TC.booted = true; return; }
+                TC.ext = await TC.repo.ext();
                 await loadAll();
                 TC.booted = true;
                 netInit();
@@ -384,13 +598,14 @@
             TC.timers.push(setInterval(() => { if (TC.mounted && !document.hidden) pollActive(); }, 8000));
             TC.timers.push(setInterval(() => { loadAll().then(() => { if (TC.mounted) { renderList(); if (TC.activeId) { renderHead(); } } badge(); }).catch(() => { }); markDelivered(); }, 30000));
             TC.timers.push(setInterval(runScheduler, 15000));
+            TC.timers.push(setInterval(checkReminders, 20000));
             TC.timers.push(setInterval(() => {
                 const now = Date.now(); let dirty = false;
                 Object.keys(TC.typing).forEach(r => Object.keys(TC.typing[r]).forEach(u => { if (TC.typing[r][u] < now) { delete TC.typing[r][u]; dirty = true; } }));
                 if (dirty && TC.mounted) renderHead();
                 if (TC.mounted && TC.activeId) { const r = TC.rooms.get(TC.activeId); if (r && r.disappearing_secs && list(r.id).some(isExpired)) renderMessages(false); }
             }, 1500));
-            markDelivered(); runScheduler();
+            markDelivered(); runScheduler(); checkReminders();
         }
         function stop(keepNet) { TC.timers.forEach(clearInterval); TC.timers = []; if (!keepNet) netStop(); }
         function reset() { stop(false); Object.assign(TC, { booted: false, repo: null, me: null, rooms: new Map(), members: new Map(), msgs: new Map(), activeId: null, root: null, typing: {}, presence: {} }); }
@@ -416,6 +631,7 @@
         // ---------------------------------------------------------------
         function parseMentions(body, roomId) {
             const out = [];
+            if (/(^|\s)@all(\s|$)/.test(body) && isAdmin(roomId)) { roomMembers(roomId).forEach(m => { if (m.user_id !== meId()) out.push({ id: m.user_id, name: person(m.user_id).name }); }); return out; }
             roomMembers(roomId).forEach(m => { const p = person(m.user_id); if (m.user_id !== meId() && p.name && body.includes('@' + p.name)) out.push({ id: m.user_id, name: p.name }); });
             return out;
         }
@@ -439,7 +655,13 @@
                 await TC.repo.addMessage(row);
                 if (TC.pending) TC.pending.delete(row.id);
                 if (scheduled) { TC.scheduled.push(row); say('success', 'Message scheduled for ' + new Date(row.scheduled_for).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) + '. Keep the portal open at that time.'); }
-                else { emit({ t: 'msg', msg: row, to: memberIds(roomId) }); if (TC.mounted) { renderMessages(false); renderList(); } }
+                else {
+                    emit({ t: 'msg', msg: row, to: memberIds(roomId) }); if (TC.mounted) { renderMessages(false); renderList(); }
+                    if (row.kind !== 'system') {
+                        const now = Date.now(), pts = now - TC.lastRepMsg > 20000 ? 1 : 0; TC.lastRepMsg = now; bumpRep(meId(), { points: pts, msgs: 1 });
+                        if (row.reply_to) { const q = list(roomId).find(x => x.id === row.reply_to); if (q && q.sender_id !== meId() && awardOnce('reply|' + row.id)) bumpRep(q.sender_id, { points: 2 }); }
+                    }
+                }
                 return row;
             } catch (e) {
                 console.warn('[chat] send failed', e);
@@ -492,6 +714,7 @@
             Object.keys(rx).forEach(k => { rx[k] = rx[k].filter(u => u !== meId()); if (!rx[k].length) delete rx[k]; });
             if (!had) (rx[emoji] = rx[emoji] || []).push(meId());
             await patchMsg(m, { reactions: rx }); renderMessages(false);
+            if (!had && m.sender_id !== meId() && awardOnce('rx|' + m.id + '|' + meId() + '|' + emoji)) { const h = emoji === 'helpful'; bumpRep(m.sender_id, { points: h ? 6 : 2, reactions: 1, helpful: h ? 1 : 0 }); }
         }
         async function toggleStar(m) {
             const s = new Set(m.starred_by || []);
@@ -536,14 +759,14 @@
             return id;
         }
         async function openDM(uid) {
-            for (const [id, r] of TC.rooms) { if (r.kind === 'dm') { const ids = memberIds(id); if (ids.includes(uid) && ids.includes(meId())) return id; } }
+            for (const [id, r] of TC.rooms) { if (r.kind === 'dm') { const ids = memberIds(id); if (ids.includes(uid) && ids.includes(meId()) && (uid !== meId() || ids.length === 1)) return id; } }
             const id = uuid(), at = nowIso();
             const room = { id, name: '', description: '', kind: 'dm', created_by: meId(), only_admins_send: false, disappearing_secs: 0, pinned_message_id: null, is_archived: false, created_at: at };
             await TC.repo.addRoom(room);
-            const rows = [meId(), uid].map(u => ({ room_id: id, user_id: u, user_name: person(u).name, role: 'member', joined_at: at, last_read_at: at, last_delivered_at: at, muted: false, archived: false }));
+            const rows = [...new Set([meId(), uid])].map(u => ({ room_id: id, user_id: u, user_name: person(u).name, role: 'member', joined_at: at, last_read_at: at, last_delivered_at: at, muted: false, archived: false }));
             await TC.repo.addMembers(rows);
             TC.rooms.set(id, room); TC.members.set(id, rows);
-            emit({ t: 'room', room: id, to: [meId(), uid] });
+            emit({ t: 'room', room: id, to: [...new Set([meId(), uid])] });
             return id;
         }
         async function addToGroup(roomId, uids) {
@@ -604,13 +827,15 @@
             return { url, name: file.name, size: file.size, mime: file.type, image: isImg };
         }
         async function sendFiles(files) {
+            const cinp = TC.root && TC.root.querySelector('#tc-input'); let cap = cinp ? cinp.value.trim() : '';
+            if (cap && cinp) { cinp.value = ''; autoGrow(cinp); delete TC.drafts[TC.activeId]; ls.set('drafts', TC.drafts); renderComposerMeta(); }
             for (const f of Array.from(files || [])) {
                 if (f.size > 15 * 1048576) { say('warning', f.name + ' is larger than 15 MB.'); continue; }
                 say('info', 'Uploading ' + f.name + '…');
                 try {
                     const att = await uploadFile(f);
-                    await send({ kind: att.image ? 'image' : 'file', body: '', attachment: att, reply_to: TC.reply ? TC.reply.id : null });
-                    TC.reply = null; renderComposerMeta();
+                    await send({ kind: att.image ? 'image' : 'file', body: cap, attachment: att, reply_to: TC.reply ? TC.reply.id : null });
+                    TC.reply = null; cap = ''; renderComposerMeta();
                 } catch (e) { say('error', 'Upload failed: ' + (e.message || e)); }
             }
         }
@@ -656,7 +881,7 @@
         const $ = sel => (TC.root ? TC.root.querySelector(sel) : null);
         function ico(c) { return '<i class="fa-solid ' + c + '"></i>'; }
         function fmt(text, mentions) {
-            let h = esc(text || '');
+            let h = tokens(esc(text || ''));
             h = h.replace(/```([\s\S]+?)```/g, '<code class="tc-mono">$1</code>');
             h = h.replace(/(https?:\/\/[^\s<]+[^\s<.,!?;:)])/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
             h = h.replace(/(^|[\s(>])\*([^*\n]+)\*(?=$|[\s).,!?<])/g, '$1<b>$2</b>');
@@ -687,7 +912,7 @@
             if (!m.reply_to) return '';
             if (!q) return '<div class="tc-quote gone"><b>Original message</b><span>Not available</span></div>';
             const mine = q.sender_id === meId();
-            return '<div class="tc-quote" data-tc="jump" data-id="' + q.id + '"><b style="color:hsl(' + hue(q.sender_id) + ' 60% 42%)">' + esc(mine ? 'You' : (q.sender_name || person(q.sender_id).name)) + '</b><span>' + esc(preview(q).replace(/^You: /, '')) + '</span></div>';
+            return '<div class="tc-quote" data-tc="jump" data-id="' + q.id + '"><b style="color:hsl(' + hue(q.sender_id) + ' 60% 42%)">' + esc(mine ? 'You' : (q.sender_name || person(q.sender_id).name)) + '</b><span>' + pv(q, true) + '</span></div>';
         }
         function pollHtml(m) {
             const p = m.poll || {}, opts = p.options || [];
@@ -702,12 +927,14 @@
             if (m.kind === 'voice') return '<div class="tc-voice">' + ico('fa-microphone') + '<audio controls preload="none" src="' + esc(a.url) + '"></audio><small>' + Math.floor((a.dur || 0) / 60) + ':' + String((a.dur || 0) % 60).padStart(2, '0') + '</small></div>';
             if (m.kind === 'file') return '<a class="tc-file" href="' + esc(a.url) + '" target="_blank" rel="noopener noreferrer" download="' + esc(a.name || 'file') + '">' + ico('fa-file-lines') + '<span><b>' + esc(a.name || 'File') + '</b><small>' + (a.size ? Math.max(1, Math.round(a.size / 1024)) + ' KB' : 'Document') + '</small></span>' + ico('fa-download') + '</a>';
             if (m.kind === 'card') return '<button class="tc-card" data-tc="opencard" data-id="' + m.id + '">' + ico(a.type === 'meeting' ? 'fa-people-group' : 'fa-calendar-days') + '<span><b>' + esc(a.title || 'Item') + '</b><small>' + esc([a.date, a.venue].filter(Boolean).join(' · ')) + '</small></span>' + ico('fa-arrow-up-right-from-square') + '</button>';
+            if (m.kind === 'task') return taskHtml(m);
+            if (m.kind === 'location') return locHtml(m);
             return '';
         }
         function reactionsHtml(m) {
             const rx = m.reactions || {}, ks = Object.keys(rx).filter(k => (rx[k] || []).length);
             if (!ks.length) return '';
-            return '<div class="tc-rx">' + ks.map(k => '<button data-tc="react" data-id="' + m.id + '" data-e="' + esc(k) + '" class="' + (rx[k].includes(meId()) ? 'on' : '') + '" title="' + esc(rx[k].map(u => person(u).name).join(', ')) + '">' + esc(k) + (rx[k].length > 1 ? '<b>' + rx[k].length + '</b>' : '') + '</button>').join('') + '</div>';
+            return '<div class="tc-rx">' + ks.map(k => '<button data-tc="react" data-id="' + m.id + '" data-e="' + esc(k) + '" class="' + (rx[k].includes(meId()) ? 'on' : '') + '" title="' + esc((RX[k] ? RX[k].n + ': ' : '') + rx[k].map(u => person(u).name).join(', ')) + '">' + rxIcon(k) + (rx[k].length > 1 ? '<b>' + rx[k].length + '</b>' : '') + '</button>').join('') + '</div>';
         }
         function bubbleHtml(m, prev, showName, showAv, grouped) {
             const mine = m.sender_id === meId();
@@ -720,8 +947,8 @@
                     (m.kind === 'poll' ? pollHtml(m) : attachHtml(m)) + (m.body ? '<div class="tc-text">' + fmt(m.body, m.mentions) + '</div>' : '');
             }
             const meta = '<span class="tc-meta">' + (m.expires_at ? '<span title="Disappearing message">' + ico('fa-hourglass-half') + '</span>' : '') + (starred ? '<span class="tc-star">' + ico('fa-star') + '</span>' : '') + (m.edited_at && !m.deleted_all ? '<em>edited</em>' : '') + '<time>' + fmtTime(m.created_at) + '</time>' + (mine && !m.deleted_all ? ticksHtml(m) : '') + '</span>';
-            const sender = showName && !mine ? '<div class="tc-who" style="color:hsl(' + hue(m.sender_id) + ' 62% 40%)">' + esc(m.sender_name || person(m.sender_id).name) + '</div>' : '';
-            const av = !mine && TC.rooms.get(m.room_id) && TC.rooms.get(m.room_id).kind !== 'dm' ? (showAv ? avatar(person(m.sender_id).name, person(m.sender_id).photo, 30) : '<span class="tc-av-gap"></span>') : '';
+            const sender = showName && !mine ? '<div class="tc-who" data-tc="profile" data-uid="' + esc(m.sender_id) + '" style="color:hsl(' + hue(m.sender_id) + ' 62% 40%)">' + esc(m.sender_name || person(m.sender_id).name) + ' ' + repBadge(m.sender_id) + '</div>' : '';
+            const av = !mine && TC.rooms.get(m.room_id) && TC.rooms.get(m.room_id).kind !== 'dm' ? (showAv ? '<span class="tc-avbtn" data-tc="profile" data-uid="' + esc(m.sender_id) + '">' + avatar(person(m.sender_id).name, person(m.sender_id).photo, 30) + '</span>' : '<span class="tc-av-gap"></span>') : '';
             return '<div class="tc-row ' + (mine ? 'mine' : 'theirs') + (grouped ? ' grouped' : '') + '" data-id="' + m.id + '">' + av +
                 '<div class="tc-bubwrap"><div class="tc-bub' + (m.priority === 'urgent' && !m.deleted_all ? ' urgent' : '') + (m.deleted_all ? ' deleted' : '') + (mentionedMe(m) && !mine ? ' mentioned' : '') + '">' +
                 (m.deleted_all ? '' : '<button class="tc-chev" data-tc="mmenu" data-id="' + m.id + '" aria-label="Message options">' + ico('fa-chevron-down') + '</button>') +
@@ -734,7 +961,8 @@
             const q = TC.q.trim().toLowerCase();
             let rooms = [...TC.rooms.values()].filter(r => myMember(r.id));
             rooms.forEach(r => { r._last = lastMsg(r.id); r._t = r._last ? r._last.created_at : r.created_at; });
-            rooms.sort((a, b) => (a._t < b._t ? 1 : -1));
+            const pins = TC.prefs.pins || [];
+            rooms.sort((a, b) => { const pa = pins.includes(a.id), pb = pins.includes(b.id); if (pa !== pb) return pa ? -1 : 1; return a._t < b._t ? 1 : -1; });
             const f = TC.filter;
             rooms = rooms.filter(r => {
                 const mm = myMember(r.id);
@@ -748,15 +976,15 @@
             let html = rooms.map(r => {
                 const mm = myMember(r.id), n = unreadCount(r.id), m = r._last, active = TC.activeId === r.id;
                 const typers = Object.keys(TC.typing[r.id] || {}).filter(u => u !== meId());
-                let pv;
-                if (typers.length) pv = '<span class="tc-typing-txt">' + (r.kind === 'dm' ? 'typing…' : esc(person(typers[0]).name.split(' ')[0]) + ' is typing…') + '</span>';
-                else if (m) { const who = r.kind !== 'dm' && m.kind !== 'system' && m.sender_id !== meId() ? esc((m.sender_name || person(m.sender_id).name).split(' ')[0]) + ': ' : ''; pv = who + esc(preview(m).replace(/^You: /, m.sender_id === meId() ? 'You: ' : '')); }
-                else pv = '<i>No messages yet</i>';
+                let pvh;
+                if (typers.length) pvh = '<span class="tc-typing-txt">' + (r.kind === 'dm' ? 'typing…' : esc(person(typers[0]).name.split(' ')[0]) + ' is typing…') + '</span>';
+                else if (m) { const who = r.kind !== 'dm' && m.kind !== 'system' && m.sender_id !== meId() ? esc((m.sender_name || person(m.sender_id).name).split(' ')[0]) + ': ' : ''; pvh = who + pv(m, false); }
+                else pvh = '<i>No messages yet</i>';
                 const men = list(r.id).some(x => x.sender_id !== meId() && mentionedMe(x) && x.created_at > (mm.last_read_at || '') && visible(x));
                 return '<button class="tc-item ' + (active ? 'on' : '') + '" data-tc="open" data-id="' + r.id + '">' +
                     avatar(roomTitle(r), roomPhoto(r), 48, r.kind === 'dm' && isOnline((roomMembers(r.id).find(x => x.user_id !== meId()) || {}).user_id) ? 'online' : '') +
                     '<span class="tc-item-main"><span class="tc-item-top"><b>' + esc(roomTitle(r)) + '</b><time class="' + (n ? 'unread' : '') + '">' + listTime(r._t) + '</time></span>' +
-                    '<span class="tc-item-bot"><span class="tc-pv">' + pv + '</span>' + (mm.muted ? '<span class="tc-mute">' + ico('fa-bell-slash') + '</span>' : '') + (men ? '<span class="tc-at">@</span>' : '') + (n ? '<span class="tc-badge' + (mm.muted ? ' muted' : '') + '">' + (n > 99 ? '99+' : n) + '</span>' : '') + '</span></span></button>';
+                    '<span class="tc-item-bot"><span class="tc-pv">' + pvh + '</span>' + (pins.includes(r.id) ? '<span class="tc-pinned">' + ico('fa-thumbtack') + '</span>' : '') + (isMuted(mm) ? '<span class="tc-mute">' + ico('fa-bell-slash') + '</span>' : '') + (men ? '<span class="tc-at">@</span>' : '') + (n ? '<span class="tc-badge' + (isMuted(mm) ? ' muted' : '') + '">' + (n > 99 ? '99+' : n) + '</span>' : '') + '</span></span></button>';
             }).join('');
             if (q) {
                 const have = new Set();
@@ -764,7 +992,7 @@
                 const people = TC.directory.filter(p => p.id !== meId() && !have.has(p.id) && p.name.toLowerCase().includes(q));
                 if (people.length) html += '<div class="tc-sec">People</div>' + people.map(p => '<button class="tc-item" data-tc="dm" data-uid="' + esc(p.id) + '">' + avatar(p.name, p.photo, 48) + '<span class="tc-item-main"><span class="tc-item-top"><b>' + esc(p.name) + '</b></span><span class="tc-item-bot"><span class="tc-pv">' + esc(prettyRole(p.role)) + '</span></span></span></button>').join('');
             }
-            if (!html) html = '<div class="tc-empty-list">' + ico('fa-comments') + '<p>' + (q ? 'No chats match “' + esc(TC.q) + '”' : f === 'archived' ? 'No archived chats' : f === 'unread' ? 'You are all caught up 🎉' : 'No chats yet') + '</p>' + (!q && f === 'all' ? '<button class="tc-btn pri" data-tc="newgroup">' + ico('fa-users') + ' Start a group</button>' : '') + '</div>';
+            if (!html) html = '<div class="tc-empty-list">' + ico('fa-comments') + '<p>' + (q ? 'No chats match “' + esc(TC.q) + '”' : f === 'archived' ? 'No archived chats' : f === 'unread' ? 'You are all caught up' : 'No chats yet') + '</p>' + (!q && f === 'all' ? '<button class="tc-btn pri" data-tc="newgroup">' + ico('fa-users') + ' Start a group</button>' : '') + '</div>';
             el.innerHTML = html;
             TC.root.querySelectorAll('.tc-chips button').forEach(b => b.classList.toggle('on', b.getAttribute('data-f') === f));
             const un = TC.root.querySelector('[data-f="unread"] .tc-count'); if (un) { const t = totalUnread(); un.textContent = t ? t : ''; }
@@ -785,7 +1013,7 @@
             const pin = $('#tc-pin');
             if (pin) {
                 const pm = r.pinned_message_id && list(r.id).find(x => x.id === r.pinned_message_id && !x.deleted_all);
-                pin.innerHTML = pm ? '<button data-tc="jump" data-id="' + pm.id + '">' + ico('fa-thumbtack') + '<span><b>Pinned message</b><em>' + esc(preview(pm).replace(/^You: /, '')) + '</em></span></button>' : '';
+                pin.innerHTML = pm ? '<button data-tc="jump" data-id="' + pm.id + '">' + ico('fa-thumbtack') + '<span><b>Pinned message</b><em>' + pv(pm, true) + '</em></span></button>' : '';
                 pin.style.display = pm ? '' : 'none';
             }
             const sb = $('#tc-searchbar'); if (sb) sb.style.display = TC.searching ? '' : 'none';
@@ -808,7 +1036,7 @@
                 html += bubbleHtml(m, prev, r.kind !== 'dm' && !sameRun, !sameRun, sameRun);
                 prev = m;
             });
-            if (!arr.length) html += '<div class="tc-empty-chat">' + ico('fa-lock') + '<p>Say hello 👋 — messages here are visible only to chat members.</p></div>';
+            if (!arr.length) html += '<div class="tc-empty-chat">' + ico('fa-lock') + '<p>No messages yet — say hello! Messages here are visible only to chat members.</p></div>';
             el.innerHTML = html;
             if (stick === 'bottom' || (stick === true && (near || (arr.length && arr[arr.length - 1].sender_id === meId())))) el.scrollTop = el.scrollHeight;
             else if (stick === 'unread') { const u = el.querySelector('#tc-unread-line'); if (u) el.scrollTop = Math.max(0, u.offsetTop - 80); else el.scrollTop = el.scrollHeight; }
@@ -825,7 +1053,7 @@
             const el = $('#tc-meta'), r = active(); if (!el || !r) return;
             let h = '';
             if (TC.editing) h = '<div class="tc-bar edit">' + ico('fa-pen') + '<span><b>Editing message</b></span><button data-tc="cancelbar" aria-label="Cancel">' + ico('fa-xmark') + '</button></div>';
-            else if (TC.reply) h = '<div class="tc-bar">' + ico('fa-reply') + '<span><b>Replying to ' + esc(TC.reply.sender_id === meId() ? 'yourself' : (TC.reply.sender_name || person(TC.reply.sender_id).name)) + '</b><em>' + esc(preview(TC.reply).replace(/^You: /, '')) + '</em></span><button data-tc="cancelbar" aria-label="Cancel">' + ico('fa-xmark') + '</button></div>';
+            else if (TC.reply) h = '<div class="tc-bar">' + ico('fa-reply') + '<span><b>Replying to ' + esc(TC.reply.sender_id === meId() ? 'yourself' : (TC.reply.sender_name || person(TC.reply.sender_id).name)) + '</b><em>' + pv(TC.reply, true) + '</em></span><button data-tc="cancelbar" aria-label="Cancel">' + ico('fa-xmark') + '</button></div>';
             if (TC.rec) h += '<div class="tc-bar rec"><span class="tc-recdot"></span><span><b>Recording voice note…</b><em>Tap the stop button to send</em></span><button data-tc="cancelrec" aria-label="Cancel recording">' + ico('fa-trash') + '</button></div>';
             el.innerHTML = h;
             const comp = $('#tc-composer'); if (!comp) return;
@@ -920,14 +1148,14 @@
                 (r.kind !== 'dm' ? '<div class="tc-desc">' + (r.description ? esc(r.description) : '<i>No description</i>') + '</div>' + (admin ? '<button class="tc-link" data-tc="editgroup">' + ico('fa-pen') + ' Edit name & description</button>' : '') : '') + '</div>' +
                 '<div class="tc-info-sec"><button class="tc-trow plain" data-tc="gallery"><span><b>' + ico('fa-photo-film') + ' Media, docs and links</b></span>' + ico('fa-chevron-right') + '</button>' +
                 '<button class="tc-trow plain" data-tc="starredroom"><span><b>' + ico('fa-star') + ' Starred messages</b></span>' + ico('fa-chevron-right') + '</button></div>' +
-                '<div class="tc-info-sec">' + toggleRow('Mute notifications', 'Urgent messages and @mentions still alert you', mm && mm.muted, 'mute') + toggleRow('Archive chat', 'Hide from your main list', mm && mm.archived, 'archive') +
+                '<div class="tc-info-sec">' + '<button class="tc-trow" data-tc="mutepick"><span><b>Notifications</b><small>' + esc(muteLabel(mm)) + '</small></span>' + ico('fa-chevron-right') + '</button>' + toggleRow('Archive chat', 'Hide from your main list', mm && mm.archived, 'archive') +
                 (r.kind !== 'dm' && admin ? toggleRow('Only admins can send', 'Announcement mode', r.only_admins_send, 'onlyadmins') : '') +
                 (admin || r.kind === 'dm' ? '<label class="tc-select"><span><b>Disappearing messages</b><small>New messages vanish after the chosen time</small></span><select data-tc-sel="disappear"><option value="0" ' + (!dis ? 'selected' : '') + '>Off</option><option value="86400" ' + (dis === 86400 ? 'selected' : '') + '>24 hours</option><option value="604800" ' + (dis === 604800 ? 'selected' : '') + '>7 days</option></select></label>' : '') + '</div>';
             if (r.kind !== 'dm') {
                 h += '<div class="tc-info-sec"><div class="tc-sec-h"><b>' + mem.length + ' members</b>' + (admin ? '<button class="tc-link" data-tc="addmembers">' + ico('fa-user-plus') + ' Add</button>' : '') + '</div>' +
                     mem.slice().sort((a, b) => (b.role === 'admin') - (a.role === 'admin') || person(a.user_id).name.localeCompare(person(b.user_id).name)).map(m => {
                         const p = person(m.user_id), me = m.user_id === meId();
-                        return '<div class="tc-mrow">' + avatar(p.name, p.photo, 38, isOnline(m.user_id) ? 'online' : '') + '<span><b>' + esc(p.name) + (me ? ' (You)' : '') + '</b><small>' + esc(prettyRole(p.role) || 'Member') + '</small></span>' + (m.role === 'admin' ? '<em class="tc-adm">Admin</em>' : '') +
+                        return '<div class="tc-mrow" data-tc="profile" data-uid="' + esc(m.user_id) + '">' + avatar(p.name, p.photo, 38, isOnline(m.user_id) ? 'online' : '') + '<span><b>' + esc(p.name) + (me ? ' (You)' : '') + ' ' + repBadge(m.user_id) + '</b><small>' + esc(prettyRole(p.role) || 'Member') + '</small></span>' + (m.role === 'admin' ? '<em class="tc-adm">Admin</em>' : '') +
                             (admin && !me ? '<button class="tc-ib sm" data-tc="memberact" data-uid="' + esc(m.user_id) + '" aria-label="Member options">' + ico('fa-ellipsis-vertical') + '</button>' : '') + '</div>';
                     }).join('') + '</div>';
             }
@@ -976,16 +1204,12 @@
         function showTemplates(pick) {
             modal('Quick replies', '<div class="tc-tpl">' + (TC.templates.length ? TC.templates.map((t, i) => '<div class="tc-trow plain"><button class="tc-tpl-t" data-tc="usetpl" data-i="' + i + '">' + esc(t) + '</button><button class="tc-ib sm" data-tc="deltpl" data-i="' + i + '" aria-label="Delete">' + ico('fa-trash') + '</button></div>').join('') : '<p class="tc-hint center">No quick replies yet.</p>') + '</div><div class="tc-addtpl"><input type="text" id="tc-ntpl" maxlength="200" placeholder="Add a quick reply"><button class="tc-btn pri" data-tc="addtpl">' + ico('fa-plus') + ' Add</button></div><p class="tc-hint">Tip: type <b>/</b> in the message box to pick one instantly.</p>');
         }
-        function showPrefs() {
-            const perm = window.Notification ? Notification.permission : 'unsupported';
-            modal('Notifications & storage', toggleRow('Sound', 'Play a tone for new messages', TC.prefs.sound, 'pref-sound') + toggleRow('Desktop alerts', perm === 'denied' ? 'Blocked in browser settings' : perm === 'unsupported' ? 'Not supported by this browser' : 'Show alerts when this tab is in the background', TC.prefs.desktop && perm === 'granted', 'pref-desktop') +
-                '<div class="tc-storage"><b>' + ico(TC.mode === 'db' ? 'fa-cloud' : 'fa-hard-drive') + ' ' + (TC.mode === 'db' ? 'Cloud sync is on' : 'Local mode (this browser only)') + '</b><small>' + (TC.mode === 'db' ? 'Messages are stored in your Supabase database and shared live with every admin.' : 'Chats are saved only in this browser. Run chat_setup.sql in Supabase to share chats with the whole team.') + '</small>' + (TC.mode === 'local' ? '<button class="tc-btn pri" data-tc="trycloud">' + ico('fa-cloud-arrow-up') + ' Check cloud connection</button>' : '') + '</div>');
-        }
+        function showPrefs() { showSettings(); }
         async function showStarred(roomOnly) {
             let rows = [];
             try { const ids = roomOnly ? [TC.activeId] : [...TC.rooms.keys()]; rows = await TC.repo.starred(meId(), ids); rows.forEach(upsertMsg); } catch (e) { /* show what we have */ }
             rows = rows.filter(m => visible(m) && !m.deleted_all);
-            modal('Starred messages', rows.length ? rows.map(m => '<button class="tc-srow link" data-tc="gotomsg" data-id="' + m.id + '" data-room="' + m.room_id + '"><span><b>' + esc(m.sender_id === meId() ? 'You' : (m.sender_name || person(m.sender_id).name)) + ' · ' + esc(TC.rooms.get(m.room_id) ? roomTitle(TC.rooms.get(m.room_id)) : '') + '</b><em>' + esc(new Date(m.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })) + '</em><small>' + esc(preview(m).replace(/^You: /, '')) + '</small></span></button>').join('') : '<p class="tc-hint center">' + ico('fa-star') + '<br>No starred messages yet.<br>Open a message menu and tap Star.</p>');
+            modal('Starred messages', rows.length ? rows.map(m => '<button class="tc-srow link" data-tc="gotomsg" data-id="' + m.id + '" data-room="' + m.room_id + '"><span><b>' + esc(m.sender_id === meId() ? 'You' : (m.sender_name || person(m.sender_id).name)) + ' · ' + esc(TC.rooms.get(m.room_id) ? roomTitle(TC.rooms.get(m.room_id)) : '') + '</b><em>' + esc(new Date(m.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })) + '</em><small>' + pv(m, true) + '</small></span></button>').join('') : '<p class="tc-hint center">' + ico('fa-star') + '<br>No starred messages yet.<br>Open a message menu and tap Star.</p>');
         }
         async function showGallery() {
             const id = TC.activeId; if (!id) return;
@@ -1005,7 +1229,7 @@
             const others = roomMembers(m.room_id).filter(x => x.user_id !== meId());
             const read = others.filter(o => o.last_read_at && o.last_read_at >= m.created_at), deliv = others.filter(o => !read.includes(o) && ((o.last_delivered_at && o.last_delivered_at >= m.created_at) || isOnline(o.user_id))), rest = others.filter(o => !read.includes(o) && !deliv.includes(o));
             const grp = (title, arr, cls) => '<div class="tc-info-sec"><div class="tc-sec-h"><b class="' + cls + '">' + title + '</b></div>' + (arr.length ? arr.map(o => '<div class="tc-mrow">' + avatar(person(o.user_id).name, person(o.user_id).photo, 34) + '<span><b>' + esc(person(o.user_id).name) + '</b><small>' + (title === 'Read by' && o.last_read_at ? esc(new Date(o.last_read_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })) : '') + '</small></span></div>').join('') : '<p class="tc-hint">—</p>') + '</div>';
-            modal('Message info', '<div class="tc-quote plain"><span>' + esc(preview(m).replace(/^You: /, '')) + '</span><small>' + esc(new Date(m.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })) + '</small></div>' + grp('Read by', read, 'blue') + grp('Delivered to', deliv, '') + grp('Sent to', rest, ''));
+            modal('Message info', '<div class="tc-quote plain"><span>' + pv(m, true) + '</span><small>' + esc(new Date(m.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })) + '</small></div>' + grp('Read by', read, 'blue') + grp('Delivered to', deliv, '') + grp('Sent to', rest, ''));
         }
         async function showShare() {
             modal('Share a project or meeting', '<p class="tc-hint center"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</p>');
@@ -1023,7 +1247,7 @@
         function showDelete(m) {
             const canAll = m.sender_id === meId() || isAdmin(m.room_id);
             TC.delTarget = m.id;
-            modal('Delete message?', '<div class="tc-quote plain"><span>' + esc(preview(m).replace(/^You: /, '')) + '</span></div>', (canAll ? '<button class="tc-btn red" data-tc="delall">' + ico('fa-trash') + ' Delete for everyone</button>' : '') + '<button class="tc-btn" data-tc="delme">Delete for me</button><button class="tc-btn" data-tc="closemodal">Cancel</button>', 'stack');
+            modal('Delete message?', '<div class="tc-quote plain"><span>' + pv(m, true) + '</span></div>', (canAll ? '<button class="tc-btn red" data-tc="delall">' + ico('fa-trash') + ' Delete for everyone</button>' : '') + '<button class="tc-btn" data-tc="delme">Delete for me</button><button class="tc-btn" data-tc="closemodal">Cancel</button>', 'stack');
         }
         function messageMenu(m, anchor) {
             const mine = m.sender_id === meId();
@@ -1032,23 +1256,23 @@
             const canPin = r && (r.kind === 'dm' || isAdmin(r.id) || !r.only_admins_send);
             const starred = (m.starred_by || []).includes(meId());
             const item = (act, icon, label, red) => '<button data-tc="' + act + '" data-id="' + m.id + '" class="' + (red ? 'red' : '') + '">' + ico(icon) + '<span>' + label + '</span></button>';
-            popup(anchor, '<div class="tc-quickrx">' + QUICK.map(e => '<button data-tc="react" data-id="' + m.id + '" data-e="' + e + '">' + e + '</button>').join('') + '</div>' +
-                (canSend(m.room_id) ? item('reply', 'fa-reply', 'Reply') : '') + (m.body ? item('copy', 'fa-copy', 'Copy') : '') + item('forward', 'fa-share', 'Forward') + item('star', starred ? 'fa-star-half-stroke' : 'fa-star', starred ? 'Unstar' : 'Star') +
+            popup(anchor, '<div class="tc-quickrx">' + QUICK.map(e => '<button data-tc="react" data-id="' + m.id + '" data-e="' + e + '" title="' + RX[e].n + '">' + rxIcon(e) + '</button>').join('') + '</div>' +
+                (canSend(m.room_id) ? item('reply', 'fa-reply', 'Reply') : '') + (m.body ? item('copy', 'fa-copy', 'Copy') : '') + item('forward', 'fa-share', 'Forward') + item('remind', 'fa-bell', 'Remind me') + item('maketask', 'fa-list-check', 'Make task') + (!mine && m.kind !== 'system' ? item('giveKudosMsg', 'fa-heart', 'Give kudos') : '') + item('star', starred ? 'fa-star-half-stroke' : 'fa-star', starred ? 'Unstar' : 'Star') +
                 (canPin ? item('pin', 'fa-thumbtack', r && r.pinned_message_id === m.id ? 'Unpin' : 'Pin') : '') + (mine ? item('minfo', 'fa-circle-info', 'Message info') : '') + (canEdit ? item('edit', 'fa-pen', 'Edit') : '') + item('delete', 'fa-trash', 'Delete', true), 'msgmenu');
         }
         function chatMenu(anchor) {
             const r = active(); if (!r) return; const mm = myMember(r.id);
             const item = (act, icon, label, red) => '<button data-tc="' + act + '" class="' + (red ? 'red' : '') + '">' + ico(icon) + '<span>' + label + '</span></button>';
-            popup(anchor, item('info', 'fa-circle-info', r.kind === 'dm' ? 'Contact info' : 'Group info') + item('search', 'fa-magnifying-glass', 'Search') + item('mute', mm && mm.muted ? 'fa-bell' : 'fa-bell-slash', mm && mm.muted ? 'Unmute' : 'Mute notifications') + item('archive', 'fa-box-archive', mm && mm.archived ? 'Unarchive' : 'Archive chat') +
+            popup(anchor, item('info', 'fa-circle-info', r.kind === 'dm' ? 'Contact info' : 'Group info') + item('search', 'fa-magnifying-glass', 'Search') + item('mutepick', isMuted(mm) ? 'fa-bell' : 'fa-bell-slash', isMuted(mm) ? 'Notifications (muted)' : 'Notifications') + item('pinchat', 'fa-thumbtack', (TC.prefs.pins || []).includes(r.id) ? 'Unpin chat' : 'Pin chat to top') + item('tasks', 'fa-list-check', 'Tasks') + item('archive', 'fa-box-archive', mm && mm.archived ? 'Unarchive' : 'Archive chat') +
                 item('scheduled', 'fa-clock', 'Scheduled messages') + item('export', 'fa-file-export', 'Export chat') + item('clear', 'fa-broom', 'Clear chat', true), 'chatmenu');
         }
         function sideMenu(anchor) {
             const item = (act, icon, label) => '<button data-tc="' + act + '">' + ico(icon) + '<span>' + label + '</span></button>';
-            popup(anchor, item('newgroup', 'fa-users', 'New group') + item('starred', 'fa-star', 'Starred messages') + item('scheduled', 'fa-clock', 'Scheduled messages') + item('templates', 'fa-bolt', 'Quick replies') + item('prefs', 'fa-bell', 'Notifications & storage'), 'sidemenu');
+            popup(anchor, item('newgroup', 'fa-users', 'New group') + item('starred', 'fa-star', 'Starred messages') + item('scheduled', 'fa-clock', 'Scheduled messages') + item('notes', 'fa-bookmark', 'Saved notes') + item('broadcast', 'fa-bullhorn', 'Broadcast') + item('leaderboard', 'fa-ranking-star', 'Leaderboard') + item('myprofile', 'fa-id-badge', 'My profile') + item('templates', 'fa-bolt', 'Quick replies') + item('prefs', 'fa-gear', 'Settings'), 'sidemenu');
         }
         function attachMenu(anchor) {
             const item = (act, icon, label, c) => '<button data-tc="' + act + '"><i class="tc-circ ' + c + '">' + ico(icon) + '</i><span>' + label + '</span></button>';
-            popup(anchor, item('pickimg', 'fa-image', 'Photo', 'c1') + item('pickdoc', 'fa-file-lines', 'Document', 'c2') + item('poll', 'fa-chart-simple', 'Poll', 'c3') + item('share', 'fa-calendar-days', 'Project / meeting', 'c4') + item('schedule', 'fa-clock', 'Schedule message', 'c5') + item('templates', 'fa-bolt', 'Quick replies', 'c6'), 'attachmenu up');
+            popup(anchor, item('pickimg', 'fa-image', 'Photo', 'c1') + item('pickdoc', 'fa-file-lines', 'Document', 'c2') + item('poll', 'fa-chart-simple', 'Poll', 'c3') + item('share', 'fa-calendar-days', 'Project / meeting', 'c4') + item('task', 'fa-list-check', 'Task', 'c7') + item('location', 'fa-location-dot', 'Location', 'c8') + item('schedule', 'fa-clock', 'Schedule message', 'c5') + item('templates', 'fa-bolt', 'Quick replies', 'c6'), 'attachmenu up');
         }
         function insertAtCaret(text) {
             const inp = $('#tc-input'); if (!inp) return;
@@ -1122,8 +1346,8 @@
                 case 'retry': retry(id); break;
                 case 'opencard': { const m = findMsg(id); if (m && m.attachment) AdminPanel.navigateTo(m.attachment.type === 'meeting' ? 'meetings' : 'events'); break; }
                 case 'view': modal('Photo', '<img class="tc-viewer" src="' + esc(t.getAttribute('data-url')) + '" alt="Shared photo">', '<a class="tc-btn" href="' + esc(t.getAttribute('data-url')) + '" target="_blank" rel="noopener noreferrer">' + ico('fa-up-right-from-square') + ' Open original</a>', 'wide'); break;
-                case 'emoji': popup(t, '<div class="tc-emoji">' + EMOJIS.map(x => '<button data-tc="emo" data-e="' + x + '">' + x + '</button>').join('') + '</div>', 'emoji up'); break;
-                case 'emo': insertAtCaret(t.getAttribute('data-e')); break;
+                case 'emoji': popup(t, '<div class="tc-emoji">' + STICKERS.map(x => '<button data-tc="emo" data-e=":' + x[0] + ':" title="' + x[0] + '"><i class="fa-solid ' + x[1] + '" style="color:' + x[2] + '"></i></button>').join('') + '</div>', 'emoji up'); break;
+                case 'emo': insertAtCaret(t.getAttribute('data-e') + ' '); break;
                 case 'attach': attachMenu(t); break;
                 case 'pickimg': closeMenu(); fileInput('image/*'); break;
                 case 'pickdoc': closeMenu(); fileInput('*/*'); break;
@@ -1212,7 +1436,7 @@
                     ls.set('prefs', TC.prefs); showPrefs(); break;
                 }
                 case 'trycloud': ls.set('mode', ''); reset(); await boot(); rerootAfterReset(); break;
-                default: break;
+                default: await act2(a, t, e); break;
             }
         }
         function showHit() {
@@ -1247,6 +1471,7 @@
             root.addEventListener('change', async e => {
                 const t = e.target;
                 if (t.id === 'tc-file') { await sendFiles(t.files); t.value = ''; }
+                else if (onChange2(t)) { /* handled */ }
                 else if (t.getAttribute && t.getAttribute('data-tc-sel') === 'disappear') {
                     const r = active(); if (!r) return; const v = Number(t.value) || 0;
                     if (await setRoom(r.id, { disappearing_secs: v })) { await systemMsg(r.id, TC.me.name + (v ? ' turned on disappearing messages (' + (v >= 604800 ? '7 days' : '24 hours') + ')' : ' turned off disappearing messages')); renderMessages(true); }
@@ -1282,8 +1507,181 @@
             root.addEventListener('drop', e => { const z = dropZone(); if (z) z.classList.remove('drop'); if (TC.activeId && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); sendFiles(e.dataTransfer.files); } });
             root.addEventListener('scroll', e => { if (e.target.id === 'tc-msgs') { updateJump(); if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 40 && TC.activeId) markRead(TC.activeId); } }, true);
         }
-        document.addEventListener('keydown', e => { if (e.key === 'Escape' && TC.root && TC.root.isConnected) { if (TC.modal) closeModal(); else if (TC.menu) closeMenu(); } });
+        document.addEventListener('keydown', e => {
+            if (!(TC.root && TC.root.isConnected)) return;
+            if (e.key === 'Escape') { if (TC.modal) closeModal(); else if (TC.menu) closeMenu(); }
+            else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { const q = $('#tc-q'); if (q) { e.preventDefault(); if (TC.activeId) back(); q.focus(); q.select(); } }
+            else if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                const ids = Array.from(TC.root.querySelectorAll('#tc-list .tc-item[data-id]')).map(x => x.getAttribute('data-id')); if (!ids.length) return;
+                e.preventDefault(); const i = ids.indexOf(TC.activeId), n = e.key === 'ArrowDown' ? Math.min(ids.length - 1, i + 1) : Math.max(0, i < 0 ? 0 : i - 1); openRoom(ids[n]);
+            }
+        });
         document.addEventListener('visibilitychange', () => { if (!document.hidden && TC.mounted && TC.activeId) markRead(TC.activeId); });
+
+
+        // ---------------------------------------------------------------
+        // Premium extras: profile, leaderboard, notification centre, settings,
+        // mute picker, tasks, reminders, broadcast, location, saved notes
+        // ---------------------------------------------------------------
+        function applyLook() { if (!TC.root) return; TC.root.setAttribute('data-wall', TC.prefs.wall || 'default'); TC.root.setAttribute('data-fs', TC.prefs.fs || 'm'); }
+        function savePrefs() { ls.set('prefs', TC.prefs); applyLook(); }
+        function rankOf(uid) { const all = TC.directory.map(p => [p.id, repRow(p.id).points]).sort((a, b) => b[1] - a[1]); const i = all.findIndex(x => x[0] === uid); return i < 0 ? 0 : i + 1; }
+        function showProfile(uid) {
+            const p = person(uid), r = repRow(uid), lv = levelOf(r.points), l = lv.l, next = lv.next, me = uid === meId();
+            const pct = next ? Math.min(100, Math.round((r.points - l.min) * 100 / (next.min - l.min))) : 100;
+            const earned = BADGES.filter(b => b.t(r));
+            const stat = (i, n, t) => '<div><i class="fa-solid ' + i + '"></i><b>' + n + '</b><small>' + t + '</small></div>';
+            modal('Profile', '<div class="tc-prof"><div class="tc-prof-top">' + avatar(p.name, p.photo, 84, isOnline(uid) ? 'online' : '') + '<h3>' + esc(p.name) + (me ? ' <small>(You)</small>' : '') + '</h3><p>' + esc(prettyRole(p.role) || 'Member') + '</p>' +
+                '<span class="tc-lvlchip" style="--c:' + l.c + '"><i class="fa-solid ' + l.i + '"></i> ' + l.n + '</span></div>' +
+                '<div class="tc-prog"><div><b>' + r.points + ' pts</b><small>' + (next ? (next.min - r.points) + ' to ' + next.n : 'Top level reached') + '</small></div><span><i style="width:' + pct + '%;background:' + l.c + '"></i></span></div>' +
+                '<div class="tc-stats">' + stat('fa-message', r.msgs, 'Messages') + stat('fa-thumbs-up', r.reactions, 'Reactions') + stat('fa-hand-holding-heart', r.helpful, 'Helpful') + stat('fa-heart', r.kudos, 'Kudos') + stat('fa-list-check', r.tasks_done || 0, 'Tasks') + stat('fa-ranking-star', '#' + rankOf(uid), 'Rank') + '</div>' +
+                '<div class="tc-badges">' + (earned.length ? earned.map(b => '<span title="' + esc(b.d) + '"><i class="fa-solid ' + b.i + '"></i>' + b.n + '</span>').join('') : '<em>No badges yet — they unlock as ' + (me ? 'you' : 'they') + ' contribute.</em>') + '</div></div>',
+                me ? '<button class="tc-btn" data-tc="closemodal">Close</button><button class="tc-btn pri" data-tc="leaderboard">' + ico('fa-ranking-star') + ' Leaderboard</button>' :
+                    '<button class="tc-btn" data-tc="dm" data-uid="' + esc(uid) + '">' + ico('fa-message') + ' Message</button><button class="tc-btn pri" data-tc="kudos" data-uid="' + esc(uid) + '">' + ico('fa-heart') + ' Give kudos</button>', 'tc-profmodal');
+        }
+        function showLeaderboard() {
+            const rows = TC.directory.map(p => ({ p, r: repRow(p.id) })).sort((a, b) => b.r.points - a.r.points || a.p.name.localeCompare(b.p.name));
+            const medal = ['#eab308', '#94a3b8', '#b45309'];
+            modal('Leaderboard', '<p class="tc-hint">Earn points by helping, replying, reacting, completing tasks and receiving kudos.</p><div class="tc-lb">' + rows.map((x, i) => {
+                const l = levelOf(x.r.points).l;
+                return '<button class="tc-lbrow" data-tc="profile" data-uid="' + esc(x.p.id) + '"><span class="tc-rank">' + (i < 3 ? '<i class="fa-solid fa-medal" style="color:' + medal[i] + '"></i>' : (i + 1)) + '</span>' + avatar(x.p.name, x.p.photo, 38) +
+                    '<span class="tc-lbn"><b>' + esc(x.p.name) + (x.p.id === meId() ? ' (You)' : '') + '</b><small><i class="fa-solid ' + l.i + '" style="color:' + l.c + '"></i> ' + l.n + '</small></span><em>' + x.r.points + '</em></button>';
+            }).join('') + '</div>', '<button class="tc-btn" data-tc="closemodal">Close</button>');
+        }
+        const NI = { mention: ['fa-at', '#0ea5e9'], reply: ['fa-reply', '#16a34a'], urgent: ['fa-triangle-exclamation', '#dc2626'], task: ['fa-list-check', '#7c3aed'], reminder: ['fa-bell', '#f59e0b'], kudos: ['fa-heart', '#ec4899'] };
+        const NL = { mention: 'mentioned you', reply: 'replied to you', urgent: 'sent an urgent message', task: 'assigned you a task', reminder: 'Reminder', kudos: 'sent you kudos' };
+        function showNotifs() {
+            const ns = TC.notifs;
+            modal('Notifications', ns.length ? '<div class="tc-nlist">' + ns.map((n, i) => { const ic = NI[n.type] || NI.mention; return '<button class="tc-nrow ' + (n.read ? '' : 'new') + '" data-tc="notifopen" data-i="' + i + '"><span class="tc-toast-ic" style="--c:' + ic[1] + '"><i class="fa-solid ' + ic[0] + '"></i></span><span><b>' + esc(n.type === 'reminder' ? 'Reminder' : n.by) + ' <em>' + (n.type === 'reminder' ? '' : NL[n.type] || '') + '</em></b><small>' + esc(n.text || '') + '</small></span><time>' + listTime(n.at) + '</time></button>'; }).join('') + '</div>' :
+                '<div class="tc-empty-list">' + ico('fa-bell') + '<p>You are all caught up.</p></div>', '<button class="tc-btn" data-tc="notifclear">Clear all</button><button class="tc-btn pri" data-tc="notifread">Mark all read</button>');
+        }
+        function showSettings() {
+            const perm = window.Notification ? Notification.permission : 'unsupported', d = TC.prefs.dnd || {};
+            const seg = (key, val, opts) => '<div class="tc-seg">' + opts.map(o => '<button data-tc="pref-' + key + '" data-v="' + o[0] + '" class="' + (val === o[0] ? 'on' : '') + '">' + (o[2] ? ico(o[2]) + ' ' : '') + o[1] + '</button>').join('') + '</div>';
+            modal('Chat settings', '<div class="tc-set"><h4>' + ico('fa-bell') + ' Notifications</h4>' +
+                toggleRow('Sound', 'Play a tone for new messages', TC.prefs.sound, 'pref-sound') +
+                '<div class="tc-setrow"><span><b>Tone</b></span>' + seg('tone', TC.prefs.tone || 'soft', [['soft', 'Soft'], ['chime', 'Chime'], ['pop', 'Pop'], ['bell', 'Bell']]) + '<button class="tc-link" data-tc="testsound">' + ico('fa-play') + ' Test</button></div>' +
+                toggleRow('Desktop alerts', perm === 'denied' ? 'Blocked in browser settings' : perm === 'unsupported' ? 'Not supported by this browser' : 'Show alerts when this tab is in the background', TC.prefs.desktop && perm === 'granted', 'pref-desktop') +
+                toggleRow('Quiet hours', 'Silence alerts during set hours', d.on, 'pref-dnd') +
+                (d.on ? '<div class="tc-setrow"><span><b>From</b></span><input type="time" id="tc-dnd-from" value="' + esc(d.from || '22:00') + '"><span><b>To</b></span><input type="time" id="tc-dnd-to" value="' + esc(d.to || '07:00') + '"></div>' + toggleRow('Urgent breaks through', 'Urgent messages still alert you', d.urgent !== false, 'pref-dndurg') : '') +
+                '<h4>' + ico('fa-palette') + ' Appearance</h4><div class="tc-setrow"><span><b>Chat background</b></span>' + seg('wall', TC.prefs.wall || 'default', [['default', 'Classic'], ['mint', 'Mint'], ['dusk', 'Dusk'], ['sand', 'Sand'], ['plain', 'Plain']]) + '</div>' +
+                '<div class="tc-setrow"><span><b>Text size</b></span>' + seg('fs', TC.prefs.fs || 'm', [['s', 'Small'], ['m', 'Medium'], ['l', 'Large']]) + '</div>' +
+                '<h4>' + ico('fa-database') + ' Storage</h4><div class="tc-storage"><b>' + ico(TC.mode === 'db' ? 'fa-cloud' : 'fa-hard-drive') + ' ' + (TC.mode === 'db' ? 'Cloud sync is on' : 'Local mode (this browser only)') + '</b><small>' + (TC.mode === 'db' ? 'Messages are stored in your Supabase database and shared live with every admin.' : 'Chats are saved only in this browser. Run chat_setup.sql in Supabase to share chats with the whole team.') + '</small>' +
+                (TC.mode === 'local' ? '<button class="tc-btn pri" data-tc="trycloud">' + ico('fa-cloud') + ' Switch to cloud sync</button>' : '') + (TC.mode === 'db' && !TC.ext ? '<small class="tc-err">Reputation and timed mute need the updated SQL.</small><button class="tc-btn pri" data-tc="copysql">' + ico('fa-copy') + ' Copy updated SQL</button>' : '') + '</div>' +
+                '<p class="tc-hint">Shortcuts: <kbd>Ctrl</kbd>+<kbd>K</kbd> search chats · <kbd>Alt</kbd>+<kbd>↑/↓</kbd> switch chat · admins can use <b>@all</b></p></div>', '<button class="tc-btn pri" data-tc="closemodal">Done</button>');
+        }
+        function showMute() {
+            const r = active(); if (!r) return; const mm = myMember(r.id) || {}; const long = TC.ext || TC.mode === 'local';
+            const opt = (k, t, i) => '<button class="tc-trow plain" data-tc="domute" data-d="' + k + '"><span><b>' + ico(i) + ' ' + t + '</b></span></button>';
+            modal('Notifications for “' + roomTitle(r) + '”', '<p class="tc-hint"><b>' + esc(muteLabel(mm)) + '</b></p>' + (long ? opt('8h', 'Mute for 8 hours', 'fa-moon') + opt('1w', 'Mute for 1 week', 'fa-calendar-week') : '') + opt('always', 'Mute always', 'fa-bell-slash') + (isMuted(mm) ? opt('off', 'Unmute', 'fa-bell') : '') +
+                (long ? '<h4 class="tc-h4">When not muted</h4><div class="tc-seg full"><button data-tc="notifymode" data-m="all" class="' + (mm.notify !== 'mentions' ? 'on' : '') + '">All messages</button><button data-tc="notifymode" data-m="mentions" class="' + (mm.notify === 'mentions' ? 'on' : '') + '">Mentions & urgent</button></div>' : '<small class="tc-err">Run the updated chat_setup.sql for timed mute.</small>') +
+                '<p class="tc-hint">Urgent messages always get through unless the chat is muted.</p>', '<button class="tc-btn pri" data-tc="closemodal">Done</button>');
+        }
+        function showTask(prefill) {
+            const r = active(); if (!r) return;
+            const people = roomMembers(r.id).filter(m => r.kind !== 'dm' || m.user_id !== meId() || roomMembers(r.id).length === 1);
+            modal('New task', '<label class="tc-fl"><span>Task</span><input type="text" id="tc-tt" maxlength="140" placeholder="What needs to be done?" value="' + esc(prefill || '') + '"></label><label class="tc-fl"><span>Due (optional)</span><input type="datetime-local" id="tc-td"></label>' +
+                '<div class="tc-fl"><span>Assign to</span></div><div class="tc-plist" id="tc-plist" style="max-height:200px">' + people.map(m => { const p = person(m.user_id); return '<label class="tc-prow"><input type="checkbox" value="' + esc(m.user_id) + '">' + avatar(p.name, p.photo, 32) + '<span><b>' + esc(p.name) + (m.user_id === meId() ? ' (You)' : '') + '</b></span></label>'; }).join('') + '</div><p class="tc-hint">Leave empty so anyone can complete it. Completing a task earns +4 points.</p>',
+                '<button class="tc-btn" data-tc="closemodal">Cancel</button><button class="tc-btn pri" data-tc="dotask">' + ico('fa-paper-plane') + ' Create</button>');
+        }
+        function taskHtml(m) {
+            const a = m.attachment || {}, s = taskStats(a), as = a.assignees || [], due = a.due ? new Date(a.due) : null, od = due && !s.all && due.getTime() < Date.now(), mine = (a.done || {})[meId()];
+            return '<div class="tc-task' + (s.all ? ' done' : '') + '"><div class="tc-task-h"><i class="fa-solid ' + (s.all ? 'fa-circle-check' : 'fa-list-check') + '"></i><b>' + esc(a.title || 'Task') + '</b></div>' +
+                (due ? '<small class="' + (od ? 'od' : '') + '">' + ico('fa-calendar-day') + ' Due ' + due.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) + (od ? ' · overdue' : '') + '</small>' : '') +
+                (as.length ? '<div class="tc-task-as">' + as.map(u => '<span class="' + ((a.done || {})[u] ? 'ok' : '') + '" title="' + esc(person(u).name + ((a.done || {})[u] ? ' — done' : '')) + '">' + avatar(person(u).name, person(u).photo, 24) + '</span>').join('') + '</div>' : '') +
+                '<div class="tc-task-p"><span><i style="width:' + Math.round(s.n * 100 / s.total) + '%"></i></span><small>' + s.n + '/' + s.total + ' done</small></div>' +
+                (canMarkTask(a) && !m.deleted_all ? '<button class="tc-btn ' + (mine ? '' : 'pri') + ' sm" data-tc="tasktoggle" data-id="' + m.id + '">' + ico(mine ? 'fa-rotate-left' : 'fa-check') + ' ' + (mine ? 'Undo' : 'Mark done') + '</button>' : '') + '</div>';
+        }
+        function showTasks() {
+            const r = active(); if (!r) return;
+            const ts = list(r.id).filter(m => m.kind === 'task' && !m.deleted_all && visible(m)).reverse();
+            modal('Tasks', ts.length ? '<div class="tc-tasks">' + ts.map(m => { const a = m.attachment || {}, s = taskStats(a); return '<button class="tc-trow plain" data-tc="gotomsg" data-room="' + r.id + '" data-id="' + m.id + '"><span><b>' + ico(s.all ? 'fa-circle-check' : 'fa-list-check') + ' ' + esc(a.title || 'Task') + '</b><small>' + s.n + '/' + s.total + ' done' + (a.due ? ' · due ' + new Date(a.due).toLocaleDateString() : '') + '</small></span></button>'; }).join('') + '</div>' : '<div class="tc-empty-list">' + ico('fa-list-check') + '<p>No tasks in this chat yet.</p></div>', '<button class="tc-btn" data-tc="closemodal">Close</button><button class="tc-btn pri" data-tc="task">' + ico('fa-plus') + ' New task</button>');
+        }
+        function showRemind(m) {
+            TC.remTarget = m.id;
+            const o = (k, t) => '<button class="tc-trow plain" data-tc="doremind" data-d="' + k + '"><span><b>' + ico('fa-clock') + ' ' + t + '</b></span></button>';
+            modal('Remind me about this', o('20', 'In 20 minutes') + o('60', 'In 1 hour') + o('180', 'In 3 hours') + o('tom', 'Tomorrow, 9:00 AM') + (TC.reminders.length ? '<p class="tc-hint">' + TC.reminders.length + ' pending reminder' + (TC.reminders.length > 1 ? 's' : '') + '</p>' : ''), '<button class="tc-btn" data-tc="closemodal">Cancel</button>');
+        }
+        function showBroadcast() {
+            const people = TC.directory.filter(p => p.id !== meId());
+            modal('Broadcast message', '<p class="tc-hint">Send one message privately to each selected person.</p><label class="tc-fl"><span>Message</span><textarea id="tc-bt" rows="3" maxlength="1000" placeholder="Write your announcement…"></textarea></label><div class="tc-plist" id="tc-plist" style="max-height:220px">' +
+                people.map(p => '<label class="tc-prow"><input type="checkbox" value="' + esc(p.id) + '">' + avatar(p.name, p.photo, 32) + '<span><b>' + esc(p.name) + '</b><small>' + esc(prettyRole(p.role)) + '</small></span></label>').join('') + '</div>', '<button class="tc-btn" data-tc="closemodal">Cancel</button><button class="tc-btn pri" data-tc="dobroadcast">' + ico('fa-bullhorn') + ' Send</button>');
+        }
+        async function openNotes() {
+            for (const [id, r] of TC.rooms) { if (r.kind === 'dm' && memberIds(id).length === 1 && memberIds(id)[0] === meId()) return id; }
+            return openDM(meId());
+        }
+        function shareLocation() {
+            if (!navigator.geolocation) { say('warning', 'Location is not supported by this browser.'); return; }
+            say('info', 'Getting your location…');
+            navigator.geolocation.getCurrentPosition(async pos => {
+                await send({ kind: 'location', body: '', attachment: { lat: +pos.coords.latitude.toFixed(5), lng: +pos.coords.longitude.toFixed(5), acc: Math.round(pos.coords.accuracy || 0) } });
+            }, () => say('warning', 'Location permission was denied.'), { enableHighAccuracy: true, timeout: 10000 });
+        }
+        function locHtml(m) {
+            const a = m.attachment || {}, u = 'https://www.google.com/maps?q=' + encodeURIComponent(a.lat + ',' + a.lng);
+            return '<a class="tc-card tc-loc" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + ico('fa-location-dot') + '<span><b>Shared location</b><small>' + esc(a.lat + ', ' + a.lng) + (a.acc ? ' · ±' + a.acc + ' m' : '') + '</small></span>' + ico('fa-arrow-up-right-from-square') + '</a>';
+        }
+        function onChange2(t) {
+            if (t.id === 'tc-dnd-from' || t.id === 'tc-dnd-to') { TC.prefs.dnd = Object.assign({ on: true, urgent: true }, TC.prefs.dnd, t.id === 'tc-dnd-from' ? { from: t.value } : { to: t.value }); savePrefs(); return true; }
+            return false;
+        }
+        async function act2(a, t, e) {
+            const id = t.getAttribute('data-id'), uid = t.getAttribute('data-uid'), r = active();
+            switch (a) {
+                case 'profile': if (uid) showProfile(uid); break;
+                case 'leaderboard': closeMenu(); showLeaderboard(); break;
+                case 'kudos': if (uid && await giveKudos(uid)) showProfile(uid); break;
+                case 'notifs': closeMenu(); showNotifs(); break;
+                case 'notifopen': { const n = TC.notifs[Number(t.getAttribute('data-i'))]; if (n) { n.read = true; ls.set('notifs', TC.notifs); updateBell(); closeModal(); gotoRoom(n.room, n.msg); } break; }
+                case 'notifread': TC.notifs.forEach(n => { n.read = true; }); ls.set('notifs', TC.notifs); updateBell(); showNotifs(); break;
+                case 'notifclear': TC.notifs = []; ls.set('notifs', TC.notifs); updateBell(); showNotifs(); break;
+                case 'mutepick': closeMenu(); showMute(); break;
+                case 'domute': {
+                    if (!r) break; const d = t.getAttribute('data-d'), h = { '8h': 8 * 3600000, '1w': 7 * 86400000 };
+                    const patch = d === 'always' ? { muted: true } : d === 'off' ? { muted: false } : { muted: false };
+                    if (TC.ext || TC.mode === 'local') patch.muted_until = h[d] ? new Date(Date.now() + h[d]).toISOString() : null;
+                    await setMine(r.id, patch); say('info', d === 'off' ? 'Notifications on' : 'Muted'); showMute(); break;
+                }
+                case 'notifymode': if (r) { await setMine(r.id, { notify: t.getAttribute('data-m') }); showMute(); } break;
+                case 'copysql': try { await navigator.clipboard.writeText(SETUP_SQL); say('success', 'SQL copied — paste it into the Supabase SQL Editor.'); } catch (er) { say('info', 'Copy failed — open chat_setup.sql instead.'); } break;
+                case 'pref-tone': TC.prefs.tone = t.getAttribute('data-v'); savePrefs(); beep(false, true); showSettings(); break;
+                case 'pref-wall': TC.prefs.wall = t.getAttribute('data-v'); savePrefs(); showSettings(); break;
+                case 'pref-fs': TC.prefs.fs = t.getAttribute('data-v'); savePrefs(); showSettings(); break;
+                case 'pref-dnd': TC.prefs.dnd = Object.assign({ from: '22:00', to: '07:00', urgent: true }, TC.prefs.dnd, { on: !(TC.prefs.dnd && TC.prefs.dnd.on) }); savePrefs(); showSettings(); break;
+                case 'pref-dndurg': TC.prefs.dnd = Object.assign({}, TC.prefs.dnd, { urgent: !(TC.prefs.dnd && TC.prefs.dnd.urgent !== false) }); savePrefs(); showSettings(); break;
+                case 'testsound': beep(false, true); break;
+                case 'task': closeMenu(); showTask(''); break;
+                case 'tasks': closeMenu(); showTasks(); break;
+                case 'maketask': { const m = findMsg(id); closeMenu(); if (m) showTask(previewBody(m).replace(/:([a-z0-9_]{2,20}):/g, '').slice(0, 140)); break; }
+                case 'dotask': {
+                    const title = (($('#tc-tt') || {}).value || '').trim(); if (!title) { say('warning', 'Describe the task.'); break; }
+                    const dv = ($('#tc-td') || {}).value, as = checked('#tc-plist'); closeModal();
+                    await send({ kind: 'task', body: '', attachment: { title, due: dv ? new Date(dv).toISOString() : null, assignees: as, done: {} } }); break;
+                }
+                case 'tasktoggle': { const m = findMsg(id); if (m) await toggleTask(m); break; }
+                case 'remind': { const m = findMsg(id); closeMenu(); if (m) showRemind(m); break; }
+                case 'doremind': {
+                    const m = findMsg(TC.remTarget); closeModal(); if (!m) break; const d = t.getAttribute('data-d'); let at;
+                    if (d === 'tom') { const x = new Date(); x.setDate(x.getDate() + 1); x.setHours(9, 0, 0, 0); at = x; } else at = new Date(Date.now() + Number(d) * 60000);
+                    addReminder(m, at.toISOString()); say('success', 'Reminder set for ' + at.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })); break;
+                }
+                case 'giveKudosMsg': { const m = findMsg(id); closeMenu(); if (m) giveKudos(m.sender_id); break; }
+                case 'broadcast': closeMenu(); showBroadcast(); break;
+                case 'dobroadcast': {
+                    const text = (($('#tc-bt') || {}).value || '').trim(), ids = checked('#tc-plist');
+                    if (!text) { say('warning', 'Write a message first.'); break; } if (!ids.length) { say('warning', 'Pick at least one person.'); break; }
+                    closeModal(); let n = 0;
+                    for (const u of ids) { try { const rid = await openDM(u); if (await send({ roomId: rid, kind: 'text', body: text })) n++; } catch (er) { /* skip */ } }
+                    say(n ? 'success' : 'warning', n ? 'Sent to ' + n + ' ' + (n > 1 ? 'people' : 'person') : 'Nothing sent'); renderList(); break;
+                }
+                case 'location': closeMenu(); shareLocation(); break;
+                case 'notes': { closeMenu(); const rid = await openNotes(); renderList(); await openRoom(rid); break; }
+                case 'myprofile': closeMenu(); showProfile(meId()); break;
+                case 'pinchat': { if (r) { const p = TC.prefs.pins = TC.prefs.pins || []; const i = p.indexOf(r.id); if (i >= 0) p.splice(i, 1); else p.unshift(r.id); savePrefs(); closeMenu(); renderList(); say('info', i >= 0 ? 'Chat unpinned' : 'Chat pinned to top'); } break; }
+                default: break;
+            }
+        }
 
         // ---------------------------------------------------------------
         // Mount
@@ -1314,13 +1712,14 @@
             TC.root = document.createElement('div');
             TC.root.className = 'tc-app';
             TC.root.id = 'tc-app';
-            TC.root.innerHTML = '<aside class="tc-side"><div class="tc-side-head"><div class="tc-me">' + avatar(TC.me.name, TC.me.photo, 40) + '<span><b>Team Chat</b><small>' + (TC.mode === 'db' ? ico('fa-cloud') + ' Live' : ico('fa-hard-drive') + ' This browser only') + '</small></span></div><div class="tc-side-btns"><button class="tc-ib" data-tc="newchat" title="New chat" aria-label="New chat">' + ico('fa-message') + '</button><button class="tc-ib" data-tc="sidemenu" title="Menu" aria-label="Menu">' + ico('fa-ellipsis-vertical') + '</button></div></div>' +
+            TC.root.innerHTML = '<aside class="tc-side"><div class="tc-side-head"><div class="tc-me">' + avatar(TC.me.name, TC.me.photo, 40) + '<span><b>Team Chat</b><small>' + (TC.mode === 'db' ? ico('fa-cloud') + ' Live' : ico('fa-hard-drive') + ' This browser only') + '</small></span></div><div class="tc-side-btns"><button class="tc-ib tc-bellb" data-tc="notifs" title="Notifications" aria-label="Notifications">' + ico('fa-bell') + '<span class="tc-bellN" id="tc-bell-n" style="display:none"></span></button><button class="tc-ib" data-tc="newchat" title="New chat" aria-label="New chat">' + ico('fa-message') + '</button><button class="tc-ib" data-tc="sidemenu" title="Menu" aria-label="Menu">' + ico('fa-ellipsis-vertical') + '</button></div></div>' +
+                (TC.mode === 'db' && !TC.ext ? '<button class="tc-localbar" data-tc="prefs">' + ico('fa-triangle-exclamation') + ' Run the updated SQL to unlock reputation & timed mute. <u>Details</u></button>' : '') +
                 (TC.mode === 'local' ? '<button class="tc-localbar" data-tc="prefs">' + ico('fa-triangle-exclamation') + ' Local mode — chats are not shared. <u>Set up cloud sync</u></button>' : '') +
                 '<div class="tc-search">' + ico('fa-magnifying-glass') + '<input id="tc-q" type="search" placeholder="Search chats or people" autocomplete="off" value="' + esc(TC.q) + '"></div>' +
                 '<div class="tc-chips"><button data-tc="filter" data-f="all" class="on">All</button><button data-tc="filter" data-f="unread">Unread <span class="tc-count"></span></button><button data-tc="filter" data-f="groups">Groups</button><button data-tc="filter" data-f="archived">Archived</button></div><div class="tc-list" id="tc-list"></div></aside>' +
                 '<section class="tc-main" id="tc-main"></section><div class="tc-overlay" id="tc-overlay"></div>';
             ws.innerHTML = ''; ws.appendChild(TC.root);
-            bind(TC.root);
+            bind(TC.root); applyLook(); updateBell();
             renderList(); renderChatArea();
             loadAll().then(() => { renderList(); if (TC.activeId && TC.rooms.has(TC.activeId)) { renderHead(); renderMessages(false); } else if (TC.activeId) { TC.activeId = null; renderChatArea(); } badge(); }).catch(() => { });
             emit({ t: 'hello' }); markDelivered();
@@ -1328,7 +1727,7 @@
 
         return {
             render: mount, boot, reset, unread: totalUnread, state: TC,
-            _test: { send, openDM, createGroup, openRoom, loadAll, LocalRepo, DBRepo, emit, onNet }
+            _test: { giveKudos, bumpRep, repRow, levelOf, onIncoming, isMuted, inQuiet, checkReminders, addReminder, toggleTask, showProfile, showLeaderboard, showNotifs, showSettings, showMute, showTask, act2, send, openDM, createGroup, openRoom, loadAll, LocalRepo, DBRepo, emit, onNet }
         };
     })();
 
