@@ -177,8 +177,8 @@
         function initials(n) { const p = String(n || '?').trim().split(/\s+/); return ((p[0] || '?')[0] + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase(); }
         function avatar(name, photo, size, extra) {
             const s = size || 40, h = hue(name);
-            if (photo) return `<span class="tc-av ${extra || ''}" style="width:${s}px;height:${s}px"><img src="${esc(photo)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('noimg');this.remove()"><b style="background:hsl(${h} 70% 46%)">${esc(initials(name))}</b></span>`;
-            return `<span class="tc-av noimg ${extra || ''}" style="width:${s}px;height:${s}px"><b style="background:hsl(${h} 70% 46%);font-size:${Math.round(s * .38)}px">${esc(initials(name))}</b></span>`;
+            if (photo) return `<span class="tc-av ${extra || ''}" style="width:${s}px;height:${s}px"><img src="${esc(photo)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('noimg');this.remove()"><b style="background:hsl(${h} 72% 34%)">${esc(initials(name))}</b></span>`;
+            return `<span class="tc-av noimg ${extra || ''}" style="width:${s}px;height:${s}px"><b style="background:hsl(${h} 72% 34%);font-size:${Math.round(s * .38)}px">${esc(initials(name))}</b></span>`;
         }
         function roomMembers(id) { return TC.members.get(id) || []; }
         function myMember(id) { return roomMembers(id).find(m => m.user_id === meId()); }
@@ -1071,14 +1071,14 @@
             const r = active();
             TC.root.classList.toggle('has-chat', !!r);
             if (!r) { main.innerHTML = '<div class="tc-welcome"><div class="tc-welcome-ico">' + ico('fa-comments') + '</div><h2>Team Chat</h2><p>Private conversations for your admin team. Pick a chat on the left, or start a new one.</p><div class="tc-welcome-btns"><button class="tc-btn pri" data-tc="newchat">' + ico('fa-message') + ' New chat</button><button class="tc-btn" data-tc="newgroup">' + ico('fa-users') + ' New group</button></div><small>' + ico('fa-lock') + ' Visible only to signed-in portal admins</small></div>'; return; }
-            main.innerHTML = '<header class="tc-head" id="tc-head"></header><div class="tc-searchbar" id="tc-searchbar" style="display:none"><input id="tc-sq" placeholder="Search in this chat…" autocomplete="off"><span id="tc-sinfo"></span><button class="tc-ib" data-tc="closesearch" aria-label="Close search">' + ico('fa-xmark') + '</button></div><div class="tc-pin" id="tc-pin" style="display:none"></div>' +
+            main.innerHTML = '<div class="tc-head" id="tc-head"></div><div class="tc-searchbar" id="tc-searchbar" style="display:none"><input id="tc-sq" placeholder="Search in this chat…" autocomplete="off"><span id="tc-sinfo"></span><button class="tc-ib" data-tc="closesearch" aria-label="Close search">' + ico('fa-xmark') + '</button></div><div class="tc-pin" id="tc-pin" style="display:none"></div>' +
                 '<div class="tc-msgs" id="tc-msgs" tabindex="0"></div><button class="tc-jump" id="tc-jumpbtn" data-tc="tobottom" style="display:none" aria-label="Jump to latest">' + ico('fa-angles-down') + '</button>' +
-                '<footer class="tc-composer" id="tc-composer"><div id="tc-meta"></div><div class="tc-suggest" id="tc-suggest" style="display:none"></div>' +
+                '<div class="tc-composer" id="tc-composer"><div id="tc-meta"></div><div class="tc-suggest" id="tc-suggest" style="display:none"></div>' +
                 '<div class="tc-locked" id="tc-locked" style="display:none">' + ico('fa-lock') + ' Only admins can send messages in this group.</div>' +
                 '<div class="tc-compose-row"><button class="tc-ib" data-tc="emoji" aria-label="Emoji">' + ico('fa-face-smile') + '</button><button class="tc-ib" data-tc="attach" aria-label="Attach">' + ico('fa-paperclip') + '</button><button class="tc-ib urg" data-tc="urgent" title="Mark next message urgent" aria-label="Urgent">' + ico('fa-flag') + '</button>' +
-                '<textarea id="tc-input" rows="1" placeholder="Type a message — @ to mention, / for quick replies" maxlength="4000" autocomplete="off"></textarea>' +
+                '<textarea id="tc-input" rows="1" placeholder="Type a message" title="@ to mention · / for quick replies" maxlength="4000" autocomplete="off"></textarea>' +
                 '<button class="tc-send" data-tc="send" aria-label="Send" style="display:none">' + ico('fa-paper-plane') + '</button><button class="tc-send mic" data-tc="mic" aria-label="Voice note">' + ico('fa-microphone') + '</button></div>' +
-                '<input type="file" id="tc-file" multiple hidden></footer><aside class="tc-info" id="tc-info" style="display:none"></aside>';
+                '<input type="file" id="tc-file" multiple hidden></div><div class="tc-info" id="tc-info" style="display:none"></div>';
             renderHead(); renderMessages('unread'); renderComposerMeta();
             const inp = $('#tc-input'); if (inp) { inp.value = TC.drafts[r.id] || ''; autoGrow(inp); renderComposerMeta(); if (window.matchMedia && !matchMedia('(hover:none)').matches) inp.focus(); }
             if (TC.info) renderInfo();
@@ -1712,12 +1712,12 @@
             TC.root = document.createElement('div');
             TC.root.className = 'tc-app';
             TC.root.id = 'tc-app';
-            TC.root.innerHTML = '<aside class="tc-side"><div class="tc-side-head"><div class="tc-me">' + avatar(TC.me.name, TC.me.photo, 40) + '<span><b>Team Chat</b><small>' + (TC.mode === 'db' ? ico('fa-cloud') + ' Live' : ico('fa-hard-drive') + ' This browser only') + '</small></span></div><div class="tc-side-btns"><button class="tc-ib tc-bellb" data-tc="notifs" title="Notifications" aria-label="Notifications">' + ico('fa-bell') + '<span class="tc-bellN" id="tc-bell-n" style="display:none"></span></button><button class="tc-ib" data-tc="newchat" title="New chat" aria-label="New chat">' + ico('fa-message') + '</button><button class="tc-ib" data-tc="sidemenu" title="Menu" aria-label="Menu">' + ico('fa-ellipsis-vertical') + '</button></div></div>' +
+            TC.root.innerHTML = '<div class="tc-side"><div class="tc-side-head"><div class="tc-me">' + avatar(TC.me.name, TC.me.photo, 40) + '<span><b>Team Chat</b><small>' + (TC.mode === 'db' ? ico('fa-cloud') + ' Live' : ico('fa-hard-drive') + ' This browser only') + '</small></span></div><div class="tc-side-btns"><button class="tc-ib tc-bellb" data-tc="notifs" title="Notifications" aria-label="Notifications">' + ico('fa-bell') + '<span class="tc-bellN" id="tc-bell-n" style="display:none"></span></button><button class="tc-ib" data-tc="newchat" title="New chat" aria-label="New chat">' + ico('fa-message') + '</button><button class="tc-ib" data-tc="sidemenu" title="Menu" aria-label="Menu">' + ico('fa-ellipsis-vertical') + '</button></div></div>' +
                 (TC.mode === 'db' && !TC.ext ? '<button class="tc-localbar" data-tc="prefs">' + ico('fa-triangle-exclamation') + ' Run the updated SQL to unlock reputation & timed mute. <u>Details</u></button>' : '') +
                 (TC.mode === 'local' ? '<button class="tc-localbar" data-tc="prefs">' + ico('fa-triangle-exclamation') + ' Local mode — chats are not shared. <u>Set up cloud sync</u></button>' : '') +
                 '<div class="tc-search">' + ico('fa-magnifying-glass') + '<input id="tc-q" type="search" placeholder="Search chats or people" autocomplete="off" value="' + esc(TC.q) + '"></div>' +
-                '<div class="tc-chips"><button data-tc="filter" data-f="all" class="on">All</button><button data-tc="filter" data-f="unread">Unread <span class="tc-count"></span></button><button data-tc="filter" data-f="groups">Groups</button><button data-tc="filter" data-f="archived">Archived</button></div><div class="tc-list" id="tc-list"></div></aside>' +
-                '<section class="tc-main" id="tc-main"></section><div class="tc-overlay" id="tc-overlay"></div>';
+                '<div class="tc-chips"><button data-tc="filter" data-f="all" class="on">All</button><button data-tc="filter" data-f="unread">Unread <span class="tc-count"></span></button><button data-tc="filter" data-f="groups">Groups</button><button data-tc="filter" data-f="archived">Archived</button></div><div class="tc-list" id="tc-list"></div></div>' +
+                '<div class="tc-main" id="tc-main"></div><div class="tc-overlay" id="tc-overlay"></div>';
             ws.innerHTML = ''; ws.appendChild(TC.root);
             bind(TC.root); applyLook(); updateBell();
             renderList(); renderChatArea();
