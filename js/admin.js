@@ -2770,11 +2770,11 @@
                             ${this.inputField('contact_address', 'Address (City, State)', this.getValue('contact_address', 'Coimbatore, Tamil Nadu'), 'Shown in footer')}
                             ${this.inputField('contact_country', 'Country', this.getValue('contact_country', 'India'), '')}
                             ${this.textareaField('map_embed_url', 'Google Map Embed URL', this.getValue('map_embed_url', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15665.467472061262!2d76.95357835!3d11.0120227!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba859af2f973901%3A0xa7df13d55d172206!2sCoimbatore%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1700000000000'), 'Google Maps iframe src URL', 3)}
-                            ${this.inputField('social_instagram', 'Instagram Handle', this.getValue('social_instagram', 'rotaractunity'), 'Without @ sign')}
-                            ${this.inputField('social_facebook', 'Facebook Handle', this.getValue('social_facebook', ''), 'Page name/handle')}
-                            ${this.inputField('social_linkedin', 'LinkedIn Handle', this.getValue('social_linkedin', ''), 'Company page handle')}
-                            ${this.inputField('social_youtube', 'YouTube Channel', this.getValue('social_youtube', ''), 'Channel URL')}
-                            ${this.inputField('social_twitter', 'X / Twitter Handle', this.getValue('social_twitter', ''), 'Without @ sign')}
+                            ${this.inputField('social_instagram', 'Instagram', this.getValue('social_instagram', 'rotaractunity'), 'Handle or full link')}
+                            ${this.inputField('social_facebook', 'Facebook', this.getValue('social_facebook', ''), 'Page name or full link')}
+                            ${this.inputField('social_linkedin', 'LinkedIn', this.getValue('social_linkedin', ''), 'Company handle or full link')}
+                            ${this.inputField('social_youtube', 'YouTube', this.getValue('social_youtube', ''), 'Channel handle or full link')}
+                            ${this.inputField('social_twitter', 'X / Twitter', this.getValue('social_twitter', ''), 'Handle or full link')}
                         </div>
 
                         <div class="mt-6 p-4 rounded-xl ap-tint-box">
@@ -2939,6 +2939,13 @@
                             ${this.inputField('cta_secondary_label', 'Secondary CTA Button Label', this.getValue('cta_secondary_label', 'Explore Projects'))}
                             ${this.textareaField('about_section_text', 'About / Benefits Section Intro', this.getValue('about_section_text', 'Rotaract empowers youth to build professional capabilities, grow dynamic leadership networks, support humanitarian activities, and make lifelong connections.'), '', 3)}
                             ${this.inputField('footer_copyright', 'Footer Copyright Line', this.getValue('footer_copyright', '2026-27 Rotaract Club of Coimbatore Unity. All rights reserved.'))}
+                            ${this.inputField('about_title', 'About Section Heading', this.getValue('about_title', 'About Our Club'))}
+                            ${this.textareaField('about_us_text', 'About Us Description', this.getValue('about_us_text', 'Rotaract Club of Coimbatore Unity is a family of Rotary Club of Coimbatore East, bringing young leaders together to serve the community, grow professionally and build lifelong friendships.'), '', 3)}
+                            ${this.textareaField('about_mission', 'Our Mission', this.getValue('about_mission', 'To develop young professionals into responsible leaders through service projects, professional development and fellowship.'), '', 3)}
+                            ${this.textareaField('about_vision', 'Our Vision', this.getValue('about_vision', 'A community where every young person is empowered to lead and to make a lasting difference through Service Above Self.'), '', 3)}
+                            ${this.toggleField('show_about_section', 'Show About Section on Landing Page', this.getValue('show_about_section', 'true'))}
+                            ${this.toggleField('show_footer_social', 'Show Social Icons in Footer', this.getValue('show_footer_social', 'true'))}
+                            ${this.toggleField('show_footer_map', 'Show Map in Footer', this.getValue('show_footer_map', 'true'))}
                             ${this.toggleField('show_games_section', 'Show Games Portal in Navigation', this.getValue('show_games_section', 'true'))}
                             ${this.toggleField('show_blood_section', 'Show Blood Desk Section', this.getValue('show_blood_section', 'true'))}
                             ${this.toggleField('show_chatbot', 'Show AI Chatbot Floating Button', this.getValue('show_chatbot', 'true'))}
