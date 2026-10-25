@@ -1098,6 +1098,7 @@
             const pop = document.createElement('div'); pop.id = 'tc-pop'; pop.className = 'tc-pop ' + (cls || ''); pop.innerHTML = html; root.appendChild(pop);
             const rr = root.getBoundingClientRect(), ar = anchor.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
             let left = ar.right - rr.left - pw, top = ar.bottom - rr.top + 6;
+            if (/attachmenu/.test(cls || '')) left = ar.left - rr.left - 6;
             if (left < 8) left = 8; if (left + pw > rr.width - 8) left = Math.max(8, rr.width - pw - 8);
             if (top + ph > rr.height - 8) top = Math.max(8, ar.top - rr.top - ph - 6);
             pop.style.left = left + 'px'; pop.style.top = top + 'px';
