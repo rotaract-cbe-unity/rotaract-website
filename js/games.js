@@ -2256,10 +2256,10 @@
         UI.id = 'ux-arcade';
         UI.setAttribute('role', 'dialog');
         UI.setAttribute('aria-label', 'Unity Arcade');
-        UI.innerHTML = '<div class="uxa-orb a"></div><div class="uxa-orb b"></div><div class="uxa-orb c"></div><div class="uxa-shell"><div class="uxa-head"></div><div class="uxa-main"></div><div class="uxa-chat"></div></div>';
+        UI.innerHTML = '<div class="uxa-shell"><div class="uxa-head"></div><div class="uxa-main"></div><div class="uxa-chat"></div></div>';
         document.body.appendChild(UI);
         applyTheme();
-        try { new MutationObserver(() => { if (themeId === 'auto') applyTheme(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] }); } catch (e) { /* optional */ }
+        try { new MutationObserver(() => { applyTheme(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] }); } catch (e) { /* optional */ }
         UI.addEventListener('click', onClick);
         UI.addEventListener('keydown', onKey);
         UI.addEventListener('input', onInput);
@@ -2390,7 +2390,7 @@
         return `<div class="uxa-logo"><i class="fa-solid ${G.icon || 'fa-gamepad'}" style="color:${G.color || '#60a5fa'}"></i><div><b>${esc(G.name || 'Room')}</b><small>${S.status === 'joining' ? 'Joining...' : S.players.length + ' player' + (S.players.length === 1 ? '' : 's') + (S.mode === 'local' ? ' &bull; local mode' : '')}</small></div></div>
             <div class="uxa-roominfo"><button class="uxa-code" data-ux="copy" title="Copy room code">${esc(S.code)} <i class="fa-regular fa-copy"></i></button>
             <span class="uxa-idle" title="Room auto-closes when idle"><i class="fa-regular fa-clock"></i> <span data-idle>--</span></span></div>
-            <div class="uxa-headbtns"><button class="uxa-btn ghost" data-ux="themes" aria-label="Change theme" title="Theme"><i class="fa-solid fa-palette"></i></button><button class="uxa-btn ghost" data-ux="togglechat"><i class="fa-regular fa-comments"></i></button>
+            <div class="uxa-headbtns"><button class="uxa-btn ghost" data-ux="togglechat"><i class="fa-regular fa-comments"></i></button>
             ${S.isHost ? '<button class="uxa-btn danger" data-ux="closeroom"><i class="fa-solid fa-lock"></i> Close room</button>' : '<button class="uxa-btn ghost" data-ux="leave"><i class="fa-solid fa-right-from-bracket"></i> Leave</button>'}</div>${viewThemes()}`;
     }
     function viewHub() {
@@ -2486,6 +2486,46 @@ ${L} .uxa-chip,${L} .uxa-pill b,${L} .uxa-res b,${L} .uxa-prow b{color:#0f172a}
         return css;
     }
 
+    const FLATCSS = `
+/* ===== Site-matched flat style: same cards, borders, buttons and colours as the rest of the website ===== */
+#ux-arcade#ux-arcade{--ab:#050a18;--ac:rgba(255,255,255,.04);--ad:rgba(255,255,255,.08);--at:#f1f5f9;--am:#94a3b8;--ai:rgba(255,255,255,.06);background:var(--ab);-webkit-backdrop-filter:none;backdrop-filter:none;color:var(--at)}
+#ux-arcade#ux-arcade[data-theme="light"]{--ab:#f1f5fb;--ac:#ffffff;--ad:#e2e8f0;--at:#0f172a;--am:#64748b;--ai:#f8fafc}
+#ux-arcade#ux-arcade .uxa-orb{display:none}
+#ux-arcade#ux-arcade .uxa-shell{background:var(--ab);border:1px solid var(--ad);border-radius:24px;box-shadow:0 20px 50px -24px rgba(0,0,0,.35);-webkit-backdrop-filter:none;backdrop-filter:none}
+#ux-arcade#ux-arcade .uxa-shell::before{display:none}
+#ux-arcade#ux-arcade :is(.uxa-head,.uxa-chat){border-color:var(--ad);background:transparent}
+#ux-arcade#ux-arcade :is(.uxa-panel,.uxa-prow,.uxa-res,.dice-row,.quiz-q,.quiz-opt,.tr-text,.race-prompt,.uxa-pill,.uxa-solo,.uxa-chipbtn,.uxa-x,.uxa-code,.uxa-input,.mem-card,.rps-btn,.uxa-game,.uxa-cd,.uxa-logo>i){background:var(--ac);border-color:var(--ad);color:var(--at);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+#ux-arcade#ux-arcade :is(.uxa-panel,.uxa-game,.rps-btn,.mem-card,.quiz-q){border-radius:16px}
+#ux-arcade#ux-arcade .uxa-input{background:var(--ai)}
+#ux-arcade#ux-arcade .uxa-code{border-style:dashed}
+#ux-arcade#ux-arcade :is(.uxa-panel p,.uxa-sub,.uxa-logo small,.uxa-idle,.uxa-field>span,.uxa-h small,.uxa-game small,.uxa-game p,.uxa-center p,.uxa-note,.dice-pair small,.uxa-tag,.rps-card small,.tr-rest){color:var(--am)}
+#ux-arcade#ux-arcade :is(.uxa-note.big,.uxa-logo b,.uxa-h,.uxa-panel h3,.uxa-game b,.uxa-chip,.uxa-pill b,.uxa-res b,.uxa-prow b){color:var(--at)}
+#ux-arcade#ux-arcade .uxa-btn{background:var(--ac);border:1px solid var(--ad);color:var(--at);box-shadow:none;border-radius:12px;transition:background .15s,border-color .15s}
+#ux-arcade#ux-arcade .uxa-btn:hover:not(:disabled){transform:none;box-shadow:none;border-color:#1a73e8}
+#ux-arcade#ux-arcade .uxa-btn.primary{background:linear-gradient(135deg,#1a73e8,#7c3aed);border-color:transparent;color:#fff}
+#ux-arcade#ux-arcade .uxa-btn.danger{background:#dc2626;border-color:transparent;color:#fff}
+#ux-arcade#ux-arcade .uxa-btn.ghost{background:transparent}
+#ux-arcade#ux-arcade .uxa-game{background:var(--ac)}
+#ux-arcade#ux-arcade .uxa-game:hover{transform:none;box-shadow:none;border-color:var(--c)}
+#ux-arcade#ux-arcade .uxa-game>i{background:color-mix(in srgb,var(--c) 14%,transparent);border-color:transparent}
+#ux-arcade#ux-arcade :is(.uxa-solo,.uxa-chipbtn):hover{background:var(--ai);border-color:#1a73e8}
+#ux-arcade#ux-arcade .uxa-chipbtn.on{background:color-mix(in srgb,var(--c) 16%,transparent);border-color:var(--c)}
+#ux-arcade#ux-arcade .uxa-input:focus{border-color:#1a73e8;box-shadow:0 0 0 3px rgba(26,115,232,.18)}
+#ux-arcade#ux-arcade .uxa-logo>i,#ux-arcade#ux-arcade .uxa-spin{color:#1a73e8}#ux-arcade#ux-arcade .uxa-spin{border-color:var(--ad);border-top-color:#1a73e8}
+#ux-arcade#ux-arcade .uxa-banner{background:rgba(250,204,21,.12);border-color:rgba(250,204,21,.4);color:inherit;box-shadow:none}
+#ux-arcade#ux-arcade .c4-board{background:#1a73e8;border:0;box-shadow:none;border-radius:18px}
+#ux-arcade#ux-arcade .c4-cell{box-shadow:none;background:#0b1b3a}
+#ux-arcade#ux-arcade .c4-cell.on{background:var(--c);animation:none}
+#ux-arcade#ux-arcade .mem-card{background:var(--ac)}
+#ux-arcade#ux-arcade .rps-btn{background:var(--ac);color:var(--at)}
+#ux-arcade#ux-arcade .rx-pad{box-shadow:none;border:0;border-radius:18px}
+#ux-arcade#ux-arcade .uxa-trophy{box-shadow:none;animation:none}
+#ux-arcade#ux-arcade :is(.quiz-opt):hover:not(:disabled){background:var(--ai);border-color:#1a73e8}
+#ux-arcade#ux-arcade .quiz-opt.ok{background:rgba(34,197,94,.16);border-color:#22c55e}
+#ux-arcade#ux-arcade .quiz-opt.bad{background:rgba(239,68,68,.14);border-color:#ef4444}
+#ux-arcade#ux-arcade .uxa-note.ok,#ux-arcade#ux-arcade .tr-ok{color:#16a34a}#ux-arcade#ux-arcade .uxa-note.bad{color:#dc2626}
+`;
+
     // ---------- styles (glass) ----------
     function injectCSS() {
         if (document.getElementById('uxa-styles')) return;
@@ -2579,7 +2619,7 @@ body.uxa-lock{overflow:hidden}
 .uxa-chat{display:none;border-top:1px solid rgba(255,255,255,.14);padding:10px 14px;background:rgba(0,0,0,.18)}.chat-open .uxa-chat{display:block}.uxa-chatlog{max-height:120px;overflow:auto;font-size:11.5px;display:flex;flex-direction:column;gap:3px;margin-bottom:8px}.uxa-chatlog .sys{color:#9db1cf;font-style:italic}.uxa-chatrow{display:flex;gap:8px}
 @media (max-width:720px){#ux-arcade{padding:0}.uxa-shell{border-radius:0;height:100%}.uxa-panel.row,.uxa-lobby{grid-template-columns:1fr}.quiz-grid{grid-template-columns:1fr}.tr-bar{grid-template-columns:90px 1fr 38px}.race-prompt{font-size:24px}.rx-pad{height:190px}.uxa-head{padding:10px 12px}.uxa-main{padding:12px}}
 @media (prefers-reduced-motion:reduce){#ux-arcade *{animation:none!important;transition:none!important}}
-`+themeCSS();
+`+themeCSS()+FLATCSS;
         document.head.appendChild(st);
     }
 
