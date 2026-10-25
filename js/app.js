@@ -355,6 +355,11 @@
             this.apply();
             this.bindToggle();
 
+            // Keep every open page (landing page, arcade tab) on the same theme as the landing-page toggle.
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'unity_theme' && (e.newValue === 'dark' || e.newValue === 'light')) { this.current = e.newValue; this.apply(); }
+            });
+
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
                 if (!localStorage.getItem('unity_theme')) {
                     this.current = e.matches ? 'dark' : 'light';
