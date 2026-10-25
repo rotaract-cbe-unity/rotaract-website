@@ -2079,7 +2079,7 @@
                 $('hero_tail').forEach(el => { el.style.display = tailOn ? '' : 'none'; });
                 if (!tailOn) $('hero_tagline').forEach(el => this.set(el, v('hero_tagline')));
             }
-            ['cta_primary_label', 'cta_secondary_label', 'about_section_text', 'footer_copyright', 'contact_address'].forEach(k => {
+            ['cta_primary_label', 'cta_secondary_label', 'about_section_text', 'about_title', 'about_us_text', 'about_mission', 'about_vision', 'footer_copyright', 'contact_address'].forEach(k => {
                 const x = v(k); if (x) $(k).forEach(el => this.set(el, x));
             });
             if (sponsor || ri || region) {
@@ -2099,8 +2099,13 @@
             document.querySelectorAll('[data-site="contact_phone"]').forEach(el => this.set(el, phone));
             document.querySelectorAll('[data-site-row="contact_phone"]').forEach(el => this.show(el, !!phone));
 
+            const bases = { instagram: 'https://instagram.com/', facebook: 'https://facebook.com/', linkedin: 'https://linkedin.com/company/', twitter: 'https://x.com/', youtube: 'https://youtube.com/@' };
             ['instagram', 'facebook', 'linkedin', 'twitter', 'youtube'].forEach(n => {
-                const u = this.url(this.val('social_' + n));
+                let raw = this.val('social_' + n);
+                if (!raw && n === 'instagram') raw = 'rotaractunity';
+                // Accept a full link, a bare domain, or just a handle (with or without @).
+                let u = this.url(raw);
+                if (!u && raw) { const h = raw.replace(/^@/, '').replace(/[^A-Za-z0-9._-]/g, ''); if (h) u = bases[n] + h; }
                 document.querySelectorAll('a[data-social="' + n + '"]').forEach(a => {
                     if (u) { a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer'; }
                     this.show(a, !!u);
@@ -2118,6 +2123,9 @@
         applyToggles() {
             this.toggleSection('#blood-portal, a[href="#blood-portal"]', this.flag('show_blood_section', true));
             this.toggleSection('#games, a[href="#games"], a[href="games.html"], a[data-arcade]', this.flag('show_games_section', true));
+            this.toggleSection('#about, a[href="#about"]', this.flag('show_about_section', true));
+            this.toggleSection('[data-site-block="footer_social"]', this.flag('show_footer_social', true));
+            this.toggleSection('[data-site-block="footer_map"]', this.flag('show_footer_map', true));
             this.toggleSection('#chatbot-container', this.flag('show_chatbot', true));
             const open = this.flag('enable_membership_apps', true);
             document.querySelectorAll('#join-us form').forEach(f => {
