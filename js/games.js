@@ -2237,18 +2237,13 @@
         return THEMES[themeId] ? themeId : 'aurora';
     }
     function applyTheme() { if (UI) UI.setAttribute('data-theme', resolveTheme()); }
-    function setTheme(id) {
+    function setTheme(id) { return;
         themeId = (id === 'auto' || THEMES[id]) ? id : 'auto';
         store.set('arcade_theme', themeId);
         themeOpen = false;
         applyTheme(); render();
     }
-    function viewThemes() {
-        if (!themeOpen) return '';
-        const cur = themeId;
-        const sw = Object.keys(THEMES).map(k => { const t = THEMES[k]; return `<button class="uxa-sw ${cur === k ? 'on' : ''}" data-ux="theme:${k}" style="--a:${t.a};--b:${t.b}" aria-label="${t.n} theme"><i></i><span>${t.n}</span></button>`; }).join('');
-        return `<div class="uxa-themes" role="menu"><b>Theme</b><div class="uxa-swgrid"><button class="uxa-sw ${cur === 'auto' ? 'on' : ''}" data-ux="theme:auto" style="--a:#1a73e8;--b:#e2e8f0" aria-label="Match site theme"><i></i><span>Auto</span></button>${sw}</div></div>`;
-    }
+
     function ensureUI() {
         if (UI && document.body.contains(UI)) return UI;
         injectCSS();
@@ -2294,7 +2289,6 @@
 
     // ---------- events ----------
     function onClick(e) {
-        if (themeOpen && !e.target.closest('.uxa-themes') && !e.target.closest('[data-ux="themes"]')) { themeOpen = false; render(); }
         const t = e.target.closest('[data-a],[data-react],[data-submit],[data-ux]');
         if (!t || t.disabled) return;
         if (t.hasAttribute('data-a')) { try { sendAct(JSON.parse(t.getAttribute('data-a'))); } catch (er) { /* silent */ } return; }
@@ -2327,8 +2321,6 @@
             case 'link': copyLink(); break;
             case 'chat': { const i = UI.querySelector('#uxa-chat-in'); if (i) { sendChat(i.value); i.value = ''; i.focus(); } break; }
             case 'togglechat': UI.classList.toggle('chat-open'); break;
-            case 'themes': themeOpen = !themeOpen; render(); break;
-            case 'theme': setTheme(arg); break;
         }
     }
     function copyCode() { if (!S) return; try { navigator.clipboard.writeText(S.code); flashRoom('Room code copied'); } catch (e) { flashRoom('Code: ' + S.code); } }
@@ -2385,13 +2377,13 @@
         tick();
     }
     function viewHead() {
-        if (!S) return `<div class="uxa-logo"><i class="fa-solid fa-gamepad"></i><div><b>Unity Arcade</b><small>Multiplayer rooms &bull; 10 live games</small></div></div><button class="uxa-x" data-ux="themes" aria-label="Change theme" title="Theme"><i class="fa-solid fa-palette"></i></button><button class="uxa-x" data-ux="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>${viewThemes()}`;
+        if (!S) return `<div class="uxa-logo"><i class="fa-solid fa-gamepad"></i><div><b>Unity Arcade</b><small>Multiplayer rooms &bull; 10 live games</small></div></div><button class="uxa-x" data-ux="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>`;
         const G = GAMES[S.gameId] || {};
         return `<div class="uxa-logo"><i class="fa-solid ${G.icon || 'fa-gamepad'}" style="color:${G.color || '#60a5fa'}"></i><div><b>${esc(G.name || 'Room')}</b><small>${S.status === 'joining' ? 'Joining...' : S.players.length + ' player' + (S.players.length === 1 ? '' : 's') + (S.mode === 'local' ? ' &bull; local mode' : '')}</small></div></div>
             <div class="uxa-roominfo"><button class="uxa-code" data-ux="copy" title="Copy room code">${esc(S.code)} <i class="fa-regular fa-copy"></i></button>
             <span class="uxa-idle" title="Room auto-closes when idle"><i class="fa-regular fa-clock"></i> <span data-idle>--</span></span></div>
             <div class="uxa-headbtns"><button class="uxa-btn ghost" data-ux="togglechat"><i class="fa-regular fa-comments"></i></button>
-            ${S.isHost ? '<button class="uxa-btn danger" data-ux="closeroom"><i class="fa-solid fa-lock"></i> Close room</button>' : '<button class="uxa-btn ghost" data-ux="leave"><i class="fa-solid fa-right-from-bracket"></i> Leave</button>'}</div>${viewThemes()}`;
+            ${S.isHost ? '<button class="uxa-btn danger" data-ux="closeroom"><i class="fa-solid fa-lock"></i> Close room</button>' : '<button class="uxa-btn ghost" data-ux="leave"><i class="fa-solid fa-right-from-bracket"></i> Leave</button>'}</div>`;
     }
     function viewHub() {
         const wins = store.get('arcade_wins', {});
@@ -2449,13 +2441,6 @@
         const rgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)).join(',');
         let css = `
 .uxa-head{z-index:3}
-.uxa-themes{position:absolute;right:14px;top:calc(100% + 6px);z-index:20;width:min(300px,calc(100% - 28px));padding:12px;border-radius:20px;background:rgba(15,23,42,.78);border:1px solid rgba(255,255,255,.28);box-shadow:0 24px 60px -20px rgba(0,0,0,.7),0 1px 0 rgba(255,255,255,.3) inset;-webkit-backdrop-filter:blur(26px) saturate(180%);backdrop-filter:blur(26px) saturate(180%)}
-.uxa-themes>b{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin:0 2px 8px;color:#c3d1ea}
-.uxa-swgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.uxa-sw{display:flex;flex-direction:column;align-items:center;gap:6px;padding:9px 4px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;font:700 10.5px Poppins,sans-serif}
-.uxa-sw i{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--a),var(--b));box-shadow:0 0 0 2px rgba(255,255,255,.35),0 8px 16px -6px var(--a)}
-.uxa-sw:hover{background:rgba(255,255,255,.14)}
-.uxa-sw.on{border-color:#fff;background:rgba(255,255,255,.18)}.uxa-sw.on i{box-shadow:0 0 0 3px #fff,0 8px 16px -6px var(--a)}
 `;
         Object.keys(THEMES).forEach(id => {
             const t = THEMES[id], T = '#ux-arcade[data-theme="' + id + '"]';
@@ -2479,8 +2464,6 @@ ${L} .uxa-game{color:#0f172a;background:linear-gradient(150deg,rgba(255,255,255,
 ${L} .uxa-note.big,${L} .uxa-logo b,${L} .uxa-h,${L} .uxa-panel h3{color:#0f172a}
 ${L} .uxa-note.ok{color:#15803d}${L} .uxa-note.bad{color:#b91c1c}
 ${L} .uxa-input::placeholder{color:#64748b}${L} .uxa-input{background:rgba(255,255,255,.85)}
-${L} .uxa-themes{background:rgba(255,255,255,.85);border-color:rgba(15,23,42,.14)}${L} .uxa-themes>b{color:#475569}
-${L} .uxa-sw{background:rgba(255,255,255,.7);border-color:rgba(15,23,42,.14);color:#0f172a}${L} .uxa-sw.on{border-color:#2563eb}
 ${L} .uxa-chip,${L} .uxa-pill b,${L} .uxa-res b,${L} .uxa-prow b{color:#0f172a}
 `;
         return css;
