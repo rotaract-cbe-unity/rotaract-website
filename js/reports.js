@@ -747,7 +747,7 @@
             if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
         },
 
-        // ---- Mini map: real OpenStreetMap tiles drawn to a canvas (cached) ----
+        // ---- Mini map: Google-Maps-style "Voyager" tiles (retina) drawn to a canvas, OSM as fallback ----
         async buildMapCanvas(lat, lng, size, zoom) {
             const key = [lat.toFixed(5), lng.toFixed(5), size, zoom].join('|');
             if (this._mapCache && this._mapCache.key === key) return this._mapCache.canvas;
@@ -757,29 +757,43 @@
             const lr = lat * Math.PI / 180;
             const fy = (1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2 * n;
             const tx = Math.floor(fx), ty = Math.floor(fy);
-            const big = document.createElement('canvas'); big.width = big.height = 768;
-            const bctx = big.getContext('2d');
-            bctx.fillStyle = '#e8eef5'; bctx.fillRect(0, 0, 768, 768);
-            const load = (x, y) => new Promise(res => {
+            const load = (url) => new Promise(res => {
                 const im = new Image(); im.crossOrigin = 'anonymous';
-                const t = setTimeout(() => res(null), 5000);
+                const t = setTimeout(() => res(null), 6000);
                 im.onload = () => { clearTimeout(t); res(im); };
                 im.onerror = () => { clearTimeout(t); res(null); };
-                im.src = `https://tile.openstreetmap.org/${z}/${((x % n) + n) % n}/${y}.png`;
+                im.src = url;
             });
-            const jobs = [];
-            for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) jobs.push(load(tx + dx, ty + dy).then(im => ({ im, dx, dy })));
-            const tiles = await Promise.all(jobs);
-            let ok = 0;
-            tiles.forEach(t => { if (t.im) { bctx.drawImage(t.im, (t.dx + 1) * 256, (t.dy + 1) * 256, 256, 256); ok++; } });
-            if (!ok) {
-                bctx.strokeStyle = '#cbd5e1'; bctx.lineWidth = 2;
-                for (let i = 0; i <= 768; i += 64) { bctx.beginPath(); bctx.moveTo(i, 0); bctx.lineTo(i, 768); bctx.moveTo(0, i); bctx.lineTo(768, i); bctx.stroke(); }
+            const wrap = (x) => ((x % n) + n) % n;
+            const sub = ['a', 'b', 'c', 'd'];
+            const sources = [
+                { px: 512, url: (x, y, i) => `https://${sub[i % 4]}.basemaps.cartocdn.com/rastertiles/voyager/${z}/${wrap(x)}/${y}@2x.png` },
+                { px: 256, url: (x, y) => `https://tile.openstreetmap.org/${z}/${wrap(x)}/${y}.png` }
+            ];
+            let big = null, unit = 256;
+            for (const src of sources) {
+                const c = document.createElement('canvas'); c.width = c.height = src.px * 3;
+                const cx2 = c.getContext('2d'); cx2.fillStyle = '#e8eaed'; cx2.fillRect(0, 0, c.width, c.height);
+                const jobs = []; let i = 0;
+                for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) jobs.push(load(src.url(tx + dx, ty + dy, i++)).then(im => ({ im, dx, dy })));
+                const tiles = await Promise.all(jobs);
+                const ok = tiles.filter(t => t.im);
+                if (ok.length >= 5) {
+                    ok.forEach(t => cx2.drawImage(t.im, (t.dx + 1) * src.px, (t.dy + 1) * src.px, src.px, src.px));
+                    big = c; unit = src.px; break;
+                }
             }
-            const cx = (fx - tx + 1) * 256, cy = (fy - ty + 1) * 256;
+            if (!big) {
+                big = document.createElement('canvas'); big.width = big.height = 768; unit = 256;
+                const g = big.getContext('2d'); g.fillStyle = '#e8eaed'; g.fillRect(0, 0, 768, 768);
+                g.strokeStyle = '#fff'; g.lineWidth = 10; for (let i = 0; i <= 768; i += 96) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 768); g.moveTo(0, i); g.lineTo(768, i); g.stroke(); }
+            }
+            const cx = (fx - tx + 1) * unit, cy = (fy - ty + 1) * unit;
             const out = document.createElement('canvas'); out.width = out.height = size;
             const octx = out.getContext('2d');
-            const crop = size * 1.0;
+            octx.imageSmoothingQuality = 'high';
+            // `size` px of output cover size/2 standard 256px tile-pixels, i.e. a street-level view
+            const crop = (size / 2) * (unit / 256);
             octx.drawImage(big, cx - crop / 2, cy - crop / 2, crop, crop, 0, 0, size, size);
             this._mapCache = { key, canvas: out };
             return out;
@@ -823,7 +837,7 @@
             ctx.font = '700 54px Poppins, "Segoe UI", Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.textAlign = 'center';
             ctx.fillText('Your photo appears here', 800, 520); ctx.textAlign = 'start';
             let map = null;
-            try { map = await this.buildMapCanvas(this.activeLocation.latitude, this.activeLocation.longitude, 420, 17); } catch (e) { /* offline */ }
+            try { map = await this.buildMapCanvas(this.activeLocation.latitude, this.activeLocation.longitude, 480, 17); } catch (e) { /* offline */ }
             const stamp = this.randomStamps(1)[0];
             this.drawWatermarkOverlay(ctx, 1600, 1200, map, this.buildStampInfo(stamp));
         },
@@ -1964,6 +1978,7 @@
                 lat: `${Math.abs(lat).toFixed(6)}° ${lat >= 0 ? 'N' : 'S'}`,
                 lng: `${Math.abs(lng).toFixed(6)}° ${lng >= 0 ? 'E' : 'W'}`,
                 locName: this.activeLocationName || `${loc.city || 'Coimbatore'}, Tamil Nadu`,
+                mapMeters: (480 / 2) * 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, 17),
                 club: (window.SiteConfig && window.SiteConfig.val && window.SiteConfig.val('club_name')) || 'Rotaract Club of Coimbatore Unity'
             };
         },
@@ -2015,15 +2030,7 @@
             ctx.save();
             const topH = 46 * s;
             ctx.font = `700 ${18 * s}px ${FONT}`;
-            const tagTxt = 'GEO-TAGGED';
-            const tagW = ctx.measureText(tagTxt).width + 74 * s;
-            this.rrPath(ctx, m, m, tagW, topH, topH / 2);
-            ctx.fillStyle = 'rgba(8,14,30,.78)'; ctx.fill();
-            ctx.lineWidth = 1.5 * s; ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.stroke();
-            ctx.beginPath(); ctx.arc(m + 26 * s, m + topH / 2, 13 * s, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
-            ctx.beginPath(); ctx.arc(m + 26 * s, m + topH / 2, 5 * s, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
-            ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle'; ctx.fillText(tagTxt, m + 50 * s, m + topH / 2 + 1 * s);
-
+            ctx.lineWidth = 1.5 * s; ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.textBaseline = 'middle';
             ctx.font = `600 ${17 * s}px ${FONT}`;
             const clubTxt = this.fitText(ctx, info.club, W * 0.45);
             const clubW = ctx.measureText(clubTxt).width + 40 * s;
@@ -2061,20 +2068,43 @@
             vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(8,14,30,.28)');
             ctx.fillStyle = vg; ctx.fillRect(mx, my, ms, ms);
             ctx.restore();
-            // accuracy ring + pin
+            // Google-style red pin with soft ground shadow
             ctx.save();
-            ctx.beginPath(); ctx.arc(mx + ms / 2, my + ms / 2, 34 * s, 0, Math.PI * 2);
-            ctx.fillStyle = color + '33'; ctx.fill(); ctx.lineWidth = 2 * s; ctx.strokeStyle = color; ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(mx + ms / 2, my + ms / 2 + 2 * s, 11 * s, 4 * s, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.fill();
             ctx.restore();
-            this.drawPinShape(ctx, mx + ms / 2, my + ms / 2 + 4 * s, 15 * s, color);
+            this.drawPinShape(ctx, mx + ms / 2, my + ms / 2, 13 * s, '#EA4335');
+            // white frame
             this.rrPath(ctx, mx, my, ms, ms, 22 * s);
             ctx.lineWidth = 4 * s; ctx.strokeStyle = '#ffffff'; ctx.stroke();
-            // compass
+            // compass button (top-right)
             ctx.save();
-            ctx.beginPath(); ctx.arc(mx + ms - 26 * s, my + 26 * s, 17 * s, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(8,14,30,.85)'; ctx.fill();
-            ctx.fillStyle = '#fff'; ctx.font = `800 ${16 * s}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText('N', mx + ms - 26 * s, my + 27 * s);
+            const cx0 = mx + ms - 26 * s, cy0 = my + 26 * s;
+            ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 6 * s; ctx.shadowOffsetY = 2 * s;
+            ctx.beginPath(); ctx.arc(cx0, cy0, 17 * s, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+            ctx.shadowColor = 'transparent';
+            ctx.beginPath(); ctx.moveTo(cx0, cy0 - 11 * s); ctx.lineTo(cx0 + 5.5 * s, cy0 + 2 * s); ctx.lineTo(cx0 - 5.5 * s, cy0 + 2 * s); ctx.closePath(); ctx.fillStyle = '#EA4335'; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(cx0, cy0 + 11 * s); ctx.lineTo(cx0 + 5.5 * s, cy0 - 2 * s); ctx.lineTo(cx0 - 5.5 * s, cy0 - 2 * s); ctx.closePath(); ctx.fillStyle = '#9aa0a6'; ctx.fill();
+            ctx.restore();
+            // scale bar + attribution (bottom of the tile)
+            if (info.mapMeters) {
+                const nice = [10, 20, 50, 100, 200, 500];
+                let want = info.mapMeters * 0.3, m1 = nice[0];
+                nice.forEach(v => { if (v <= want) m1 = v; });
+                const barW = ms * (m1 / info.mapMeters);
+                ctx.save();
+                const bx = mx + 14 * s, by = my + ms - 30 * s;
+                this.rrPath(ctx, bx - 6 * s, by - 16 * s, barW + 12 * s + 40 * s, 24 * s, 7 * s);
+                ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fill();
+                ctx.strokeStyle = '#3c4043'; ctx.lineWidth = 2 * s; ctx.lineCap = 'butt';
+                ctx.beginPath(); ctx.moveTo(bx, by - 8 * s); ctx.lineTo(bx, by); ctx.lineTo(bx + barW, by); ctx.lineTo(bx + barW, by - 8 * s); ctx.stroke();
+                ctx.fillStyle = '#3c4043'; ctx.font = `700 ${11 * s}px ${FONT}`; ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
+                ctx.fillText(m1 + ' m', bx + barW + 6 * s, by - 5 * s);
+                ctx.restore();
+            }
+            ctx.save();
+            ctx.font = `600 ${8.5 * s}px ${FONT}`; ctx.fillStyle = 'rgba(60,64,67,.85)'; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+            ctx.fillText('\u00A9 OpenStreetMap \u00A9 CARTO', mx + ms - 8 * s, my + ms - 5 * s);
             ctx.restore();
 
             // ---- right column ----
@@ -2158,7 +2188,7 @@
             ctx.drawImage(img, sx, sy, sw, sh, 0, 0, TW, TH);
 
             let map = null;
-            try { map = await this.buildMapCanvas(loc.latitude, loc.longitude, 420, 17); } catch (e) { /* offline map: grid fallback */ }
+            try { map = await this.buildMapCanvas(loc.latitude, loc.longitude, 480, 17); } catch (e) { /* offline map: grid fallback */ }
             try { if (document.fonts && document.fonts.load) await Promise.race([document.fonts.load('800 40px Poppins'), new Promise(r => setTimeout(r, 1200))]); } catch (e) { /* font optional */ }
             this.drawWatermarkOverlay(ctx, TW, TH, map, this.buildStampInfo(stamp));
 
