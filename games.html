@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <meta name="theme-color" content="#050a18">
+    <meta name="theme-color" content="#1a73e8">
     <title>Unity Arcade | Rotaract Club of Coimbatore Unity</title>
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/duoy1cje9/image/upload/w_32,h_32,c_fill/v1783501797/unity_standard_colour_mkz1k7.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,14 +12,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="css/styles.css" onerror="this.onerror=null;this.href='styles.css'">
     <style>
-        html,body{margin:0;min-height:100%;background:#050a18;font-family:Poppins,system-ui,sans-serif;color:#eaf1fb}
+        html,body{margin:0;min-height:100%;font-family:Poppins,system-ui,sans-serif;background:#f1f5fb;color:#0f172a}
+        html.dark,html.dark body{background:#050a18;color:#f1f5f9}
         .arcade-landing{position:fixed;inset:0;display:grid;place-items:center;text-align:center;padding:24px}
-        .arcade-landing a{color:#93c5fd;font-weight:700;text-decoration:none}
+        .arcade-landing i{font-size:42px;color:#1a73e8}
+        .arcade-landing p{color:#64748b}html.dark .arcade-landing p{color:#94a3b8}
+        .arcade-landing a{color:#1a73e8;font-weight:700;text-decoration:none}
     </style>
 </head>
-<body class="dark">
-<script>try{document.documentElement.classList.add('dark')}catch(e){}</script>
-<div class="arcade-landing"><div><i class="fa-solid fa-gamepad" style="font-size:42px;color:#60a5fa"></i><h1 style="font-weight:900">Unity Arcade</h1><p style="color:#9db1cf">Loading your games...</p><p><a href="index.html">&larr; Back to the club site</a></p></div></div>
+<body>
+<script>try{var t=localStorage.getItem('unity_theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}</script>
+<div class="arcade-landing"><div><i class="fa-solid fa-gamepad"></i><h1 style="font-weight:900">Unity Arcade</h1><p>Loading your games...</p><p><a href="index.html">&larr; Back to the club site</a></p></div></div>
 
 <!-- Realtime transport (Supabase) - the arcade falls back to same-device rooms if this is unavailable -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
