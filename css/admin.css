@@ -2861,3 +2861,27 @@ body.tc-admin-chat #admin-workspace {padding-bottom:12px}
 .tc-app i.fa-xmark[class][class][class]::before,.tc-toasts i.fa-xmark[class][class][class]::before{content:"\f00d" !important}
 .tc-pop.attachmenu>button>i.tc-circ{width:34px;height:34px;min-width:34px;flex:0 0 34px;border-radius:50%;font-size:14px}
 .tc-pop.attachmenu>button>i.tc-circ>i{width:auto;margin:0}
+
+/* ===== v3.1 fixes: dropdown arrow tiling + invisible primary row buttons ===== */
+/* Several rules used the `background` shorthand on <select>, which reset the arrow's no-repeat/position and tiled it across the text ("vvvv"). One explicit rule wins for every dropdown. */
+:is(#admin-portal-modal,#admin-dynamic-modal,.tc-app) select:not([multiple]):not([size]),
+:is(#admin-portal-modal,#admin-dynamic-modal) select.admin-form-select:not([multiple]){
+  -webkit-appearance:none !important;appearance:none !important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+  background-repeat:no-repeat !important;background-position:right 12px center !important;background-size:14px 14px !important;
+  padding-right:38px !important;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;cursor:pointer;
+}
+.dark :is(#admin-portal-modal,#admin-dynamic-modal,.tc-app) select:not([multiple]):not([size]),
+.dark :is(#admin-portal-modal,#admin-dynamic-modal) select.admin-form-select:not([multiple]){
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+}
+:is(#admin-portal-modal,#admin-dynamic-modal) select option{color:#0f172a;background:#fff}
+.dark :is(#admin-portal-modal,#admin-dynamic-modal) select option{color:#f1f5f9;background:#0c1225}
+/* primary action buttons inside tables: solid brand fill with white text (was blue text on a blue fill) */
+.admin-data-table .btn-primary.btn-xs,
+#admin-portal-modal .admin-data-table .btn-primary.btn-xs{
+  background-color:transparent !important;background-image:linear-gradient(135deg,#1a73e8,#7c3aed) !important;
+  color:#fff !important;border-color:transparent !important;box-shadow:0 6px 14px -8px rgba(76,70,235,.7) !important;
+}
+.admin-data-table .btn-primary.btn-xs :is(i,span,svg){color:#fff !important}
+.admin-data-table .btn-primary.btn-xs:hover{filter:brightness(1.08);transform:translateY(-1px)}
