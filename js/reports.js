@@ -78,6 +78,7 @@
         liveLocationName: '',
 
         // Custom override state (NEW)
+        skipGeo: false,       // true = upload photos without adding our geo-tag stamp
         geoTagMode: 'event',  // location comes from the pasted Google Maps link (or GPS on request)
         customLocation: null, // { latitude, longitude, address, city, state }
         customDateTime: null, // ISO string or null (uses now if null)
@@ -512,32 +513,49 @@
 
         isShortMapsLink(s) { return /^(https?:\/\/)?(maps\.app\.goo\.gl|goo\.gl\/maps|g\.co\/kgs|share\.google|g\.page)\b/i.test(String(s || '').trim()); },
 
-        // Short links cannot be opened from a browser directly, so a public read-only proxy follows the redirect for us.
+        // Short links cannot be opened from a browser directly, so read-only public proxies follow the redirect for us.
+        // We look at (1) the final URL after redirects, then (2) the page itself for coordinates.
         async expandShortLink(url) {
-            const clean = /^https?:\/\//i.test(url) ? url : 'https://' + url;
-            const proxies = [
-                u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
-                u => 'https://corsproxy.io/?' + encodeURIComponent(u)
+            const clean = /^https?:\/\//i.test(url) ? url.trim() : 'https://' + url.trim();
+            const enc = encodeURIComponent(clean);
+            const fetchT = async (u, ms) => {
+                const ctl = new AbortController();
+                const t = setTimeout(() => ctl.abort(), ms || 8000);
+                try { return await fetch(u, { signal: ctl.signal }); } finally { clearTimeout(t); }
+            };
+            const fromHtml = (html) => {
+                const m = html.match(/center=(-?\d{1,2}\.\d+)(?:%2C|,)(-?\d{1,3}\.\d+)/i)
+                    || html.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/)
+                    || html.match(/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/)
+                    || html.match(/\[null,null,(-?\d{1,2}\.\d{3,}),(-?\d{1,3}\.\d{3,})\]/)
+                    || html.match(/"latitude"\s*:\s*(-?\d{1,2}\.\d+)\s*,\s*"longitude"\s*:\s*(-?\d{1,3}\.\d+)/)
+                    || html.match(/ll=(-?\d{1,2}\.\d+)(?:%2C|,)(-?\d{1,3}\.\d+)/i);
+                if (!m) return null;
+                const t2 = html.match(/<meta[^>]+property="og:title"[^>]+content="([^"]+)"/i);
+                return { latitude: parseFloat(m[1]), longitude: parseFloat(m[2]), name: t2 ? t2[1].replace(/\s*[\u00B7-]\s*Google Maps.*$/i, '').trim() : '' };
+            };
+            const tries = [
+                async () => { // allorigins JSON: tells us the final URL after redirects
+                    const r = await fetchT('https://api.allorigins.win/get?url=' + enc); if (!r.ok) return null;
+                    const j = await r.json();
+                    const fin = (j && j.status && j.status.url) || '';
+                    const c = this.parseGoogleMapsUrl(fin);
+                    if (c) return { latitude: c.latitude, longitude: c.longitude, name: this.extractPlaceName(fin) };
+                    return fromHtml(String((j && j.contents) || '')) || (this.extractPlaceName(fin) ? { name: this.extractPlaceName(fin) } : null);
+                },
+                async () => { const r = await fetchT('https://corsproxy.io/?' + enc); if (!r.ok) return null; const h = await r.text(); return fromHtml(h); },
+                async () => { const r = await fetchT('https://api.codetabs.com/v1/proxy?quest=' + enc); if (!r.ok) return null; const h = await r.text(); return fromHtml(h); },
+                async () => { const r = await fetchT('https://api.allorigins.win/raw?url=' + enc); if (!r.ok) return null; const h = await r.text(); return fromHtml(h); }
             ];
-            for (const p of proxies) {
+            let nameOnly = null;
+            for (const t of tries) {
                 try {
-                    const ctl = new AbortController();
-                    const t = setTimeout(() => ctl.abort(), 7000);
-                    const r = await fetch(p(clean), { signal: ctl.signal });
-                    clearTimeout(t);
-                    if (!r.ok) continue;
-                    const html = await r.text();
-                    let m = html.match(/center=(-?\d{1,2}\.\d+)(?:%2C|,)(-?\d{1,3}\.\d+)/i)
-                        || html.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/)
-                        || html.match(/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/)
-                        || html.match(/\[null,null,(-?\d{1,2}\.\d{3,}),(-?\d{1,3}\.\d{3,})\]/);
-                    if (m) {
-                        const t2 = html.match(/<meta[^>]+property="og:title"[^>]+content="([^"]+)"/i);
-                        return { latitude: parseFloat(m[1]), longitude: parseFloat(m[2]), name: t2 ? t2[1].replace(/\s*[·-]\s*Google Maps.*$/i, '').trim() : '' };
-                    }
-                } catch (e) { /* try next */ }
+                    const res = await t();
+                    if (res && res.latitude != null) return res;
+                    if (res && res.name && !nameOnly) nameOnly = res;
+                } catch (e) { /* try the next proxy */ }
             }
-            return null;
+            return nameOnly; // may carry only a place name, which can still be geocoded
         },
 
         // Compact "Venue, Area, City" name for the photo stamp
@@ -618,14 +636,16 @@
                 if (!coords && this.isShortMapsLink(input)) {
                     this.setGeoBusy(true, 'Opening the short link...');
                     const ex = await this.expandShortLink(input);
-                    if (ex) { coords = { latitude: ex.latitude, longitude: ex.longitude }; hint = hint || ex.name; }
-                    else { toast.error('This short link could not be opened automatically. Open it in Maps, copy the full address-bar link and paste that.'); return false; }
+                    if (ex && ex.latitude != null) { coords = { latitude: ex.latitude, longitude: ex.longitude }; hint = hint || ex.name; }
+                    else if (ex && ex.name) { hint = ex.name; }
+                    else { this.showGeoFail(input); return false; }
                 }
                 if (!coords) {
                     const forward = await this.forwardGeocode(hint || input);
                     if (forward) coords = { latitude: forward.latitude, longitude: forward.longitude };
                 }
-                if (!coords) { toast.error('Could not find a location in that link.'); return false; }
+                if (!coords) { this.showGeoFail(input); return false; }
+                this.showGeoFail('');
 
                 this.setGeoBusy(true, 'Finding the place name...');
                 const addr = await this.reverseGeocodeCustom(coords.latitude, coords.longitude, hint);
@@ -660,6 +680,32 @@
                 await this.updateGeoStudio();
                 toast.success('Using your current location');
             } finally { this.setGeoBusy(false); }
+        },
+
+        showGeoFail(link) {
+            const el = document.getElementById('geo-fail');
+            if (!el) { if (link) toast.error('Could not read that link. Paste the full link from the Maps address bar.'); return; }
+            if (!link) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+            const safe = this.esc(link);
+            el.classList.remove('hidden');
+            el.innerHTML = `<div><b><i class="fa-solid fa-circle-exclamation"></i> Could not read this link automatically</b>
+                <p>Short links sometimes cannot be opened from the browser. Any one of these works:</p>
+                <ol><li>Tap <b>Open link</b>, then copy the long address from the Maps address bar and paste it here.</li>
+                <li>Or type the venue name (for example <i>Codissia Trade Fair Complex, Coimbatore</i>) and press Find.</li>
+                <li>Or paste coordinates like <i>11.0275, 77.0270</i>.</li></ol>
+                <a class="btn-secondary btn-sm" href="${safe}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>Open link</a></div>`;
+        },
+
+        // "Upload as-is" mode: photos that already carry a geo-tag from another app are not stamped again
+        setStampMode(stamp) {
+            this.skipGeo = !stamp;
+            document.querySelectorAll('[data-stampmode]').forEach(b => b.classList.toggle('on', (b.dataset.stampmode === 'stamp') === !!stamp));
+            const wrap = document.getElementById('geo-studio-wrap');
+            if (wrap) wrap.classList.toggle('geo-dim', this.skipGeo);
+            const note = document.getElementById('geo-skip-note');
+            if (note) note.classList.toggle('hidden', !this.skipGeo);
+            this.updateUploadGate();
+            this.renderExistingPhotos();
         },
 
         setGeoBusy(on, text) {
@@ -783,7 +829,7 @@
         },
 
         updateUploadGate() {
-            const has = !!this.activeLocation;
+            const has = !!this.activeLocation || !!this.skipGeo;
             const zone = document.getElementById('report-photo-upload-zone');
             const input = document.getElementById('report-photo-input');
             if (zone) zone.classList.toggle('geo-locked', !has);
@@ -791,7 +837,7 @@
             const t = document.getElementById('geo-drop-title');
             if (t) t.textContent = has ? 'Drop photos here or tap to browse' : 'Paste the location link first';
             const s = document.getElementById('geo-status-pill');
-            if (s) { s.className = 'geo-pill ' + (has ? 'ok' : 'warn'); s.innerHTML = has ? '<i class="fa-solid fa-circle-check"></i> Ready to stamp' : '<i class="fa-solid fa-triangle-exclamation"></i> Location needed'; }
+            if (s) { s.className = 'geo-pill ' + (has ? 'ok' : 'warn'); s.innerHTML = this.skipGeo ? '<i class="fa-solid fa-image"></i> Upload as-is' : (has ? '<i class="fa-solid fa-circle-check"></i> Ready to stamp' : '<i class="fa-solid fa-triangle-exclamation"></i> Location needed'); }
         },
 
         applyActiveLocation() {
@@ -1560,9 +1606,15 @@
                                 <h4>${evName}</h4>
                                 <p>Paste one Google Maps link. We read the place, draw the map and stamp every photo with the event name, location, coordinates, date and a time within the event hours.</p>
                             </div>
-                            <span id="geo-status-pill" class="geo-pill ${has ? 'ok' : 'warn'}">${has ? '<i class="fa-solid fa-circle-check"></i> Ready to stamp' : '<i class="fa-solid fa-triangle-exclamation"></i> Location needed'}</span>
+                            <span id="geo-status-pill" class="geo-pill ${has ? 'ok' : 'warn'}">${this.skipGeo ? '<i class="fa-solid fa-image"></i> Upload as-is' : (has ? '<i class="fa-solid fa-circle-check"></i> Ready to stamp' : '<i class="fa-solid fa-triangle-exclamation"></i> Location needed')}</span>
                         </div>
 
+                        <div class="geo-seg" role="tablist" aria-label="Geo-tag stamp">
+                            <button type="button" data-stampmode="stamp" class="${this.skipGeo ? '' : 'on'}" onclick="Reports.setStampMode(true)"><i class="fa-solid fa-location-dot"></i><span><b>Add geo-tag stamp</b><small>Map, place, date and time on every photo</small></span></button>
+                            <button type="button" data-stampmode="asis" class="${this.skipGeo ? 'on' : ''}" onclick="Reports.setStampMode(false)"><i class="fa-solid fa-image"></i><span><b>Skip geo-tagging</b><small>Photos already geo-tagged elsewhere</small></span></button>
+                        </div>
+                        <p id="geo-skip-note" class="geo-note ${this.skipGeo ? '' : 'hidden'}"><i class="fa-solid fa-circle-info"></i> Photos are uploaded without our stamp. They are fitted into the 4:3 frame whole, with nothing cut off, so existing stamps stay readable.</p>
+                        <div id="geo-studio-wrap" class="${this.skipGeo ? 'geo-dim' : ''}">
                         <div class="geo-linkrow">
                             <div class="geo-linkbox">
                                 <i class="fa-solid fa-link"></i>
@@ -1576,13 +1628,15 @@
                         </div>
                         <div id="geo-busy" class="geo-busy hidden"><i class="fa-solid fa-spinner fa-spin"></i><span>Reading the location...</span></div>
 
+                        <div id="geo-fail" class="geo-fail hidden"></div>
                         <div id="geo-result"></div>
+                        </div>
 
-                        <div class="geo-drop ${has ? '' : 'geo-locked'}" id="report-photo-upload-zone">
-                            <input type="file" id="report-photo-input" accept="image/*" multiple class="geo-file" ${has ? '' : 'disabled'}>
+                        <div class="geo-drop ${(has || this.skipGeo) ? '' : 'geo-locked'}" id="report-photo-upload-zone">
+                            <input type="file" id="report-photo-input" accept="image/*" multiple class="geo-file" ${(has || this.skipGeo) ? '' : 'disabled'}>
                             <div class="geo-drop-ico"><i class="fa-solid fa-cloud-arrow-up"></i></div>
                             <div class="geo-drop-txt">
-                                <b id="geo-drop-title">${has ? 'Drop photos here or tap to browse' : 'Paste the location link first'}</b>
+                                <b id="geo-drop-title">${(has || this.skipGeo) ? 'Drop photos here or tap to browse' : 'Paste the location link first'}</b>
                                 <small>Photos are cropped to a neat 4:3 frame and stamped automatically &middot; ${this.minPhotos}&ndash;${this.maxPhotos} photos</small>
                             </div>
                         </div>
@@ -1639,9 +1693,30 @@
 .geo-slot.empty.locked{opacity:.5;cursor:not-allowed}
 .geo-num{position:absolute;top:8px;left:8px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:var(--gc);box-shadow:0 2px 6px rgba(0,0,0,.35);z-index:3}
 .geo-tools{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:8px;background:linear-gradient(180deg,rgba(0,0,0,.45),transparent 40%,transparent 55%,rgba(0,0,0,.7));opacity:0;transition:opacity .15s;z-index:4}
-.geo-slot:hover .geo-tools,.geo-slot:focus-within .geo-tools{opacity:1}@media(hover:none){.geo-tools{opacity:1}}
+.geo-slot:hover .geo-tools,.geo-slot:focus-within .geo-tools,.geo-slot.open .geo-tools{opacity:1}.geo-slot:not(.empty){cursor:pointer}
 .geo-btns{display:flex;justify-content:flex-end;gap:6px}.geo-btns button{width:28px;height:28px;border-radius:9px;border:0;background:rgba(255,255,255,.9);color:#0f172a;font-size:11px;cursor:pointer}.geo-btns button.del{background:#ef4444;color:#fff}.geo-btns button:disabled{opacity:.35;cursor:default}
+.geo-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:5px;border-radius:16px;background:rgba(148,163,184,.14)}
+.geo-seg button{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border-radius:12px;border:1.5px solid transparent;background:transparent;color:inherit;cursor:pointer;min-height:48px}
+.geo-seg button>i{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:rgba(148,163,184,.2);flex:0 0 32px}
+.geo-seg button b{display:block;font-size:12px;font-weight:800}.geo-seg button small{display:block;font-size:10px;opacity:.65;line-height:1.3}
+.geo-seg button.on{background:#fff;color:#0f172a;border-color:var(--gc);box-shadow:0 4px 14px -8px rgba(0,0,0,.4)}.geo-seg button.on>i{background:var(--gc);color:#fff}
+.dark .geo-seg button.on{background:rgba(255,255,255,.1);color:#fff}
+.geo-note{margin:0;padding:10px 12px;border-radius:12px;font-size:11px;line-height:1.5;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2)}.geo-note.hidden{display:none}
+.geo-dim{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.geo-fail{padding:14px;border-radius:14px;font-size:12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35)}.geo-fail.hidden{display:none}
+.geo-fail>div>b:first-child{display:block;margin-bottom:4px}.geo-fail p{margin:0 0 4px}.geo-fail ol{margin:0 0 10px;padding-left:18px;line-height:1.6}
+.geo-tagpill{position:absolute;right:8px;top:8px;z-index:3;padding:3px 8px;border-radius:99px;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:rgba(15,23,42,.75);color:#fff}
 .geo-cap{width:100%;padding:6px 9px;border-radius:9px;border:1px solid rgba(255,255,255,.35);background:rgba(15,23,42,.6);color:#fff;font-size:11px}.geo-cap::placeholder{color:rgba(255,255,255,.65)}
+@media(max-width:560px){
+ .geo-seg{grid-template-columns:1fr}
+ .geo-panel .geo-hero{padding:12px}.geo-hero-txt h4{font-size:15px}
+ .geo-linkrow>.btn-secondary{width:100%;justify-content:center;min-height:44px}
+ .geo-linkbox{min-width:0;flex-basis:100%}.geo-linkbox .admin-form-input{font-size:16px!important}
+ .geo-drop{flex-direction:column;text-align:center;padding:18px 14px;min-height:140px}
+ .geo-grid{grid-template-columns:1fr}.geo-namebox .admin-form-input{font-size:16px}
+ .geo-slots{gap:8px}.geo-slot.empty i{font-size:16px}.geo-slot.empty b{font-size:11px}
+}
+@media(pointer:coarse){.geo-btns button{width:34px;height:34px;font-size:13px}.geo-cap{font-size:16px;padding:6px 8px}.geo-tools{padding:6px}.geo-slot .geo-num{width:22px;height:22px}.geo-linkbox button,.geo-linkrow .btn-secondary{min-height:44px}}
 `;
         },
 
@@ -1665,14 +1740,14 @@
         },
 
         pickPhotos() {
-            if (!this.activeLocation) { toast.warning('Paste the Google Maps link first.'); this.openGeoTagConfigModal(); return; }
+            if (!this.activeLocation && !this.skipGeo) { toast.warning('Paste the Google Maps link first, or choose Skip geo-tagging.'); this.openGeoTagConfigModal(); return; }
             const input = document.getElementById('report-photo-input');
             if (input) input.click();
         },
 
         async processPhotoFiles(files) {
             this.applyActiveLocation();
-            if (!this.activeLocation) { toast.error('Paste the Google Maps location link first.'); this.openGeoTagConfigModal(); return; }
+            if (!this.activeLocation && !this.skipGeo) { toast.error('Paste the Google Maps link first, or choose Skip geo-tagging.'); this.openGeoTagConfigModal(); return; }
 
             const remaining = this.maxPhotos - this.reportPhotos.length;
             if (remaining <= 0) { toast.warning(`Maximum ${this.maxPhotos} photos allowed.`); return; }
@@ -1683,16 +1758,16 @@
             const procTxt = document.getElementById('photo-processing-text');
             if (procEl) procEl.classList.remove('hidden');
 
-            const stamps = this.randomStamps(list.length);
+            const stamps = this.skipGeo ? list.map(() => null) : this.randomStamps(list.length);
             let failed = 0;
             for (let i = 0; i < list.length; i++) {
                 const file = list[i];
-                if (procTxt) procTxt.textContent = `Stamping photo ${i + 1} of ${list.length}...`;
+                if (procTxt) procTxt.textContent = (this.skipGeo ? 'Preparing photo ' : 'Stamping photo ') + `${i + 1} of ${list.length}...`;
                 try {
                     const blob = await this.applyGeoWatermark(file, stamps[i]);
                     const stamped = new File([blob], (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
                     const result = await window.Uploader.upload(stamped, { type: 'report_photo', folder: 'reports/' + this.currentEvent.id });
-                    this.reportPhotos.push({ url: result.url, provider: result.provider, caption: '', existing: false, stamp: stamps[i].toISOString() });
+                    this.reportPhotos.push({ url: result.url, provider: result.provider, caption: '', existing: false, stamped: !this.skipGeo, stamp: stamps[i] ? stamps[i].toISOString() : null });
                     this.renderExistingPhotos();
                 } catch (err) {
                     failed++;
@@ -1700,7 +1775,7 @@
                 }
             }
             if (procEl) procEl.classList.add('hidden');
-            if (failed) toast.error(`${failed} photo(s) could not be processed.`);
+            if (failed) toast.error(`${failed} photo(s) could not be read. Please use JPG or PNG photos.`);
             this.renderExistingPhotos();
             this.updatePhotoCounter();
         },
@@ -2056,7 +2131,7 @@
 
         async applyGeoWatermark(file, stamp) {
             const loc = this.activeLocation;
-            if (!loc) throw new Error('No location configured');
+            if (!loc && !this.skipGeo) throw new Error('No location configured');
             const dataUrl = await new Promise((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = rej; r.readAsDataURL(file); });
             const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = dataUrl; });
 
@@ -2065,6 +2140,17 @@
             const canvas = document.createElement('canvas'); canvas.width = TW; canvas.height = TH;
             const ctx = canvas.getContext('2d');
             const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+            if (this.skipGeo) {
+                // Upload as-is: whole picture fitted into the 4:3 frame over a soft blurred copy, no stamp
+                const cover = Math.max(TW / iw, TH / ih);
+                ctx.save(); ctx.filter = 'blur(28px) brightness(.8)';
+                ctx.drawImage(img, (TW - iw * cover) / 2, (TH - ih * cover) / 2, iw * cover, ih * cover);
+                ctx.restore();
+                const fit = Math.min(TW / iw, TH / ih);
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, (TW - iw * fit) / 2, (TH - ih * fit) / 2, iw * fit, ih * fit);
+                return await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('Canvas export failed')), 'image/jpeg', 0.92));
+            }
             const scale = Math.max(TW / iw, TH / ih);
             const sw = TW / scale, sh = TH / scale;
             const sx = (iw - sw) / 2, sy = (ih - sh) * 0.4; // keep faces: crop a little more from the bottom
@@ -2085,17 +2171,18 @@
         renderExistingPhotos() {
             const grid = document.getElementById('report-photos-grid');
             if (!grid) return;
-            const has = !!this.activeLocation;
+            const has = !!this.activeLocation || !!this.skipGeo;
             const slots = [];
             const total = this.maxPhotos;
             for (let i = 0; i < total; i++) {
                 const p = this.reportPhotos[i];
                 if (p) {
                     slots.push(`
-                        <div class="geo-slot">
+                        <div class="geo-slot" onclick="if(!event.target.closest('.geo-tools'))this.classList.toggle('open')">
                             <img src="${this.esc(p.url)}" alt="Photo ${i + 1}" loading="lazy">
                             <span class="geo-num">${i + 1}</span>
-                            <div class="geo-tools">
+                            ${p.stamped === false ? '<span class="geo-tagpill">Original</span>' : ''}
+                            <div class="geo-tools" onclick="event.stopPropagation()">
                                 <div class="geo-btns">
                                     <button type="button" title="Move earlier" onclick="Reports.movePhoto(${i},-1)" ${i === 0 ? 'disabled' : ''}><i class="fa-solid fa-arrow-left"></i></button>
                                     <button type="button" title="Move later" onclick="Reports.movePhoto(${i},1)" ${i === this.reportPhotos.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-arrow-right"></i></button>
