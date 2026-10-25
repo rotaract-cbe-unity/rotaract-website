@@ -2564,3 +2564,16 @@ table {max-width:100%}
 
 @media (prefers-reduced-motion:reduce) {
   *,*::before,*::after {animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* ===== Dropdown chevron fix (public site): single no-repeat arrow over the glass layer, light + dark ===== */
+select:not([multiple]):not([size]):not(#admin-portal-modal *):not(#admin-dynamic-modal *):not(.tc-app *){
+  appearance:none !important; -webkit-appearance:none !important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"),linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 70%) !important;
+  background-repeat:no-repeat,no-repeat !important;
+  background-position:right 12px center,0 0 !important;
+  background-size:14px 14px,100% 100% !important;
+  padding-right:38px !important; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
+.dark select:not([multiple]):not([size]):not(#admin-portal-modal *):not(#admin-dynamic-modal *):not(.tc-app *){
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"),linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,0) 70%) !important; }
+select option{color:#0f172a;background:#fff}
+.dark select option{color:#f1f5f9 !important;background:#0c1225 !important}
