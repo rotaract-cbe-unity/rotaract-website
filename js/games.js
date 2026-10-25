@@ -2230,11 +2230,11 @@
         graphite: { n: 'Graphite', a: '#94a3b8', b: '#475569', c: '#e2e8f0' },
         light:    { n: 'Frost',    a: '#2563eb', b: '#7c3aed', c: '#06b6d4', light: true }
     };
-    let themeId = store.get('arcade_theme', 'auto');
+    let themeId = 'auto';
     let themeOpen = false;
     function resolveTheme() {
-        if (themeId === 'auto') return document.documentElement.classList.contains('dark') ? 'aurora' : 'light';
-        return THEMES[themeId] ? themeId : 'aurora';
+        // Always follows the landing-page light/dark toggle (html.dark); no separate arcade themes.
+        return document.documentElement.classList.contains('dark') ? 'aurora' : 'light';
     }
     function applyTheme() { if (UI) UI.setAttribute('data-theme', resolveTheme()); }
     function setTheme(id) { return;
