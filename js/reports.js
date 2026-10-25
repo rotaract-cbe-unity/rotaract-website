@@ -78,7 +78,7 @@
         liveLocationName: '',
 
         // Custom override state (NEW)
-        geoTagMode: 'live',   // 'live' | 'custom'
+        geoTagMode: 'event',  // location comes from the pasted Google Maps link (or GPS on request)
         customLocation: null, // { latitude, longitude, address, city, state }
         customDateTime: null, // ISO string or null (uses now if null)
         activeLocation: null, // currently applied location (live or custom)
@@ -121,9 +121,6 @@
         // ==========================================
         async init() {
             this.geoTaggingSupported = 'geolocation' in navigator;
-            if (this.geoTaggingSupported) {
-                await this.requestLiveGeoLocation();
-            }
             this.applyActiveLocation();
             this.initAutoSave();
         },
@@ -171,19 +168,6 @@
                 }
             } catch (e) {
                 this.liveLocationName = 'Coimbatore, Tamil Nadu';
-            }
-        },
-
-        applyActiveLocation() {
-            if (this.geoTagMode === 'custom' && this.customLocation) {
-                this.activeLocation = this.customLocation;
-                this.activeLocationName = this.customLocation.address || `${this.customLocation.city || 'Coimbatore'}, Tamil Nadu`;
-            } else if (this.liveLocation) {
-                this.activeLocation = this.liveLocation;
-                this.activeLocationName = this.liveLocationName;
-            } else {
-                this.activeLocation = null;
-                this.activeLocationName = '';
             }
         },
 
@@ -461,27 +445,25 @@
                 return { latitude: parseFloat(centerParam[1]), longitude: parseFloat(centerParam[2]) };
             }
 
-            return null;
-        },
-
-        /**
-         * Reverse geocodes custom coordinates to street address.
-         */
-        async reverseGeocodeCustom(lat, lng) {
-            try {
-                const resp = await fetch(
-                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18`,
-                    { headers: { 'Accept-Language': 'en' } }
-                );
-                const data = await resp.json();
-                return {
-                    address: data?.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
-                    city: data?.address?.city || data?.address?.town || data?.address?.village || data?.address?.county || 'Coimbatore',
-                    state: data?.address?.state || 'Tamil Nadu'
-                };
-            } catch (e) {
-                return { address: `${lat.toFixed(4)}, ${lng.toFixed(4)}`, city: 'Coimbatore', state: 'Tamil Nadu' };
+            // Pattern 7: destination= / query= / daddr= with coordinates
+            const dest = str.match(/[?&](?:destination|query|daddr|saddr)=(-?\d{1,2}\.\d+)(?:,|%2C)\+?(-?\d{1,3}\.\d+)/i);
+            if (dest) {
+                return { latitude: parseFloat(dest[1]), longitude: parseFloat(dest[2]) };
             }
+
+            // Pattern 8: /maps/search/lat,+lng or /maps/dir//lat,lng
+            const pathCoord = str.match(/\/(?:search|dir|place)\/(?:[^/]*\/)?(-?\d{1,2}\.\d+),\+?(-?\d{1,3}\.\d+)/);
+            if (pathCoord) {
+                return { latitude: parseFloat(pathCoord[1]), longitude: parseFloat(pathCoord[2]) };
+            }
+
+            // Pattern 9: %2C encoded coordinates anywhere in a map URL
+            const enc = str.match(/(-?\d{1,2}\.\d{3,})%2C\+?(-?\d{1,3}\.\d{3,})/i);
+            if (enc) {
+                return { latitude: parseFloat(enc[1]), longitude: parseFloat(enc[2]) };
+            }
+
+            return null;
         },
 
         /**
@@ -510,209 +492,317 @@
         },
 
         // ==========================================
-        // 4. GEO-TAG CONFIGURATION MODAL (NEW)
+        // 4. GEO-TAG STUDIO: paste a Google Maps link, the portal does the rest
         // ==========================================
-        openGeoTagConfigModal() {
-            const now = this.customDateTime ? new Date(this.customDateTime) : new Date();
-            const pad = (n) => String(n).padStart(2, '0');
-            const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-            const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
-            window.AdminPanel.createModal({
-                title: 'Configure Geo-Tag',
-                size: 'medium',
-                icon: 'map-location-dot',
-                body: `
-                    <div class="space-y-5">
-                        <div class="p-4 rounded-xl bg-brand-blue/5 border border-brand-blue/15">
-                            <p class="text-xs font-bold text-brand-blue mb-1.5">
-                                <i class="fa-solid fa-circle-info mr-1"></i> How Geo-Tagging Works
-                            </p>
-                            <p class="text-[11px] text-slate-500 leading-relaxed">
-                                Choose between <strong>Live GPS</strong> (uses your device's current coordinates and current time)
-                                or <strong>Custom Entry</strong> (specify date, time, and location manually — ideal for backdated reports or when photos are uploaded later).
-                            </p>
-                        </div>
+        // Pulls the place name out of a Google Maps URL (/maps/place/Name+Here/@... or ?q=Name)
+        extractPlaceName(input) {
+            const s = String(input || '');
+            let m = s.match(/\/maps\/place\/([^/@?]+)/i);
+            if (m) { try { return decodeURIComponent(m[1].replace(/\+/g, ' ')).trim(); } catch (e) { return m[1].replace(/\+/g, ' ').trim(); } }
+            m = s.match(/[?&](?:q|query|destination)=([^&]+)/i);
+            if (m) {
+                try {
+                    const t = decodeURIComponent(m[1].replace(/\+/g, ' ')).trim();
+                    if (!/^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(t)) return t;
+                } catch (e) { /* ignore */ }
+            }
+            return '';
+        },
 
-                        <!-- Mode Toggle -->
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="relative cursor-pointer">
-                                <input type="radio" name="geo_mode" value="live" class="peer sr-only" ${this.geoTagMode === 'live' ? 'checked' : ''} onchange="Reports.switchGeoMode('live')">
-                                <div class="p-4 rounded-xl border-2 border-slate-200/60 dark:border-white/[0.08] peer-checked:border-brand-blue peer-checked:bg-brand-blue/5 transition-all">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <div class="w-9 h-9 rounded-lg bg-brand-blue/15 flex items-center justify-center">
-                                            <i class="fa-solid fa-satellite-dish text-brand-blue"></i>
-                                        </div>
-                                        <p class="text-sm font-bold">Live GPS</p>
-                                    </div>
-                                    <p class="text-[10px] text-slate-400">Current time + device location</p>
-                                    <p class="text-[10px] mt-1 ${this.liveLocation ? 'text-green-500 font-bold' : 'text-red-500 font-bold'}">
-                                        <i class="fa-solid ${this.liveLocation ? 'fa-check-circle' : 'fa-xmark-circle'} mr-0.5"></i>
-                                        ${this.liveLocation ? 'GPS Locked' : 'GPS Unavailable'}
-                                    </p>
-                                </div>
-                            </label>
+        isShortMapsLink(s) { return /^(https?:\/\/)?(maps\.app\.goo\.gl|goo\.gl\/maps|g\.co\/kgs|share\.google|g\.page)\b/i.test(String(s || '').trim()); },
 
-                            <label class="relative cursor-pointer">
-                                <input type="radio" name="geo_mode" value="custom" class="peer sr-only" ${this.geoTagMode === 'custom' ? 'checked' : ''} onchange="Reports.switchGeoMode('custom')">
-                                <div class="p-4 rounded-xl border-2 border-slate-200/60 dark:border-white/[0.08] peer-checked:border-yellow-500 peer-checked:bg-yellow-500/5 transition-all">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <div class="w-9 h-9 rounded-lg bg-yellow-500/15 flex items-center justify-center">
-                                            <i class="fa-solid fa-pen-to-square text-yellow-600"></i>
-                                        </div>
-                                        <p class="text-sm font-bold">Custom Entry</p>
-                                    </div>
-                                    <p class="text-[10px] text-slate-400">Manual date, time & location</p>
-                                    <p class="text-[10px] mt-1 ${this.customLocation ? 'text-green-500 font-bold' : 'text-slate-400'}">
-                                        <i class="fa-solid ${this.customLocation ? 'fa-check-circle' : 'fa-circle-minus'} mr-0.5"></i>
-                                        ${this.customLocation ? 'Custom Location Set' : 'Not Configured'}
-                                    </p>
-                                </div>
-                            </label>
-                        </div>
+        // Short links cannot be opened from a browser directly, so a public read-only proxy follows the redirect for us.
+        async expandShortLink(url) {
+            const clean = /^https?:\/\//i.test(url) ? url : 'https://' + url;
+            const proxies = [
+                u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+                u => 'https://corsproxy.io/?' + encodeURIComponent(u)
+            ];
+            for (const p of proxies) {
+                try {
+                    const ctl = new AbortController();
+                    const t = setTimeout(() => ctl.abort(), 7000);
+                    const r = await fetch(p(clean), { signal: ctl.signal });
+                    clearTimeout(t);
+                    if (!r.ok) continue;
+                    const html = await r.text();
+                    let m = html.match(/center=(-?\d{1,2}\.\d+)(?:%2C|,)(-?\d{1,3}\.\d+)/i)
+                        || html.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/)
+                        || html.match(/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/)
+                        || html.match(/\[null,null,(-?\d{1,2}\.\d{3,}),(-?\d{1,3}\.\d{3,})\]/);
+                    if (m) {
+                        const t2 = html.match(/<meta[^>]+property="og:title"[^>]+content="([^"]+)"/i);
+                        return { latitude: parseFloat(m[1]), longitude: parseFloat(m[2]), name: t2 ? t2[1].replace(/\s*[·-]\s*Google Maps.*$/i, '').trim() : '' };
+                    }
+                } catch (e) { /* try next */ }
+            }
+            return null;
+        },
 
-                        <!-- Custom Entry Panel -->
-                        <div id="custom-geo-panel" class="${this.geoTagMode === 'custom' ? '' : 'hidden'} space-y-4 p-5 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+        // Compact "Venue, Area, City" name for the photo stamp
+        buildShortName(data, hint) {
+            const a = (data && data.address) || {};
+            const primary = hint || data?.name || a.amenity || a.building || a.shop || a.tourism || a.leisure || a.office || a.road || '';
+            const area = a.suburb || a.neighbourhood || a.village || a.city_district || '';
+            const city = a.city || a.town || a.county || a.state_district || '';
+            const parts = [primary, area, city].filter(Boolean);
+            const seen = new Set();
+            const out = parts.filter(p => { const k = p.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+            return out.join(', ') || (data?.display_name || '').split(',').slice(0, 3).join(',').trim();
+        },
 
-                            <!-- Date & Time -->
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-200">
-                                        <i class="fa-solid fa-calendar text-yellow-600 mr-1"></i> Custom Date
-                                    </label>
-                                    <input type="date" id="custom-date-input" class="admin-form-input w-full" value="${dateStr}">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-200">
-                                        <i class="fa-solid fa-clock text-yellow-600 mr-1"></i> Custom Time
-                                    </label>
-                                    <input type="time" id="custom-time-input" class="admin-form-input w-full" value="${timeStr}">
-                                </div>
-                            </div>
+        async reverseGeocodeCustom(lat, lng, hint) {
+            try {
+                const resp = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=${lat}&lon=${lng}&zoom=18`,
+                    { headers: { 'Accept-Language': 'en' } }
+                );
+                const data = await resp.json();
+                return {
+                    address: data?.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+                    name: this.buildShortName(data, hint),
+                    city: data?.address?.city || data?.address?.town || data?.address?.village || data?.address?.county || 'Coimbatore',
+                    state: data?.address?.state || 'Tamil Nadu'
+                };
+            } catch (e) {
+                return { address: `${lat.toFixed(4)}, ${lng.toFixed(4)}`, name: hint || `${lat.toFixed(4)}, ${lng.toFixed(4)}`, city: 'Coimbatore', state: 'Tamil Nadu' };
+            }
+        },
 
-                            <!-- Location Input -->
-                            <div>
-                                <label class="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-200">
-                                    <i class="fa-brands fa-google text-yellow-600 mr-1"></i> Google Maps Location
-                                </label>
-                                <div class="flex gap-2">
-                                    <input type="text" id="custom-location-input" class="admin-form-input flex-1" placeholder="Paste Google Maps URL, coordinates, or type a place..." value="${this.customLocation?.sourceInput || ''}">
-                                    <button type="button" class="btn-primary btn-sm whitespace-nowrap" onclick="Reports.resolveCustomLocation()">
-                                        <i class="fa-solid fa-magnifying-glass mr-1"></i> Resolve
-                                    </button>
-                                </div>
-                                <div class="mt-2 flex items-start gap-2 text-[10px] text-slate-400 leading-relaxed">
-                                    <i class="fa-solid fa-lightbulb text-yellow-500 mt-0.5"></i>
-                                    <div>
-                                        <p><strong>Accepted formats:</strong></p>
-                                        <ul class="mt-1 space-y-0.5 pl-3">
-                                            <li>• <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">https://www.google.com/maps/@11.0168,76.9558,15z</code></li>
-                                            <li>• <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">https://www.google.com/maps/place/...</code></li>
-                                            <li>• <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">11.0168, 76.9558</code> (direct coordinates)</li>
-                                            <li>• <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">Codissia Trade Centre, Coimbatore</code> (place name)</li>
-                                        </ul>
-                                        <p class="mt-1.5 text-yellow-600">
-                                            <i class="fa-solid fa-triangle-exclamation mr-0.5"></i>
-                                            Shortened links (<code>goo.gl/maps/...</code>, <code>maps.app.goo.gl/...</code>) must be expanded to the full URL first.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+        // Event window used for the random photo timings
+        getEventWindow() {
+            const e = this.currentEvent || {};
+            const toMin = (t) => {
+                if (!t) return null;
+                const m = String(t).trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i);
+                if (!m) return null;
+                let h = parseInt(m[1], 10); const mi = parseInt(m[2], 10);
+                if (m[3]) { const pm = m[3].toUpperCase() === 'PM'; if (pm && h < 12) h += 12; if (!pm && h === 12) h = 0; }
+                return h * 60 + mi;
+            };
+            let start = toMin(e.start_time); let end = toMin(e.end_time);
+            if (start == null) start = 10 * 60;
+            if (end == null || end <= start) end = Math.min(start + 120, 23 * 60 + 59);
+            let date = null;
+            if (e.date) { const m = String(e.date).match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) date = new Date(+m[1], +m[2] - 1, +m[3]); }
+            return { date: date || new Date(), hasDate: !!date, start, end };
+        },
 
-                            <!-- Resolved Preview -->
-                            <div id="custom-location-preview" class="${this.customLocation ? '' : 'hidden'} p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                                <p class="text-xs font-bold text-green-700 dark:text-green-400 mb-1">
-                                    <i class="fa-solid fa-circle-check mr-1"></i> Location Resolved
-                                </p>
-                                <div class="text-[10px] text-slate-500 space-y-0.5">
-                                    <p><strong>Coordinates:</strong> <span id="preview-coords">${this.customLocation ? `${this.customLocation.latitude.toFixed(6)}, ${this.customLocation.longitude.toFixed(6)}` : ''}</span></p>
-                                    <p><strong>Address:</strong> <span id="preview-address">${this.customLocation?.address || ''}</span></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `,
-                footer: `
-                    <button class="btn-secondary" onclick="window.AdminPanel.closeModal()">Cancel</button>
-                    <button class="btn-primary" onclick="Reports.saveGeoTagConfig()">
-                        <i class="fa-solid fa-check mr-1"></i> Apply Configuration
-                    </button>
-                `
+        fmtClock(mins) {
+            const h24 = Math.floor(mins / 60) % 24, m = mins % 60;
+            const ap = h24 >= 12 ? 'PM' : 'AM';
+            return `${(h24 % 12) || 12}:${String(m).padStart(2, '0')} ${ap}`;
+        },
+
+        // n random, ascending moments between the event's start and end (to the second)
+        randomStamps(n) {
+            const w = this.getEventWindow();
+            const span = Math.max(60, (w.end - w.start) * 60);
+            const secs = Array.from({ length: n }, () => Math.floor(Math.random() * span)).sort((a, b) => a - b);
+            return secs.map(s => {
+                const d = new Date(w.date.getFullYear(), w.date.getMonth(), w.date.getDate(), 0, 0, 0);
+                d.setSeconds(w.start * 60 + s);
+                return d;
             });
         },
 
-        switchGeoMode(mode) {
-            this.geoTagMode = mode;
-            const panel = document.getElementById('custom-geo-panel');
-            if (panel) {
-                if (mode === 'custom') panel.classList.remove('hidden');
-                else panel.classList.add('hidden');
+        async resolveGeoLink(rawInput, opts) {
+            const input = String(rawInput || '').trim();
+            if (!input) { if (!(opts && opts.silent)) toast.warning('Paste a Google Maps link first.'); return false; }
+            this.setGeoBusy(true, 'Reading the location...');
+            try {
+                let coords = this.parseGoogleMapsUrl(input);
+                let hint = this.extractPlaceName(input);
+
+                if (!coords && this.isShortMapsLink(input)) {
+                    this.setGeoBusy(true, 'Opening the short link...');
+                    const ex = await this.expandShortLink(input);
+                    if (ex) { coords = { latitude: ex.latitude, longitude: ex.longitude }; hint = hint || ex.name; }
+                    else { toast.error('This short link could not be opened automatically. Open it in Maps, copy the full address-bar link and paste that.'); return false; }
+                }
+                if (!coords) {
+                    const forward = await this.forwardGeocode(hint || input);
+                    if (forward) coords = { latitude: forward.latitude, longitude: forward.longitude };
+                }
+                if (!coords) { toast.error('Could not find a location in that link.'); return false; }
+
+                this.setGeoBusy(true, 'Finding the place name...');
+                const addr = await this.reverseGeocodeCustom(coords.latitude, coords.longitude, hint);
+                this.customLocation = {
+                    latitude: coords.latitude, longitude: coords.longitude,
+                    address: addr.address, name: addr.name, city: addr.city, state: addr.state, sourceInput: input
+                };
+                this.geoTagMode = 'event';
+                this.saveGeoState();
+                this.applyActiveLocation();
+                await this.updateGeoStudio();
+                toast.success('Location found: ' + (this.customLocation.name || 'ready'));
+                return true;
+            } catch (e) {
+                console.warn('resolveGeoLink', e);
+                toast.error('Could not read that location.');
+                return false;
+            } finally {
+                this.setGeoBusy(false);
             }
         },
 
-        async resolveCustomLocation() {
-            const inputEl = document.getElementById('custom-location-input');
-            if (!inputEl) return;
-            const input = inputEl.value.trim();
-            if (!input) { toast.warning('Please enter a location, URL, or coordinates.'); return; }
-
-            toast.info('Resolving location...');
-
-            // Try parsing as URL/coordinates first
-            let coords = this.parseGoogleMapsUrl(input);
-
-            // If parsing failed, try as a text query (place name)
-            if (!coords) {
-                const forward = await this.forwardGeocode(input);
-                if (forward) {
-                    coords = { latitude: forward.latitude, longitude: forward.longitude };
-                }
-            }
-
-            if (!coords) {
-                toast.error('Could not resolve this location. Try a different format.');
-                return;
-            }
-
-            const addrData = await this.reverseGeocodeCustom(coords.latitude, coords.longitude);
-
-            this.customLocation = {
-                latitude: coords.latitude,
-                longitude: coords.longitude,
-                address: addrData.address,
-                city: addrData.city,
-                state: addrData.state,
-                sourceInput: input
-            };
-
-            // Update preview
-            const preview = document.getElementById('custom-location-preview');
-            const previewCoords = document.getElementById('preview-coords');
-            const previewAddress = document.getElementById('preview-address');
-            if (preview) preview.classList.remove('hidden');
-            if (previewCoords) previewCoords.textContent = `${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}`;
-            if (previewAddress) previewAddress.textContent = addrData.address;
-
-            toast.success('Location resolved successfully');
+        async useMyGps() {
+            this.setGeoBusy(true, 'Getting your GPS position...');
+            try {
+                await this.requestLiveGeoLocation();
+                if (!this.liveLocation) { toast.error('GPS is unavailable. Paste a Google Maps link instead.'); return; }
+                const addr = await this.reverseGeocodeCustom(this.liveLocation.latitude, this.liveLocation.longitude, '');
+                this.customLocation = { latitude: this.liveLocation.latitude, longitude: this.liveLocation.longitude, address: addr.address, name: addr.name, city: addr.city, state: addr.state, sourceInput: 'GPS' };
+                this.saveGeoState();
+                this.applyActiveLocation();
+                await this.updateGeoStudio();
+                toast.success('Using your current location');
+            } finally { this.setGeoBusy(false); }
         },
 
-        saveGeoTagConfig() {
-            if (this.geoTagMode === 'custom') {
-                if (!this.customLocation) {
-                    toast.error('Please resolve a custom location first.');
-                    return;
-                }
-                const dateEl = document.getElementById('custom-date-input');
-                const timeEl = document.getElementById('custom-time-input');
-                if (dateEl && timeEl && dateEl.value && timeEl.value) {
-                    this.customDateTime = `${dateEl.value}T${timeEl.value}:00`;
-                }
-            }
+        setGeoBusy(on, text) {
+            const el = document.getElementById('geo-busy');
+            if (!el) return;
+            el.classList.toggle('hidden', !on);
+            const t = el.querySelector('span'); if (t && text) t.textContent = text;
+        },
+
+        saveGeoState() {
+            try { if (this.currentEvent && this.customLocation) localStorage.setItem('geo_cfg_' + this.currentEvent.id, JSON.stringify(this.customLocation)); } catch (e) { /* storage unavailable */ }
+        },
+        restoreGeoState(eventId) {
+            this.customLocation = null; this._mapCache = null;
+            try { const s = localStorage.getItem('geo_cfg_' + eventId); if (s) this.customLocation = JSON.parse(s); } catch (e) { /* ignore */ }
             this.applyActiveLocation();
-            window.AdminPanel.closeModal();
-            toast.success('Geo-tag configuration applied');
-            // Re-render upload section
-            this.refreshPhotoUploadUI();
+        },
+
+        onGeoLinkInput(el, immediate) {
+            clearTimeout(this._geoTimer);
+            const v = el.value.trim();
+            if (!v) return;
+            const looksLike = /^https?:\/\//i.test(v) || /goo\.gl|maps\.app|google\.[a-z.]+\/maps|^-?\d+\.\d+\s*,\s*-?\d+\.\d+$/i.test(v);
+            if (!looksLike) return;
+            this._geoTimer = setTimeout(() => this.resolveGeoLink(v, { silent: true }), immediate ? 80 : 700);
+        },
+
+        onGeoNameChange(v) {
+            if (!this.customLocation) return;
+            this.customLocation.name = String(v || '').trim();
+            this.applyActiveLocation();
+            this.saveGeoState();
+            this.renderGeoPreview();
+        },
+
+        // Kept so any older button that opened the modal still works: it simply focuses the link box
+        openGeoTagConfigModal() {
+            const el = document.getElementById('geo-link-input');
+            if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
+        },
+
+        // ---- Mini map: real OpenStreetMap tiles drawn to a canvas (cached) ----
+        async buildMapCanvas(lat, lng, size, zoom) {
+            const key = [lat.toFixed(5), lng.toFixed(5), size, zoom].join('|');
+            if (this._mapCache && this._mapCache.key === key) return this._mapCache.canvas;
+            const z = zoom || 17;
+            const n = Math.pow(2, z);
+            const fx = (lng + 180) / 360 * n;
+            const lr = lat * Math.PI / 180;
+            const fy = (1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2 * n;
+            const tx = Math.floor(fx), ty = Math.floor(fy);
+            const big = document.createElement('canvas'); big.width = big.height = 768;
+            const bctx = big.getContext('2d');
+            bctx.fillStyle = '#e8eef5'; bctx.fillRect(0, 0, 768, 768);
+            const load = (x, y) => new Promise(res => {
+                const im = new Image(); im.crossOrigin = 'anonymous';
+                const t = setTimeout(() => res(null), 5000);
+                im.onload = () => { clearTimeout(t); res(im); };
+                im.onerror = () => { clearTimeout(t); res(null); };
+                im.src = `https://tile.openstreetmap.org/${z}/${((x % n) + n) % n}/${y}.png`;
+            });
+            const jobs = [];
+            for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) jobs.push(load(tx + dx, ty + dy).then(im => ({ im, dx, dy })));
+            const tiles = await Promise.all(jobs);
+            let ok = 0;
+            tiles.forEach(t => { if (t.im) { bctx.drawImage(t.im, (t.dx + 1) * 256, (t.dy + 1) * 256, 256, 256); ok++; } });
+            if (!ok) {
+                bctx.strokeStyle = '#cbd5e1'; bctx.lineWidth = 2;
+                for (let i = 0; i <= 768; i += 64) { bctx.beginPath(); bctx.moveTo(i, 0); bctx.lineTo(i, 768); bctx.moveTo(0, i); bctx.lineTo(768, i); bctx.stroke(); }
+            }
+            const cx = (fx - tx + 1) * 256, cy = (fy - ty + 1) * 256;
+            const out = document.createElement('canvas'); out.width = out.height = size;
+            const octx = out.getContext('2d');
+            const crop = size * 1.0;
+            octx.drawImage(big, cx - crop / 2, cy - crop / 2, crop, crop, 0, 0, size, size);
+            this._mapCache = { key, canvas: out };
+            return out;
+        },
+
+        // Re-renders the result card + preview + upload gate without touching the link box
+        async updateGeoStudio() {
+            const box = document.getElementById('geo-result');
+            if (!box) return;
+            const loc = this.activeLocation;
+            const w = this.getEventWindow();
+            const e = this.currentEvent || {};
+            const cfg = this.AVENUE_CONFIG[e.is_dpp ? 'dpp' : e.avenue_slug] || { color: '#3B82F6', label: 'Project' };
+            const dateTxt = w.date.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+            box.innerHTML = `
+                <div class="geo-grid">
+                    <div class="geo-fact"><i class="fa-solid fa-calendar-day" style="color:${cfg.color}"></i><div><small>Event date</small><b>${this.esc(dateTxt)}</b>${w.hasDate ? '' : '<em>No date on this project, using today</em>'}</div></div>
+                    <div class="geo-fact"><i class="fa-solid fa-clock" style="color:#f59e0b"></i><div><small>Photo times (random)</small><b>${this.fmtClock(w.start)} &ndash; ${this.fmtClock(w.end)}</b></div></div>
+                    <div class="geo-fact"><i class="fa-solid fa-location-dot" style="color:#10b981"></i><div><small>Coordinates</small><b class="mono">${loc ? this.esc(loc.latitude.toFixed(6) + ', ' + loc.longitude.toFixed(6)) : 'Waiting for a link'}</b></div></div>
+                </div>
+                ${loc ? `
+                <label class="geo-namebox"><span><i class="fa-solid fa-pen"></i> Location name on photos <small>(editable)</small></span>
+                    <input type="text" class="admin-form-input" id="geo-name-input" maxlength="90" value="${this.esc(this.activeLocationName || '')}" onchange="Reports.onGeoNameChange(this.value)" oninput="Reports.onGeoNameChange(this.value)"></label>` : ''}
+                <div class="geo-preview-wrap ${loc ? '' : 'geo-empty'}">
+                    ${loc ? '<canvas id="geo-preview-canvas" width="1600" height="1200"></canvas>' : '<div class="geo-empty-msg"><i class="fa-solid fa-map-location-dot"></i><p>Paste a Google Maps link above and a live preview of the photo stamp appears here.</p></div>'}
+                </div>`;
+            this.updateUploadGate();
+            if (loc) await this.renderGeoPreview();
+        },
+
+        async renderGeoPreview() {
+            const cv = document.getElementById('geo-preview-canvas');
+            if (!cv || !this.activeLocation) return;
+            const ctx = cv.getContext('2d');
+            const g = ctx.createLinearGradient(0, 0, 1600, 1200);
+            g.addColorStop(0, '#1e3a5f'); g.addColorStop(0.5, '#3b5b8c'); g.addColorStop(1, '#7c5cbf');
+            ctx.fillStyle = g; ctx.fillRect(0, 0, 1600, 1200);
+            ctx.fillStyle = 'rgba(255,255,255,.07)';
+            ctx.beginPath(); ctx.arc(1180, 360, 330, 0, 7); ctx.fill();
+            ctx.beginPath(); ctx.arc(380, 520, 220, 0, 7); ctx.fill();
+            ctx.font = '700 54px Poppins, "Segoe UI", Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.textAlign = 'center';
+            ctx.fillText('Your photo appears here', 800, 520); ctx.textAlign = 'start';
+            let map = null;
+            try { map = await this.buildMapCanvas(this.activeLocation.latitude, this.activeLocation.longitude, 420, 17); } catch (e) { /* offline */ }
+            const stamp = this.randomStamps(1)[0];
+            this.drawWatermarkOverlay(ctx, 1600, 1200, map, this.buildStampInfo(stamp));
+        },
+
+        updateUploadGate() {
+            const has = !!this.activeLocation;
+            const zone = document.getElementById('report-photo-upload-zone');
+            const input = document.getElementById('report-photo-input');
+            if (zone) zone.classList.toggle('geo-locked', !has);
+            if (input) input.disabled = !has;
+            const t = document.getElementById('geo-drop-title');
+            if (t) t.textContent = has ? 'Drop photos here or tap to browse' : 'Paste the location link first';
+            const s = document.getElementById('geo-status-pill');
+            if (s) { s.className = 'geo-pill ' + (has ? 'ok' : 'warn'); s.innerHTML = has ? '<i class="fa-solid fa-circle-check"></i> Ready to stamp' : '<i class="fa-solid fa-triangle-exclamation"></i> Location needed'; }
+        },
+
+        applyActiveLocation() {
+            const loc = this.customLocation || this.liveLocation;
+            if (loc) {
+                this.activeLocation = loc;
+                this.activeLocationName = loc.name || loc.address || `${loc.city || 'Coimbatore'}, Tamil Nadu`;
+            } else {
+                this.activeLocation = null;
+                this.activeLocationName = '';
+            }
         },
 
         refreshPhotoUploadUI() {
@@ -921,10 +1011,8 @@
                 this.reportPhotos = [];
                 this.draftKey = `report_draft_${event.id}`;
 
-                // Default custom date to event date
-                if (event.date && !this.customDateTime) {
-                    this.customDateTime = `${event.date}T${event.start_time || '10:00'}:00`;
-                }
+                // Location link is remembered per project; dates and times always come from the project itself
+                this.restoreGeoState(event.id);
 
                 const draft = this.loadDraft(event.id);
                 if (draft && confirm(`A draft was found from ${new Date(draft.saved_at).toLocaleDateString('en-IN')}. Restore it?`)) {
@@ -1449,111 +1537,112 @@
         },
 
         // ==========================================
-        // 10. PHOTO UPLOAD WITH GEO-TAG CONFIG
+        // 10. PHOTO UPLOAD: geo-tag studio + fixed 4:3 slot grid
         // ==========================================
         renderPhotoUploadSection() {
-            const hasLocation = !!this.activeLocation;
-            const modeLabel = this.geoTagMode === 'custom' ? 'Custom Entry' : 'Live GPS';
-            const modeIcon = this.geoTagMode === 'custom' ? 'fa-pen-to-square' : 'fa-satellite-dish';
-            const modeColor = this.geoTagMode === 'custom' ? 'text-yellow-600' : 'text-brand-blue';
-            const modeBg = this.geoTagMode === 'custom' ? 'bg-yellow-500/10' : 'bg-brand-blue/10';
-
+            const has = !!this.activeLocation;
+            const cfg = this.AVENUE_CONFIG[(this.currentEvent && this.currentEvent.is_dpp) ? 'dpp' : (this.currentEvent && this.currentEvent.avenue_slug)] || { color: '#3B82F6', label: 'Project', icon: 'fa-star' };
+            const evName = this.esc((this.currentEvent && this.currentEvent.event_name) || 'Project');
+            const prefill = this.esc((this.customLocation && this.customLocation.sourceInput && this.customLocation.sourceInput !== 'GPS') ? this.customLocation.sourceInput : '');
             return `
-                <div class="admin-panel">
+                <style>${this.geoStudioCSS()}</style>
+                <div class="admin-panel geo-panel" style="--gc:${cfg.color}">
                     <div class="admin-panel-header">
                         <h3 class="admin-panel-title"><i class="fa-solid fa-camera"></i> Geo-Tagged Photographs</h3>
                         <span class="badge badge-blue" id="photo-count-badge">${this.reportPhotos.length}/${this.maxPhotos}</span>
                     </div>
                     <div class="admin-panel-body space-y-4">
 
-                        <!-- Info Banner -->
-                        <div class="p-4 rounded-xl bg-brand-blue/5 border border-brand-blue/15">
-                            <p class="text-xs font-bold text-brand-blue mb-1.5">
-                                <i class="fa-solid fa-circle-info mr-1"></i> Photographic Requirements
-                            </p>
-                            <ul class="text-[11px] text-slate-500 space-y-1">
-                                <li>• Minimum <strong>${this.minPhotos}</strong> and maximum <strong>${this.maxPhotos}</strong> action photos</li>
-                                <li>• Watermarked with date, time, coordinates, and map overlay</li>
-                                <li>• Supports Live GPS or Custom Manual Entry</li>
-                            </ul>
-                        </div>
-
-                        <!-- GEO-TAG CONFIGURATION PANEL -->
-                        <div class="rounded-xl border-2 overflow-hidden" style="border-color: ${hasLocation ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}; background: ${hasLocation ? 'rgba(16,185,129,0.03)' : 'rgba(239,68,68,0.03)'};">
-                            <div class="p-4 border-b border-slate-200/40 dark:border-white/5">
-                                <div class="flex items-center justify-between gap-3 flex-wrap">
-                                    <div class="flex items-center gap-3 flex-1 min-w-0">
-                                        <div class="w-10 h-10 rounded-xl ${modeBg} flex items-center justify-center flex-shrink-0">
-                                            <i class="fa-solid ${modeIcon} ${modeColor} text-lg"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-xs font-bold flex items-center gap-2">
-                                                <span>Active Mode: <span class="${modeColor}">${modeLabel}</span></span>
-                                                ${hasLocation
-                                                    ? '<span class="text-[9px] px-2 py-0.5 rounded-full bg-green-500/15 text-green-600 font-black"><i class="fa-solid fa-check mr-0.5"></i>READY</span>'
-                                                    : '<span class="text-[9px] px-2 py-0.5 rounded-full bg-red-500/15 text-red-600 font-black"><i class="fa-solid fa-xmark mr-0.5"></i>NOT CONFIGURED</span>'
-                                                }
-                                            </p>
-                                            <p class="text-[10px] text-slate-400 mt-0.5 truncate">
-                                                ${hasLocation
-                                                    ? `${this.activeLocation.latitude.toFixed(6)}° N, ${this.activeLocation.longitude.toFixed(6)}° E`
-                                                    : 'Click "Configure" to set up geo-tag'
-                                                }
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="btn-primary btn-sm whitespace-nowrap" onclick="Reports.openGeoTagConfigModal()">
-                                        <i class="fa-solid fa-sliders mr-1.5"></i> Configure
-                                    </button>
-                                </div>
+                        <div class="geo-hero">
+                            <div class="geo-hero-ico"><i class="fa-solid ${cfg.icon || 'fa-location-dot'}"></i></div>
+                            <div class="geo-hero-txt">
+                                <p class="geo-hero-kicker">${this.esc(cfg.label)} &middot; Geo-Tag Studio</p>
+                                <h4>${evName}</h4>
+                                <p>Paste one Google Maps link. We read the place, draw the map and stamp every photo with the event name, location, coordinates, date and a time within the event hours.</p>
                             </div>
-                            ${hasLocation ? `
-                                <div class="p-3 bg-white/40 dark:bg-slate-900/30 text-[10px] space-y-1">
-                                    <div class="flex items-start gap-2">
-                                        <i class="fa-solid fa-location-dot text-green-500 mt-0.5"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-slate-500"><strong class="text-slate-700 dark:text-slate-300">Address:</strong> ${window.AdminPanel.esc(this.activeLocationName.substring(0, 100))}${this.activeLocationName.length > 100 ? '...' : ''}</p>
-                                        </div>
-                                    </div>
-                                    ${this.geoTagMode === 'custom' && this.customDateTime ? `
-                                        <div class="flex items-start gap-2">
-                                            <i class="fa-solid fa-calendar text-yellow-600 mt-0.5"></i>
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-slate-500"><strong class="text-slate-700 dark:text-slate-300">Custom DateTime:</strong> ${new Date(this.customDateTime).toLocaleString('en-IN')}</p>
-                                            </div>
-                                        </div>
-                                    ` : ''}
-                                </div>
-                            ` : ''}
+                            <span id="geo-status-pill" class="geo-pill ${has ? 'ok' : 'warn'}">${has ? '<i class="fa-solid fa-circle-check"></i> Ready to stamp' : '<i class="fa-solid fa-triangle-exclamation"></i> Location needed'}</span>
                         </div>
 
-                        <!-- Upload Zone -->
-                        <div class="admin-upload-zone relative border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-8 text-center hover:border-brand-blue transition cursor-pointer ${!hasLocation ? 'opacity-50 pointer-events-none' : ''}" id="report-photo-upload-zone">
-                            <input type="file" id="report-photo-input" accept="image/*" multiple class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" ${!hasLocation ? 'disabled' : ''}>
-                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-brand-blue mb-3"></i>
-                            <p class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">${hasLocation ? 'Drop photos here or click to upload' : 'Configure geo-tag first'}</p>
-                            <p class="text-[10px] text-slate-400">${this.reportPhotos.length}/${this.maxPhotos} uploaded</p>
-                        </div>
-
-                        <!-- Progress Bar -->
-                        <div class="flex items-center gap-2 text-xs">
-                            <div class="flex-1 h-2 rounded-full bg-slate-200/50 dark:bg-slate-700/50 overflow-hidden">
-                                <div class="h-full rounded-full transition-all ${this.reportPhotos.length >= this.minPhotos ? 'bg-green-500' : 'bg-yellow-500'}" style="width:${(this.reportPhotos.length / this.maxPhotos) * 100}%"></div>
+                        <div class="geo-linkrow">
+                            <div class="geo-linkbox">
+                                <i class="fa-solid fa-link"></i>
+                                <input type="text" id="geo-link-input" class="admin-form-input" autocomplete="off" spellcheck="false"
+                                    placeholder="Paste Google Maps link (full link, short link or lat, lng)" value="${prefill}"
+                                    oninput="Reports.onGeoLinkInput(this)" onpaste="setTimeout(()=>Reports.onGeoLinkInput(this,true),30)"
+                                    onkeydown="if(event.key==='Enter'){event.preventDefault();Reports.resolveGeoLink(this.value)}">
+                                <button type="button" class="btn-primary btn-sm" onclick="Reports.resolveGeoLink(document.getElementById('geo-link-input').value)"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Find</button>
                             </div>
-                            <span class="text-[10px] font-bold ${this.reportPhotos.length >= this.minPhotos ? 'text-green-500' : 'text-yellow-500'}">
-                                ${this.reportPhotos.length >= this.minPhotos ? 'Minimum met' : `${this.minPhotos - this.reportPhotos.length} more needed`}
-                            </span>
+                            <button type="button" class="btn-secondary btn-sm" onclick="Reports.useMyGps()"><i class="fa-solid fa-satellite-dish mr-1"></i>Use my GPS</button>
+                        </div>
+                        <div id="geo-busy" class="geo-busy hidden"><i class="fa-solid fa-spinner fa-spin"></i><span>Reading the location...</span></div>
+
+                        <div id="geo-result"></div>
+
+                        <div class="geo-drop ${has ? '' : 'geo-locked'}" id="report-photo-upload-zone">
+                            <input type="file" id="report-photo-input" accept="image/*" multiple class="geo-file" ${has ? '' : 'disabled'}>
+                            <div class="geo-drop-ico"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                            <div class="geo-drop-txt">
+                                <b id="geo-drop-title">${has ? 'Drop photos here or tap to browse' : 'Paste the location link first'}</b>
+                                <small>Photos are cropped to a neat 4:3 frame and stamped automatically &middot; ${this.minPhotos}&ndash;${this.maxPhotos} photos</small>
+                            </div>
                         </div>
 
-                        <div id="photo-processing" class="hidden p-3 rounded-xl bg-blue-500/5 border border-blue-500/15 flex items-center gap-3">
-                            <i class="fa-solid fa-spinner fa-spin text-brand-blue"></i>
-                            <p class="text-xs text-brand-blue font-bold">Applying geo-tag watermark...</p>
+                        <div class="geo-progress">
+                            <div class="geo-bar"><i id="geo-bar-fill" style="width:${Math.min(100, this.reportPhotos.length / this.maxPhotos * 100)}%"></i></div>
+                            <span id="geo-bar-text"></span>
                         </div>
 
-                        <div id="report-photos-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+                        <div id="photo-processing" class="geo-busy hidden"><i class="fa-solid fa-spinner fa-spin"></i><span id="photo-processing-text">Stamping photos...</span></div>
+
+                        <div id="report-photos-grid" class="geo-slots"></div>
                     </div>
                 </div>
             `;
+        },
+
+        geoStudioCSS() {
+            return `
+.geo-panel .geo-hero{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px;border-radius:18px;border:1px solid color-mix(in srgb,var(--gc) 35%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--gc) 14%,transparent),rgba(124,58,237,.06))}
+.geo-hero-ico{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:20px;color:#fff;background:var(--gc);flex:0 0 48px}
+.geo-hero-txt{flex:1;min-width:200px}.geo-hero-kicker{margin:0;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--gc)}
+.geo-hero-txt h4{margin:2px 0 4px;font-size:16px;font-weight:800}.geo-hero-txt p:last-child{margin:0;font-size:11px;line-height:1.5;opacity:.7}
+.geo-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
+.geo-pill.ok{background:rgba(16,185,129,.14);color:#059669}.geo-pill.warn{background:rgba(245,158,11,.16);color:#b45309}
+.geo-linkrow{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
+.geo-linkbox{flex:1;min-width:240px;display:flex;align-items:center;gap:8px;padding:6px 6px 6px 14px;border-radius:14px;border:1.5px solid rgba(148,163,184,.4);background:rgba(148,163,184,.08)}
+.geo-linkbox:focus-within{border-color:var(--gc);box-shadow:0 0 0 3px color-mix(in srgb,var(--gc) 20%,transparent)}
+.geo-linkbox>i{color:var(--gc)}.geo-linkbox .admin-form-input{flex:1;min-width:0;border:0!important;background:transparent!important;box-shadow:none!important;padding:8px 4px!important}
+.geo-busy.hidden{display:none!important}.geo-busy{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);font-size:12px;font-weight:700;color:#2563eb}
+.geo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.geo-fact{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(148,163,184,.3);background:rgba(148,163,184,.07)}
+.geo-fact>i{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:rgba(148,163,184,.15);flex:0 0 34px}
+.geo-fact small{display:block;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.6}.geo-fact b{display:block;font-size:13px;font-weight:800}.geo-fact b.mono{font-family:ui-monospace,Consolas,monospace;font-size:12px}.geo-fact em{display:block;font-size:9px;color:#d97706;font-style:normal}
+.geo-namebox{display:block;margin-top:12px}.geo-namebox>span{display:block;font-size:11px;font-weight:800;margin-bottom:6px}.geo-namebox small{font-weight:600;opacity:.6}
+.geo-preview-wrap{margin-top:12px;border-radius:18px;overflow:hidden;border:1px solid rgba(148,163,184,.3);aspect-ratio:4/3;max-width:640px;background:rgba(148,163,184,.08)}
+.geo-preview-wrap canvas{display:block;width:100%;height:100%}
+.geo-empty{display:grid;place-items:center;aspect-ratio:auto;min-height:140px;max-width:none;border-style:dashed}
+.geo-empty-msg{text-align:center;padding:20px;font-size:12px;opacity:.65}.geo-empty-msg i{font-size:28px;color:var(--gc);margin-bottom:8px;display:block}.geo-empty-msg p{margin:0}
+.geo-drop{position:relative;display:flex;align-items:center;gap:16px;min-height:112px;flex-shrink:0;padding:18px 22px;border-radius:20px;border:2px dashed color-mix(in srgb,var(--gc) 55%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--gc) 8%,transparent),transparent);cursor:pointer;transition:background .15s,border-color .15s}
+.geo-drop:hover,.geo-drop.over{background:color-mix(in srgb,var(--gc) 14%,transparent);border-style:solid}
+.geo-drop.geo-locked{opacity:.55;cursor:not-allowed;border-color:rgba(148,163,184,.5)}.geo-drop.geo-locked .geo-file{pointer-events:none}
+.geo-file{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2}
+.geo-drop-ico{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:24px;color:#fff;background:linear-gradient(135deg,var(--gc),#7c3aed);flex:0 0 56px}
+.geo-drop-txt b{display:block;font-size:14px;font-weight:800}.geo-drop-txt small{display:block;font-size:11px;opacity:.65;margin-top:2px}
+.geo-progress{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:800}.geo-bar{flex:1;height:8px;border-radius:99px;background:rgba(148,163,184,.25);overflow:hidden}.geo-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gc),#7c3aed);transition:width .3s}
+.geo-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(min-width:640px){.geo-slots{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(min-width:1024px){.geo-slots{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.geo-slot{position:relative;aspect-ratio:4/3;border-radius:16px;overflow:hidden;border:1px solid rgba(148,163,184,.35);background:rgba(148,163,184,.1)}
+.geo-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.geo-slot.empty{display:grid;place-items:center;border:2px dashed rgba(148,163,184,.5);background:repeating-linear-gradient(135deg,transparent 0 10px,rgba(148,163,184,.07) 10px 20px);cursor:pointer;text-align:center;transition:border-color .15s,background .15s}
+.geo-slot.empty:hover{border-color:var(--gc);background:color-mix(in srgb,var(--gc) 10%,transparent)}
+.geo-slot.empty i{font-size:20px;color:var(--gc);display:block;margin-bottom:6px}.geo-slot.empty b{display:block;font-size:12px;font-weight:800}.geo-slot.empty small{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.6}
+.geo-slot.empty.locked{opacity:.5;cursor:not-allowed}
+.geo-num{position:absolute;top:8px;left:8px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:var(--gc);box-shadow:0 2px 6px rgba(0,0,0,.35);z-index:3}
+.geo-tools{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:8px;background:linear-gradient(180deg,rgba(0,0,0,.45),transparent 40%,transparent 55%,rgba(0,0,0,.7));opacity:0;transition:opacity .15s;z-index:4}
+.geo-slot:hover .geo-tools,.geo-slot:focus-within .geo-tools{opacity:1}@media(hover:none){.geo-tools{opacity:1}}
+.geo-btns{display:flex;justify-content:flex-end;gap:6px}.geo-btns button{width:28px;height:28px;border-radius:9px;border:0;background:rgba(255,255,255,.9);color:#0f172a;font-size:11px;cursor:pointer}.geo-btns button.del{background:#ef4444;color:#fff}.geo-btns button:disabled{opacity:.35;cursor:default}
+.geo-cap{width:100%;padding:6px 9px;border-radius:9px;border:1px solid rgba(255,255,255,.35);background:rgba(15,23,42,.6);color:#fff;font-size:11px}.geo-cap::placeholder{color:rgba(255,255,255,.65)}
+`;
         },
 
         bindPhotoUploadHandlers() {
@@ -1561,104 +1650,59 @@
                 const input = document.getElementById('report-photo-input');
                 const zone = document.getElementById('report-photo-upload-zone');
                 if (!input || !zone) return;
-
-                zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('bg-brand-blue/10'); });
-                zone.addEventListener('dragleave', () => zone.classList.remove('bg-brand-blue/10'));
+                zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('over'); });
+                zone.addEventListener('dragleave', () => zone.classList.remove('over'));
                 zone.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    zone.classList.remove('bg-brand-blue/10');
-                    if (e.dataTransfer.files) this.processPhotoFiles(e.dataTransfer.files);
+                    e.preventDefault(); zone.classList.remove('over');
+                    if (e.dataTransfer && e.dataTransfer.files) this.processPhotoFiles(e.dataTransfer.files);
                 });
                 input.addEventListener('change', (e) => {
-                    if (e.target.files) this.processPhotoFiles(e.target.files);
+                    if (e.target.files && e.target.files.length) this.processPhotoFiles(e.target.files);
+                    e.target.value = '';
                 });
+                this.updateGeoStudio();
             }, 100);
+        },
+
+        pickPhotos() {
+            if (!this.activeLocation) { toast.warning('Paste the Google Maps link first.'); this.openGeoTagConfigModal(); return; }
+            const input = document.getElementById('report-photo-input');
+            if (input) input.click();
         },
 
         async processPhotoFiles(files) {
             this.applyActiveLocation();
-            if (!this.activeLocation) {
-                toast.error('Configure geo-tag before uploading photos.');
-                return;
-            }
+            if (!this.activeLocation) { toast.error('Paste the Google Maps location link first.'); this.openGeoTagConfigModal(); return; }
 
             const remaining = this.maxPhotos - this.reportPhotos.length;
-            if (remaining <= 0) {
-                toast.warning(`Maximum ${this.maxPhotos} photos allowed.`);
-                return;
-            }
+            if (remaining <= 0) { toast.warning(`Maximum ${this.maxPhotos} photos allowed.`); return; }
 
-            const filesToProcess = Array.from(files).slice(0, remaining);
+            const list = Array.from(files).filter(f => f.type && f.type.startsWith('image/')).slice(0, remaining);
+            if (!list.length) return;
             const procEl = document.getElementById('photo-processing');
+            const procTxt = document.getElementById('photo-processing-text');
             if (procEl) procEl.classList.remove('hidden');
 
-            for (const file of filesToProcess) {
-                if (!file.type.startsWith('image/')) continue;
+            const stamps = this.randomStamps(list.length);
+            let failed = 0;
+            for (let i = 0; i < list.length; i++) {
+                const file = list[i];
+                if (procTxt) procTxt.textContent = `Stamping photo ${i + 1} of ${list.length}...`;
                 try {
-                    const watermarkedBlob = await this.applyGeoWatermark(file);
-                    const watermarkedFile = new File([watermarkedBlob], file.name, { type: 'image/jpeg' });
-
-                    const result = await window.Uploader.upload(watermarkedFile, {
-                        type: 'report_photo',
-                        folder: 'reports/' + this.currentEvent.id
-                    });
-
-                    this.reportPhotos.push({
-                        url: result.url,
-                        provider: result.provider,
-                        caption: '',
-                        existing: false
-                    });
+                    const blob = await this.applyGeoWatermark(file, stamps[i]);
+                    const stamped = new File([blob], (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+                    const result = await window.Uploader.upload(stamped, { type: 'report_photo', folder: 'reports/' + this.currentEvent.id });
+                    this.reportPhotos.push({ url: result.url, provider: result.provider, caption: '', existing: false, stamp: stamps[i].toISOString() });
+                    this.renderExistingPhotos();
                 } catch (err) {
+                    failed++;
                     console.error(err);
                 }
             }
-
             if (procEl) procEl.classList.add('hidden');
+            if (failed) toast.error(`${failed} photo(s) could not be processed.`);
             this.renderExistingPhotos();
             this.updatePhotoCounter();
-        },
-
-        async applyGeoWatermark(file) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                const reader = new FileReader();
-
-                reader.onload = (e) => {
-                    img.onload = async () => {
-                        try {
-                            const canvas = document.createElement('canvas');
-                            const ctx = canvas.getContext('2d');
-
-                            const MAX_WIDTH = 1920;
-                            let width = img.width;
-                            let height = img.height;
-                            if (width > MAX_WIDTH) {
-                                height = (MAX_WIDTH / width) * height;
-                                width = MAX_WIDTH;
-                            }
-
-                            canvas.width = width;
-                            canvas.height = height;
-                            ctx.drawImage(img, 0, 0, width, height);
-
-                            let mapImg = null;
-                            try { mapImg = await this.loadStaticMap(); } catch (e) {}
-
-                            this.drawWatermarkOverlay(ctx, width, height, mapImg);
-
-                            canvas.toBlob((blob) => {
-                                if (blob) resolve(blob);
-                                else reject(new Error('Canvas export failed'));
-                            }, 'image/jpeg', 0.92);
-                        } catch (err) { reject(err); }
-                    };
-                    img.onerror = reject;
-                    img.src = e.target.result;
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
         },
 
         // ==========================================
@@ -1828,196 +1872,264 @@
         },
 
         // ==========================================
-        // 12. WATERMARK OVERLAY (Uses customDateTime)
+        // 12. WATERMARK: creative "stamp card" overlay on a fixed 4:3 photo
         // ==========================================
-        drawWatermarkOverlay(ctx, width, height, mapImg) {
-            const panelHeight = Math.min(240, height * 0.27);
-            const panelY = height - panelHeight;
-            const padding = 24;
-            const mapSize = panelHeight - padding * 2;
-
-            // Dark gradient backdrop
-            const gradient = ctx.createLinearGradient(0, panelY, 0, height);
-            gradient.addColorStop(0, 'rgba(0, 0, 0, 0.35)');
-            gradient.addColorStop(0.3, 'rgba(10, 15, 25, 0.88)');
-            gradient.addColorStop(1, 'rgba(5, 10, 20, 0.97)');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, panelY, width, panelHeight);
-
-            // Top brand lines
-            ctx.fillStyle = '#E4345A';
-            ctx.fillRect(0, panelY, width, 3);
-            ctx.fillStyle = '#F7A81B';
-            ctx.fillRect(0, panelY + 3, width, 1);
-
-            // Map
-            if (mapImg) {
-                const mapX = padding;
-                const mapY = panelY + padding;
-
-                ctx.strokeStyle = 'rgba(228, 52, 90, 0.6)';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(mapX - 3, mapY - 3, mapSize + 6, mapSize + 6);
-
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(mapX - 1, mapY - 1, mapSize + 2, mapSize + 2);
-
-                ctx.drawImage(mapImg, mapX, mapY, mapSize, mapSize);
-
-                const pinX = mapX + mapSize / 2;
-                const pinY = mapY + mapSize / 2;
-
-                ctx.beginPath();
-                ctx.arc(pinX, pinY, 10, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(228, 52, 90, 0.3)';
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.arc(pinX, pinY, 6, 0, Math.PI * 2);
-                ctx.fillStyle = '#E4345A';
-                ctx.fill();
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-                ctx.lineWidth = 1.2;
-                ctx.beginPath();
-                ctx.moveTo(pinX - 16, pinY); ctx.lineTo(pinX - 9, pinY);
-                ctx.moveTo(pinX + 9, pinY); ctx.lineTo(pinX + 16, pinY);
-                ctx.moveTo(pinX, pinY - 16); ctx.lineTo(pinX, pinY - 9);
-                ctx.moveTo(pinX, pinY + 9); ctx.lineTo(pinX, pinY + 16);
-                ctx.stroke();
-
-                ctx.strokeStyle = '#F7A81B';
-                ctx.lineWidth = 1.8;
-                const bracket = 8;
-                const corners = [
-                    [mapX, mapY], [mapX + mapSize, mapY],
-                    [mapX, mapY + mapSize], [mapX + mapSize, mapY + mapSize]
-                ];
-                corners.forEach(([cx, cy], i) => {
-                    ctx.beginPath();
-                    const dx = i % 2 === 0 ? 1 : -1;
-                    const dy = i < 2 ? 1 : -1;
-                    ctx.moveTo(cx + dx * bracket, cy);
-                    ctx.lineTo(cx, cy);
-                    ctx.lineTo(cx, cy + dy * bracket);
-                    ctx.stroke();
-                });
-            }
-
-            const textStartX = mapImg ? padding * 2 + mapSize + 10 : padding;
-            const iconSize = 18;
-            const iconColOffset = 14;
-            const textOffset = textStartX + iconColOffset * 2 + 6;
-            const topY = panelY + padding + 10;
-            const lineHeight = 32;
-
-            // Use CUSTOM DATETIME if set, otherwise live
-            const timestampSource = (this.geoTagMode === 'custom' && this.customDateTime) ? new Date(this.customDateTime) : new Date();
-
-            const dateStr = timestampSource.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-            const timeStr = timestampSource.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-            const lat = this.activeLocation.latitude.toFixed(6);
-            const lng = this.activeLocation.longitude.toFixed(6);
-            const address = this.activeLocationName || `${this.activeLocation.city || 'Coimbatore'}, Tamil Nadu`;
-
-            // ROW 1: Calendar + Date
-            this.drawCalendarIcon(ctx, textStartX + iconColOffset, topY + 6, iconSize, '#FFFFFF');
-            ctx.font = 'bold 18px "Segoe UI", Arial, sans-serif';
-            ctx.fillStyle = '#FFFFFF';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(dateStr, textOffset, topY + 8);
-
-            // ROW 2: Clock + Time
-            this.drawClockIcon(ctx, textStartX + iconColOffset, topY + lineHeight + 6, iconSize, '#F7A81B');
-            ctx.font = 'bold 17px "Segoe UI", Arial, sans-serif';
-            ctx.fillStyle = '#F7A81B';
-            ctx.fillText(timeStr, textOffset, topY + lineHeight + 8);
-
-            // ROW 3: Map Pin + Coordinates
-            this.drawMapPinIcon(ctx, textStartX + iconColOffset, topY + lineHeight * 2 + 6, iconSize, '#4ADE80');
-            ctx.font = 'bold 14px "Consolas", "Courier New", monospace';
-            ctx.fillStyle = '#4ADE80';
-            ctx.fillText(`${lat}° N, ${lng}° E`, textOffset, topY + lineHeight * 2 + 8);
-
-            // ROW 4: Building + Address
-            this.drawBuildingIcon(ctx, textStartX + iconColOffset, topY + lineHeight * 3 + 6, iconSize, '#CBD5E1');
-            ctx.font = '13px "Segoe UI", Arial, sans-serif';
-            ctx.fillStyle = '#E2E8F0';
-            const maxAddressLen = Math.floor((width - textOffset - padding) / 7);
-            const displayAddress = address.length > maxAddressLen ? address.substring(0, maxAddressLen - 3) + '...' : address;
-            ctx.fillText(displayAddress, textOffset, topY + lineHeight * 3 + 8);
-
-            // Verified badge bottom-right
-            const badgeW = 110;
-            const badgeH = 20;
-            const badgeX = width - badgeW - 12;
-            const badgeY = height - badgeH - 10;
-
-            ctx.fillStyle = 'rgba(228, 52, 90, 0.9)';
-            ctx.beginPath();
-            ctx.moveTo(badgeX + 4, badgeY);
-            ctx.lineTo(badgeX + badgeW - 4, badgeY);
-            ctx.quadraticCurveTo(badgeX + badgeW, badgeY, badgeX + badgeW, badgeY + 4);
-            ctx.lineTo(badgeX + badgeW, badgeY + badgeH - 4);
-            ctx.quadraticCurveTo(badgeX + badgeW, badgeY + badgeH, badgeX + badgeW - 4, badgeY + badgeH);
-            ctx.lineTo(badgeX + 4, badgeY + badgeH);
-            ctx.quadraticCurveTo(badgeX, badgeY + badgeH, badgeX, badgeY + badgeH - 4);
-            ctx.lineTo(badgeX, badgeY + 4);
-            ctx.quadraticCurveTo(badgeX, badgeY, badgeX + 4, badgeY);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.font = 'bold 9px "Segoe UI", Arial, sans-serif';
-            ctx.fillStyle = '#FFFFFF';
-            ctx.textAlign = 'center';
-            ctx.fillText('VERIFIED GEO-STAMPED', badgeX + badgeW / 2, badgeY + badgeH / 2);
-            ctx.textAlign = 'start';
+        buildStampInfo(stamp) {
+            const e = this.currentEvent || {};
+            const cfg = this.AVENUE_CONFIG[e.is_dpp ? 'dpp' : e.avenue_slug] || { color: '#3B82F6', label: 'Project' };
+            const loc = this.activeLocation;
+            const d = stamp instanceof Date ? stamp : new Date();
+            const lat = loc.latitude, lng = loc.longitude;
+            return {
+                eventName: e.event_name || 'Project',
+                avenueLabel: (cfg.label || 'Project').toUpperCase(),
+                color: cfg.color || '#3B82F6',
+                dateStr: d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                timeStr: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
+                lat: `${Math.abs(lat).toFixed(6)}° ${lat >= 0 ? 'N' : 'S'}`,
+                lng: `${Math.abs(lng).toFixed(6)}° ${lng >= 0 ? 'E' : 'W'}`,
+                locName: this.activeLocationName || `${loc.city || 'Coimbatore'}, Tamil Nadu`,
+                club: (window.SiteConfig && window.SiteConfig.val && window.SiteConfig.val('club_name')) || 'Rotaract Club of Coimbatore Unity'
+            };
         },
 
-        async loadStaticMap() {
-            return new Promise((resolve, reject) => {
-                if (!this.activeLocation) { reject('No active location'); return; }
-                const lat = this.activeLocation.latitude;
-                const lng = this.activeLocation.longitude;
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.src = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=300x300&markers=${lat},${lng},red-pushpin`;
-                img.onload = () => resolve(img);
-                img.onerror = () => reject('Map provider offline');
-                setTimeout(() => reject('Timeout'), 4000);
+        rrPath(ctx, x, y, w, h, r) {
+            r = Math.min(r, w / 2, h / 2);
+            ctx.beginPath();
+            ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+        },
+
+        fitText(ctx, text, maxW) {
+            let t = String(text || '');
+            if (ctx.measureText(t).width <= maxW) return t;
+            while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+            return t.trimEnd() + '…';
+        },
+
+        drawPinShape(ctx, x, y, r, color) {
+            // teardrop pin whose tip sits at (x, y)
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.bezierCurveTo(x - r * 1.1, y - r * 1.15, x - r * 1.25, y - r * 2.7, x, y - r * 2.7);
+            ctx.bezierCurveTo(x + r * 1.25, y - r * 2.7, x + r * 1.1, y - r * 1.15, x, y);
+            ctx.closePath();
+            ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = r * 0.8; ctx.shadowOffsetY = r * 0.25;
+            ctx.fillStyle = color; ctx.fill();
+            ctx.shadowColor = 'transparent';
+            ctx.lineWidth = r * 0.22; ctx.strokeStyle = '#fff'; ctx.stroke();
+            ctx.beginPath(); ctx.arc(x, y - r * 1.6, r * 0.5, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+            ctx.restore();
+        },
+
+        drawWatermarkOverlay(ctx, W, H, mapImg, info) {
+            const s = W / 1600;
+            const FONT = '"Poppins","Segoe UI",Arial,sans-serif';
+            const m = 36 * s, cardH = 266 * s, cardW = W - m * 2, cardX = m, cardY = H - m - cardH;
+            const color = info.color;
+
+            // soft shade so the card always reads on bright photos
+            const sh = ctx.createLinearGradient(0, H * 0.55, 0, H);
+            sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,.55)');
+            ctx.fillStyle = sh; ctx.fillRect(0, H * 0.55, W, H * 0.45);
+
+            // ---- top pills ----
+            ctx.save();
+            const topH = 46 * s;
+            ctx.font = `700 ${18 * s}px ${FONT}`;
+            const tagTxt = 'GEO-TAGGED';
+            const tagW = ctx.measureText(tagTxt).width + 74 * s;
+            this.rrPath(ctx, m, m, tagW, topH, topH / 2);
+            ctx.fillStyle = 'rgba(8,14,30,.78)'; ctx.fill();
+            ctx.lineWidth = 1.5 * s; ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.stroke();
+            ctx.beginPath(); ctx.arc(m + 26 * s, m + topH / 2, 13 * s, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+            ctx.beginPath(); ctx.arc(m + 26 * s, m + topH / 2, 5 * s, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle'; ctx.fillText(tagTxt, m + 50 * s, m + topH / 2 + 1 * s);
+
+            ctx.font = `600 ${17 * s}px ${FONT}`;
+            const clubTxt = this.fitText(ctx, info.club, W * 0.45);
+            const clubW = ctx.measureText(clubTxt).width + 40 * s;
+            this.rrPath(ctx, W - m - clubW, m, clubW, topH, topH / 2);
+            ctx.fillStyle = 'rgba(8,14,30,.78)'; ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#e2e8f0'; ctx.fillText(clubTxt, W - m - clubW + 20 * s, m + topH / 2 + 1 * s);
+            ctx.restore();
+
+            // ---- glass card ----
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 40 * s; ctx.shadowOffsetY = 12 * s;
+            this.rrPath(ctx, cardX, cardY, cardW, cardH, 30 * s);
+            const cg = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
+            cg.addColorStop(0, 'rgba(8,14,32,.90)'); cg.addColorStop(1, 'rgba(18,26,56,.84)');
+            ctx.fillStyle = cg; ctx.fill();
+            ctx.shadowColor = 'transparent';
+            ctx.lineWidth = 1.6 * s; ctx.strokeStyle = 'rgba(255,255,255,.26)'; ctx.stroke();
+            ctx.clip();
+            // avenue colour spine + glow
+            ctx.fillStyle = color; ctx.fillRect(cardX, cardY, 12 * s, cardH);
+            const glow = ctx.createRadialGradient(cardX + cardW, cardY, 0, cardX + cardW, cardY, cardW * 0.5);
+            glow.addColorStop(0, color + '55'); glow.addColorStop(1, color + '00');
+            ctx.fillStyle = glow; ctx.fillRect(cardX, cardY, cardW, cardH);
+            ctx.restore();
+
+            // ---- map tile ----
+            const ms = cardH - 44 * s, mx = cardX + 34 * s, my = cardY + 22 * s;
+            ctx.save();
+            this.rrPath(ctx, mx, my, ms, ms, 22 * s);
+            ctx.fillStyle = '#e8eef5'; ctx.fill();
+            ctx.clip();
+            if (mapImg) ctx.drawImage(mapImg, mx, my, ms, ms);
+            else { ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2 * s; for (let i = 0; i <= ms; i += ms / 6) { ctx.beginPath(); ctx.moveTo(mx + i, my); ctx.lineTo(mx + i, my + ms); ctx.moveTo(mx, my + i); ctx.lineTo(mx + ms, my + i); ctx.stroke(); } }
+            const vg = ctx.createRadialGradient(mx + ms / 2, my + ms / 2, ms * 0.25, mx + ms / 2, my + ms / 2, ms * 0.75);
+            vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(8,14,30,.28)');
+            ctx.fillStyle = vg; ctx.fillRect(mx, my, ms, ms);
+            ctx.restore();
+            // accuracy ring + pin
+            ctx.save();
+            ctx.beginPath(); ctx.arc(mx + ms / 2, my + ms / 2, 34 * s, 0, Math.PI * 2);
+            ctx.fillStyle = color + '33'; ctx.fill(); ctx.lineWidth = 2 * s; ctx.strokeStyle = color; ctx.stroke();
+            ctx.restore();
+            this.drawPinShape(ctx, mx + ms / 2, my + ms / 2 + 4 * s, 15 * s, color);
+            this.rrPath(ctx, mx, my, ms, ms, 22 * s);
+            ctx.lineWidth = 4 * s; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+            // compass
+            ctx.save();
+            ctx.beginPath(); ctx.arc(mx + ms - 26 * s, my + 26 * s, 17 * s, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(8,14,30,.85)'; ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.font = `800 ${16 * s}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('N', mx + ms - 26 * s, my + 27 * s);
+            ctx.restore();
+
+            // ---- right column ----
+            const x0 = mx + ms + 36 * s, xR = cardX + cardW - 30 * s, rw = xR - x0;
+            ctx.textAlign = 'start'; ctx.textBaseline = 'middle';
+            let y = cardY + 22 * s;
+
+            // avenue chip + verified
+            ctx.font = `800 ${16 * s}px ${FONT}`;
+            const chipTxt = info.avenueLabel;
+            const chipW = ctx.measureText(chipTxt).width + 36 * s, chipH = 34 * s;
+            this.rrPath(ctx, x0, y, chipW, chipH, chipH / 2); ctx.fillStyle = color; ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.fillText(chipTxt, x0 + 18 * s, y + chipH / 2 + 1 * s);
+            const vTxt = 'LOCATION VERIFIED';
+            ctx.font = `800 ${14 * s}px ${FONT}`;
+            const vW = ctx.measureText(vTxt).width + 56 * s;
+            this.rrPath(ctx, xR - vW, y, vW, chipH, chipH / 2);
+            ctx.fillStyle = 'rgba(34,197,94,.16)'; ctx.fill(); ctx.lineWidth = 1.5 * s; ctx.strokeStyle = '#22c55e'; ctx.stroke();
+            ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 3 * s; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            ctx.beginPath(); ctx.moveTo(xR - vW + 16 * s, y + chipH / 2); ctx.lineTo(xR - vW + 22 * s, y + chipH / 2 + 6 * s); ctx.lineTo(xR - vW + 32 * s, y + chipH / 2 - 6 * s); ctx.stroke();
+            ctx.fillStyle = '#86efac'; ctx.fillText(vTxt, xR - vW + 42 * s, y + chipH / 2 + 1 * s);
+            y += chipH + 12 * s;
+
+            // event name
+            ctx.font = `800 ${46 * s}px ${FONT}`; ctx.fillStyle = '#ffffff';
+            ctx.fillText(this.fitText(ctx, info.eventName, rw), x0, y + 26 * s);
+            y += 56 * s;
+
+            // location name
+            this.drawMapPinIcon(ctx, x0 + 12 * s, y + 14 * s, 26 * s, '#4ADE80');
+            ctx.font = `600 ${27 * s}px ${FONT}`; ctx.fillStyle = '#cbd5e1';
+            ctx.fillText(this.fitText(ctx, info.locName, rw - 36 * s), x0 + 34 * s, y + 15 * s);
+
+            // four info tiles
+            const gap = 14 * s, th = 58 * s, ty = cardY + cardH - 22 * s - th, tw = (rw - gap * 3) / 4;
+            const tiles = [
+                ['DATE', info.dateStr, '#ffffff'],
+                ['TIME', info.timeStr, '#fbbf24'],
+                ['LATITUDE', info.lat, '#4ade80'],
+                ['LONGITUDE', info.lng, '#4ade80']
+            ];
+            tiles.forEach((t, i) => {
+                const tx = x0 + i * (tw + gap);
+                this.rrPath(ctx, tx, ty, tw, th, 15 * s);
+                ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.fill();
+                ctx.lineWidth = 1.2 * s; ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.stroke();
+                ctx.font = `800 ${12 * s}px ${FONT}`; ctx.fillStyle = '#94a3b8';
+                ctx.fillText(t[0], tx + 14 * s, ty + 15 * s);
+                ctx.font = `800 ${(i > 1 ? 21 : 22) * s}px ${i > 1 ? 'Consolas,"Courier New",monospace' : FONT}`; ctx.fillStyle = t[2];
+                ctx.fillText(this.fitText(ctx, t[1], tw - 24 * s), tx + 14 * s, ty + 39 * s);
+            });
+            ctx.textBaseline = 'alphabetic';
+        },
+
+        async applyGeoWatermark(file, stamp) {
+            const loc = this.activeLocation;
+            if (!loc) throw new Error('No location configured');
+            const dataUrl = await new Promise((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = rej; r.readAsDataURL(file); });
+            const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = dataUrl; });
+
+            // Every photo becomes the same 4:3 frame (cover crop) so the report grid is always even
+            const TW = 1600, TH = 1200;
+            const canvas = document.createElement('canvas'); canvas.width = TW; canvas.height = TH;
+            const ctx = canvas.getContext('2d');
+            const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+            const scale = Math.max(TW / iw, TH / ih);
+            const sw = TW / scale, sh = TH / scale;
+            const sx = (iw - sw) / 2, sy = (ih - sh) * 0.4; // keep faces: crop a little more from the bottom
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, TW, TH);
+
+            let map = null;
+            try { map = await this.buildMapCanvas(loc.latitude, loc.longitude, 420, 17); } catch (e) { /* offline map: grid fallback */ }
+            try { if (document.fonts && document.fonts.load) await Promise.race([document.fonts.load('800 40px Poppins'), new Promise(r => setTimeout(r, 1200))]); } catch (e) { /* font optional */ }
+            this.drawWatermarkOverlay(ctx, TW, TH, map, this.buildStampInfo(stamp));
+
+            return await new Promise((resolve, reject) => {
+                canvas.toBlob(b => b ? resolve(b) : reject(new Error('Canvas export failed')), 'image/jpeg', 0.9);
             });
         },
 
+        // ---- photo slot grid (always 4:3 slots, filled in order) ----
         renderExistingPhotos() {
             const grid = document.getElementById('report-photos-grid');
             if (!grid) return;
-            if (this.reportPhotos.length === 0) {
-                grid.innerHTML = '<p class="col-span-full text-xs text-slate-400 text-center py-6">No photographs uploaded yet.</p>';
-                return;
+            const has = !!this.activeLocation;
+            const slots = [];
+            const total = this.maxPhotos;
+            for (let i = 0; i < total; i++) {
+                const p = this.reportPhotos[i];
+                if (p) {
+                    slots.push(`
+                        <div class="geo-slot">
+                            <img src="${this.esc(p.url)}" alt="Photo ${i + 1}" loading="lazy">
+                            <span class="geo-num">${i + 1}</span>
+                            <div class="geo-tools">
+                                <div class="geo-btns">
+                                    <button type="button" title="Move earlier" onclick="Reports.movePhoto(${i},-1)" ${i === 0 ? 'disabled' : ''}><i class="fa-solid fa-arrow-left"></i></button>
+                                    <button type="button" title="Move later" onclick="Reports.movePhoto(${i},1)" ${i === this.reportPhotos.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-arrow-right"></i></button>
+                                    <button type="button" class="del" title="Remove" onclick="Reports.removePhoto(${i})"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                                <input type="text" class="geo-cap" placeholder="Add a caption..." value="${this.esc(p.caption || '')}" onchange="Reports.updatePhotoCaption(${i}, this.value)">
+                            </div>
+                        </div>`);
+                } else {
+                    slots.push(`
+                        <div class="geo-slot empty ${has ? '' : 'locked'}" onclick="Reports.pickPhotos()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();Reports.pickPhotos()}">
+                            <div><i class="fa-solid fa-plus"></i><b>Photo ${i + 1}</b><small>${i < this.minPhotos ? 'Required' : 'Optional'}</small></div>
+                        </div>`);
+                }
             }
-            grid.innerHTML = this.reportPhotos.map((p, i) => `
-                <div class="relative group rounded-xl overflow-hidden border border-slate-200/60 dark:border-white/5 bg-slate-100 dark:bg-slate-800 shadow-sm">
-                    <img src="${p.url}" class="w-full h-28 object-cover" alt="Photo ${i+1}">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition flex flex-col justify-end p-2">
-                        <input type="text" class="w-full px-2 py-1 text-[9px] bg-white/20 backdrop-blur border border-white/20 rounded text-white placeholder-white/50" placeholder="Caption..." value="${window.AdminPanel.esc(p.caption)}" onchange="Reports.updatePhotoCaption(${i}, this.value)">
-                    </div>
-                    <div class="absolute top-2 right-2 w-5 h-5 bg-black/50 backdrop-blur rounded-full flex items-center justify-center text-[9px] text-white font-bold">${i + 1}</div>
-                    <button class="absolute bottom-2 right-2 w-6 h-6 bg-red-500/90 backdrop-blur rounded-lg flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition z-20" onclick="Reports.removePhoto(${i})">
-                        <i class="fa-solid fa-trash text-[9px]"></i>
-                    </button>
-                </div>
-            `).join('');
+            grid.innerHTML = slots.join('');
         },
 
+        movePhoto(i, dir) {
+            const j = i + dir;
+            if (j < 0 || j >= this.reportPhotos.length) return;
+            const t = this.reportPhotos[i]; this.reportPhotos[i] = this.reportPhotos[j]; this.reportPhotos[j] = t;
+            this.renderExistingPhotos();
+        },
         updatePhotoCaption(i, caption) { if (this.reportPhotos[i]) this.reportPhotos[i].caption = caption; },
         removePhoto(i) { this.reportPhotos.splice(i, 1); this.renderExistingPhotos(); this.updatePhotoCounter(); },
         updatePhotoCounter() {
+            const n = this.reportPhotos.length;
             const badge = document.getElementById('photo-count-badge');
-            if (badge) badge.textContent = `${this.reportPhotos.length}/${this.maxPhotos}`;
+            if (badge) badge.textContent = `${n}/${this.maxPhotos}`;
+            const fill = document.getElementById('geo-bar-fill');
+            if (fill) fill.style.width = Math.min(100, n / this.maxPhotos * 100) + '%';
+            const txt = document.getElementById('geo-bar-text');
+            if (txt) { const ok = n >= this.minPhotos; txt.textContent = ok ? 'Minimum met' : `${this.minPhotos - n} more needed`; txt.style.color = ok ? '#10b981' : '#f59e0b'; }
         },
 
         // ==========================================
