@@ -114,15 +114,71 @@
         'receipt_url','receipt_public_id','receipt_provider','event_id','approved','approved_by','created_by'
     ], { orderBy: 'transaction_date', uuidColumns: ['event_id','approved_by','created_by'] });
 
+    // ------------------------------------------------------------------
+    // Opening balance (stored in system_settings so the PDF / DOCX / email
+    // generators read the same value)
+    //   treasury_opening_balance : amount carried in
+    //   treasury_opening_date    : "as on" date. Entries dated before it are
+    //                              treated as already inside the opening figure.
+    //                              Blank = applies to the whole ledger.
+    // ------------------------------------------------------------------
+    const OPENING_KEYS = { amount: 'treasury_opening_balance', date: 'treasury_opening_date' };
+    const Opening = {
+        amount: 0,
+        date: '',
+        loaded: false,
+        _client() { return window.DB_ADMIN || window.DB || window.supabaseClient; },
+        async load(force) {
+            if (this.loaded && !force) return this;
+            try {
+                const { data, error } = await this._client().from('system_settings')
+                    .select('key, value').in('key', [OPENING_KEYS.amount, OPENING_KEYS.date]);
+                if (error) throw error;
+                this.amount = 0; this.date = '';
+                (data || []).forEach(r => {
+                    if (r.key === OPENING_KEYS.amount) this.amount = parseFloat(r.value) || 0;
+                    if (r.key === OPENING_KEYS.date) this.date = String(r.value || '').slice(0, 10);
+                });
+            } catch (e) { console.warn('[Treasury] Opening balance not loaded:', e.message || e); }
+            this.loaded = true;
+            return this;
+        },
+        async save(amount, date) {
+            const c = this._client();
+            const keys = [OPENING_KEYS.amount, OPENING_KEYS.date];
+            const { data: existing } = await c.from('system_settings').select('key, category, data_type').in('key', keys);
+            const have = new Map((existing || []).map(r => [r.key, r]));
+            const now = new Date().toISOString();
+            const mk = (key, value) => ({
+                key, value: String(value),
+                category: (have.get(key) && have.get(key).category) || 'treasury',
+                data_type: (have.get(key) && have.get(key).data_type) || 'text',
+                updated_at: now
+            });
+            const { error } = await c.from('system_settings')
+                .upsert([mk(OPENING_KEYS.amount, amount), mk(OPENING_KEYS.date, date || '')], { onConflict: 'key' });
+            if (error) throw error;
+            this.amount = amount; this.date = date || ''; this.loaded = true;
+        },
+        // Is this entry part of the books that start from the opening balance?
+        covers(dateStr) { return !this.date || String(dateStr || '').slice(0, 10) >= this.date; }
+    };
+
     const DB = {
         async get(key, fallback) {
             if (key !== 'treasury') return fallback;
+            await Opening.load();
             const rows = await treasuryStore.get();
             const asc = [...rows].sort((a, b) =>
                 (new Date(a.transaction_date) - new Date(b.transaction_date)) ||
                 (new Date(a.created_at || 0) - new Date(b.created_at || 0)));
-            let run = 0;
-            asc.forEach(t => { if (t.approved) run += (parseFloat(t.income) || 0) - (parseFloat(t.expense) || 0); t.balance = run; });
+            let run = Opening.amount;
+            asc.forEach(t => {
+                if (!Opening.covers(t.transaction_date)) { t.beforeOpening = true; t.balance = 0; return; }
+                t.beforeOpening = false;
+                if (t.approved) run += (parseFloat(t.income) || 0) - (parseFloat(t.expense) || 0);
+                t.balance = run;
+            });
             return rows;
         },
         async set(key, value) { if (key === 'treasury') await treasuryStore.set(value); return true; },
@@ -293,6 +349,9 @@
                             <button class="btn-primary" onclick="AdminTreasury.openTransactionForm()">
                                 <i class="fa-solid fa-plus mr-1.5"></i> New Transaction
                             </button>
+                            <button class="btn-secondary btn-sm" onclick="AdminTreasury.openOpeningBalanceForm()">
+                                <i class="fa-solid fa-flag-checkered mr-1.5"></i> Opening Balance
+                            </button>
                             <button class="btn-secondary btn-sm" onclick="AdminTreasury.showExportMenu()">
                                 <i class="fa-solid fa-download mr-1.5"></i> Export
                             </button>
@@ -386,7 +445,7 @@
                         </div>
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Net Balance</p>
                         <h3 class="text-2xl font-black ${summary.balance >= 0 ? 'text-brand-blue' : 'text-red-600'}">${this.money(summary.balance)}</h3>
-                        <p class="text-[10px] text-slate-500 mt-2">${summary.balance >= 0 ? 'Surplus' : 'Deficit'}</p>
+                        <p class="text-[10px] text-slate-500 mt-2">${summary.balance >= 0 ? 'Surplus' : 'Deficit'}${Opening.amount ? ` &middot; incl. opening ${this.money(Opening.amount)}` : ''}</p>
                     </div>
                     <div class="stat-metric-card">
                         <div class="flex items-start justify-between mb-4">
@@ -523,7 +582,10 @@
             if (!container) return;
             container.innerHTML = `
                 <div class="flex items-center justify-between text-xs flex-wrap gap-3">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <button onclick="AdminTreasury.openOpeningBalanceForm()" class="px-2 py-1 rounded-lg bg-brand-blue/10 text-brand-blue font-bold" title="Set opening balance">
+                            <i class="fa-solid fa-flag-checkered mr-1"></i>Opening: ${this.money(Opening.amount)}${Opening.date ? ' as on ' + A.fmtDate(Opening.date) : ''}
+                        </button>
                         <span><strong class="text-slate-500">Showing:</strong> ${transactions.length} entries</span>
                         <span><strong class="text-green-500">Income:</strong> ${this.money(income)}</span>
                         <span><strong class="text-red-500">Expense:</strong> ${this.money(expense)}</span>
@@ -622,7 +684,7 @@
                     </td>
                     <td class="text-right font-bold text-xs ${income > 0 ? 'text-green-600' : 'text-slate-300 dark:text-slate-600'}">${income > 0 ? this.money(income) : '—'}</td>
                     <td class="text-right font-bold text-xs ${expense > 0 ? 'text-red-600' : 'text-slate-300 dark:text-slate-600'}">${expense > 0 ? this.money(expense) : '—'}</td>
-                    <td class="text-right font-black text-xs ${balance >= 0 ? 'text-brand-blue' : 'text-red-600'}">${this.money(balance)}</td>
+                    <td class="text-right font-black text-xs ${t.beforeOpening ? 'text-slate-300 dark:text-slate-600' : (balance >= 0 ? 'text-brand-blue' : 'text-red-600')}" ${t.beforeOpening ? 'title="Dated before the opening balance, already included in it"' : ''}>${t.beforeOpening ? '—' : this.money(balance)}</td>
                     <td>${t.approved ? '<span class="badge badge-green"><i class="fa-solid fa-check mr-0.5"></i>Approved</span>' : '<span class="badge badge-yellow"><i class="fa-solid fa-clock mr-0.5"></i>Pending</span>'}</td>
                     ${showActions ? `
                         <td>
@@ -1215,10 +1277,12 @@
 
                 let totalIncome = 0, totalExpense = 0, incomeCount = 0, expenseCount = 0;
                 let monthlyIncome = 0, monthlyExpense = 0, monthlyTxns = 0;
+                let coveredNet = 0;
 
                 txns.forEach(t => {
                     const inc = parseFloat(t.income) || 0;
                     const exp = parseFloat(t.expense) || 0;
+                    if (Opening.covers(t.transaction_date)) coveredNet += inc - exp;
                     totalIncome += inc; totalExpense += exp;
                     if (inc > 0) incomeCount++;
                     if (exp > 0) expenseCount++;
@@ -1229,7 +1293,8 @@
 
                 return {
                     totalIncome, totalExpense,
-                    balance: totalIncome - totalExpense,
+                    balance: Opening.amount + coveredNet,
+                    openingBalance: Opening.amount,
                     incomeCount, expenseCount,
                     monthlyIncome, monthlyExpense,
                     monthlyNet: monthlyIncome - monthlyExpense,
@@ -1748,6 +1813,20 @@
 
                 // Data rows
                 let currentRow = 5;
+                if (Opening.amount) {
+                    const ob = sheet2.getRow(currentRow);
+                    ob.getCell(3).value = 'OPENING BALANCE' + (Opening.date ? ' (as on ' + Opening.date + ')' : '');
+                    ob.getCell(8).value = Opening.amount;
+                    for (let col = 1; col <= 9; col++) {
+                        const c = ob.getCell(col);
+                        c.font = { name: 'Calibri', size: 10, bold: true, color: { argb: CLUB_INFO.colors.navy } };
+                        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: CLUB_INFO.colors.pastelBlue } };
+                        c.alignment = { horizontal: col === 8 ? 'right' : 'left', vertical: 'middle' };
+                    }
+                    ob.getCell(8).numFmt = '"₹"#,##0.00';
+                    ob.height = 22;
+                    currentRow++;
+                }
                 sorted.forEach((t, i) => {
                     const income = parseFloat(t.income) || 0;
                     const expense = parseFloat(t.expense) || 0;
@@ -1827,7 +1906,8 @@
                 // Totals row
                 const totalIncome = sorted.reduce((s, t) => s + (parseFloat(t.income) || 0), 0);
                 const totalExpense = sorted.reduce((s, t) => s + (parseFloat(t.expense) || 0), 0);
-                const netBalance = totalIncome - totalExpense;
+                const coveredNet = sorted.reduce((s, t) => Opening.covers(t.transaction_date) ? s + (parseFloat(t.income) || 0) - (parseFloat(t.expense) || 0) : s, 0);
+                const netBalance = Opening.amount + coveredNet;
 
                 const totalRow = sheet2.getRow(currentRow);
                 totalRow.getCell(1).value = '';
@@ -2102,6 +2182,46 @@
                 marketing: 10000, venue_rental: 20000, equipment: 10000, misc_expense: 5000
             };
             return budgets[cat] || 10000;
+        },
+
+        async openOpeningBalanceForm() {
+            await Opening.load(true);
+            A.createModal({
+                title: 'Opening Balance', size: 'narrow', icon: 'flag-checkered',
+                body: `
+                    <form id="opening-form" onsubmit="return false;" class="space-y-4 text-left">
+                        <p class="text-xs text-slate-500">The amount the club held when these books start. Every running balance, statement, PDF, DOCX and the monthly treasury email will start from it.</p>
+                        <label class="block">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Opening balance (Rs.)</span>
+                            <input type="number" step="0.01" id="opening-amount" class="form-input w-full mt-1" value="${Opening.amount || ''}" placeholder="0.00">
+                            <span class="text-[10px] text-slate-400">Use a negative number if the club started with a deficit.</span>
+                        </label>
+                        <label class="block">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">As on date (optional)</span>
+                            <input type="date" id="opening-date" class="form-input w-full mt-1" value="${Opening.date || ''}">
+                            <span class="text-[10px] text-slate-400">Entries dated before this day are treated as already inside the opening balance and are left out of running balances. Leave blank to apply it to the whole ledger.</span>
+                        </label>
+                    </form>`,
+                footer: `
+                    <button class="btn-secondary" onclick="AdminTreasury.closeFallbackModal()">Cancel</button>
+                    <button class="btn-primary" onclick="AdminTreasury.saveOpeningBalance()"><i class="fa-solid fa-save mr-1"></i> Save</button>`
+            });
+        },
+
+        async saveOpeningBalance() {
+            const raw = (document.getElementById('opening-amount')?.value || '').trim();
+            const date = (document.getElementById('opening-date')?.value || '').trim();
+            const amount = raw === '' ? 0 : parseFloat(raw);
+            if (!Number.isFinite(amount)) { toast.error('Enter a valid amount'); return; }
+            try {
+                await Opening.save(amount, date);
+                A.logActivity && A.logActivity('update', 'treasury', 'opening_balance', { amount, date });
+                toast.success('Opening balance saved');
+                this.closeFallbackModal();
+                this.switchView(this.currentView || 'dashboard');
+            } catch (e) {
+                toast.error('Could not save: ' + (e.message || e));
+            }
         },
 
         closeFallbackModal() {
