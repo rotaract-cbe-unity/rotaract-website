@@ -448,51 +448,102 @@
     // 8. IMAGE COMPRESSOR
     // ==========================================
     const ImageCompressor = {
+        // Every image stored by the portal (Supabase, Cloudinary, ImgBB, FreeImage) is at most this big.
+        TARGET_BYTES: 150 * 1000,
+        MIN_QUALITY: 0.5,    // prefer shrinking the picture over crushing it below this JPEG quality
+        MIN_SIDE: 240,       // never shrink the shorter side below this many pixels
+
+        // Decode with the camera rotation (EXIF) applied.
+        async decode(file) {
+            if (typeof createImageBitmap === 'function') {
+                try {
+                    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+                    return { src: bmp, w: bmp.width, h: bmp.height, close() { try { bmp.close(); } catch (e) { } } };
+                } catch (e) { /* fall back to <img> */ }
+            }
+            const url = URL.createObjectURL(file);
+            try {
+                const img = await new Promise((resolve, reject) => {
+                    const i = new Image();
+                    i.onload = () => resolve(i);
+                    i.onerror = () => reject(new Error('Image load failed'));
+                    i.src = url;
+                });
+                return { src: img, w: img.naturalWidth || img.width, h: img.naturalHeight || img.height, close() { URL.revokeObjectURL(url); } };
+            } catch (e) {
+                URL.revokeObjectURL(url);
+                throw e;
+            }
+        },
+
+        draw(dec, w, h) {
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';            // JPEG has no transparency: PNG logos/signatures stay white, not black
+            ctx.fillRect(0, 0, w, h);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(dec.src, 0, 0, w, h);
+            return canvas;
+        },
+
+        encode(canvas, quality) {
+            return new Promise(resolve => canvas.toBlob(b => resolve(b), 'image/jpeg', quality));
+        },
+
+        // Largest JPEG quality (>= MIN_QUALITY) that still fits the target, or null if even MIN_QUALITY is too big.
+        async fitQuality(canvas, startQ, target) {
+            const first = await this.encode(canvas, startQ);
+            if (first && first.size <= target) return first;
+            let lo = this.MIN_QUALITY, hi = startQ;
+            let best = await this.encode(canvas, lo);
+            if (!best || best.size > target) return null;
+            for (let i = 0; i < 5; i++) {
+                const mid = (lo + hi) / 2;
+                const b = await this.encode(canvas, mid);
+                if (b && b.size <= target) { best = b; lo = mid; } else { hi = mid; }
+            }
+            return best;
+        },
+
         async compress(file, opts) {
             opts = opts || {};
+            if (!file || !file.type || !file.type.startsWith('image/')) {
+                throw new Error('Invalid image file');
+            }
+            const target = opts.targetBytes || this.TARGET_BYTES;
             const maxW = opts.maxWidth || 1200;
             const maxH = opts.maxHeight || 1200;
-            const quality = opts.quality || 0.80;
+            const startQ = Math.min(0.92, Math.max(this.MIN_QUALITY, opts.quality || 0.80));
 
-            return new Promise((resolve, reject) => {
-                if (!file || !file.type.startsWith('image/')) {
-                    return reject(new Error('Invalid image file'));
+            const dec = await this.decode(file);
+            try {
+                const baseScale = Math.min(1, maxW / dec.w, maxH / dec.h);
+                // Already a small, correctly sized JPEG: keep it untouched.
+                if (file.size <= target && baseScale === 1 && file.type === 'image/jpeg') return file;
+
+                let blob = null, canvas = null;
+                for (let step = 0; step < 14 && !blob; step++) {
+                    const scale = baseScale * Math.pow(0.85, step);
+                    const w = Math.max(1, Math.round(dec.w * scale));
+                    const h = Math.max(1, Math.round(dec.h * scale));
+                    if (step > 0 && Math.min(w, h) < this.MIN_SIDE) break;
+                    canvas = this.draw(dec, w, h);
+                    blob = await this.fitQuality(canvas, startQ, target);
                 }
-                if (file.size < 50000 && file.type === 'image/jpeg') {
-                    return resolve(file);
+                // Last resort (extreme images): crush the quality at the smallest size reached.
+                for (let q = this.MIN_QUALITY - 0.1; !blob && canvas && q >= 0.1; q -= 0.1) {
+                    const b = await this.encode(canvas, q);
+                    if (b && b.size <= target) blob = b;
                 }
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let w = img.width, h = img.height;
-                        if (w > maxW || h > maxH) {
-                            const r = Math.min(maxW / w, maxH / h);
-                            w = Math.round(w * r);
-                            h = Math.round(h * r);
-                        }
-                        canvas.width = w;
-                        canvas.height = h;
-                        const ctx = canvas.getContext('2d');
-                        ctx.imageSmoothingEnabled = true;
-                        ctx.imageSmoothingQuality = 'high';
-                        ctx.drawImage(img, 0, 0, w, h);
-                        canvas.toBlob(blob => {
-                            if (!blob) return reject(new Error('Compression failed'));
-                            resolve(new File(
-                                [blob],
-                                file.name.replace(/\.[^.]+$/, '.jpg'),
-                                { type: 'image/jpeg', lastModified: Date.now() }
-                            ));
-                        }, 'image/jpeg', quality);
-                    };
-                    img.onerror = () => reject(new Error('Image load failed'));
-                    img.src = e.target.result;
-                };
-                reader.onerror = () => reject(new Error('File read failed'));
-                reader.readAsDataURL(file);
-            });
+                if (!blob) throw new Error('Could not compress image below ' + Math.round(target / 1000) + ' KB');
+
+                return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg', lastModified: Date.now() });
+            } finally {
+                dec.close();
+            }
         },
 
         getPreset(type) {
@@ -545,6 +596,10 @@
             try {
                 compressed = await ImageCompressor.compress(file, preset);
             } catch (e) {
+                // Pictures must never be stored above the limit. Non-images (PDF etc.) pass through untouched.
+                if (file && file.type && file.type.startsWith('image/') && file.size > ImageCompressor.TARGET_BYTES) {
+                    throw new Error('This image could not be compressed to 150 KB. Please choose a JPG, PNG or WebP picture.');
+                }
                 compressed = file;
             }
 
