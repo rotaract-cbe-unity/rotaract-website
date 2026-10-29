@@ -50,6 +50,18 @@
         } catch (e) { console.warn('Recipient fetch failed:', e); return []; }
     }
 
+    // ------------------------------------------------------------------
+    // Approval rules (shared definitions live in auth.js)
+    //  - Super Admin, President, Vice President, Secretary and Club Advisor publish at once and approve others.
+    //  - Everybody else (incl. Avenue Directors) submits for approval: no email, no Upcoming Projects until approved.
+    //  - Avenue Directors only manage projects of their own avenue and never DPP projects.
+    // ------------------------------------------------------------------
+    const me = () => window.AuthManager?.currentUser || {};
+    const isApprover = () => (typeof window.canAutoApprove === 'function' ? window.canAutoApprove(me().role) : true);
+    const manageCheck = (project) => (typeof window.canManageProject === 'function' ? window.canManageProject(me(), project) : { ok: true });
+    const isRestrictedAvenueRole = () => ['avenue_director', 'avenue_chair'].includes(me().role);
+    const reportPending = (e) => !!e && !!e.report_submitted && e.status !== 'completed' && e.status !== 'cancelled';
+
     function currentSender() {
         const u = window.AuthManager?.currentUser || {};
         return { role: u.role, name: u.full_name || u.name, email: u.email };
@@ -208,6 +220,7 @@
                                 </select>
                                 <select onchange="AdminEvents.onStatusFilter(this.value)" class="admin-form-input" style="width:auto;min-width:170px;">
                                     <option value="all">All Statuses</option>
+                                    ${isApprover() ? `<option value="awaiting_approval" ${this.currentStatusFilter === 'awaiting_approval' ? 'selected' : ''}>Awaiting approval (projects + reports)</option>` : ''}
                                     ${['draft', 'pending_approval', 'approved', 'completed', 'cancelled'].map(s => `<option value="${s}" ${this.currentStatusFilter === s ? 'selected' : ''}>${this.formatStatus(s)}</option>`).join('')}
                                 </select>
                             </div>
@@ -278,13 +291,24 @@
                     poster_url: p.poster_url || p.poster
                 }));
 
+                this._pendingProjects = allProjects.filter(p => p.status === 'pending_approval').length;
+                this._pendingReports = allProjects.filter(reportPending).length;
+
+                // Drafts and pending items are private: only the author and the approvers see them
+                if (!isApprover()) {
+                    const uid = me().id;
+                    allProjects = allProjects.filter(p => !['draft', 'pending_approval'].includes(p.status) || manageCheck(p).ok);
+                }
+
                 if (this.currentFilter === 'dpp') {
                     allProjects = allProjects.filter(p => p.is_dpp);
                 } else if (this.currentFilter !== 'all') {
                     allProjects = allProjects.filter(p => p.avenue_slug === this.currentFilter);
                 }
 
-                if (this.currentStatusFilter !== 'all') {
+                if (this.currentStatusFilter === 'awaiting_approval') {
+                    allProjects = allProjects.filter(p => p.status === 'pending_approval' || reportPending(p));
+                } else if (this.currentStatusFilter !== 'all') {
                     allProjects = allProjects.filter(p => p.status === this.currentStatusFilter);
                 }
 
@@ -332,7 +356,14 @@
                 return;
             }
 
-            container.innerHTML = `
+            const waitingProjects = this._pendingProjects || 0, waitingReports = this._pendingReports || 0;
+            const banner = (isApprover() && (waitingProjects || waitingReports)) ? `
+                <div class="flex items-center justify-between flex-wrap gap-3 px-5 py-3 border-b border-amber-200/60 bg-amber-500/[0.06]">
+                    <p class="text-xs font-bold text-amber-700 dark:text-amber-400"><i class="fa-solid fa-hourglass-half mr-2"></i>Awaiting your approval: ${waitingProjects} project${waitingProjects === 1 ? '' : 's'}, ${waitingReports} report${waitingReports === 1 ? '' : 's'}</p>
+                    <button type="button" class="btn-secondary btn-xs" onclick="AdminEvents.currentStatusFilter='awaiting_approval'; AdminEvents.currentPage=1; AdminEvents.render(AdminPanel.workspace)">Show what is waiting</button>
+                </div>` : '';
+
+            container.innerHTML = banner + `
                 <div class="overflow-x-auto">
                     <table class="admin-data-table">
                         <thead>
@@ -380,9 +411,15 @@
             const badgeColor = colorMap[event.avenue_slug] || 'blue';
             const statusClass = String(event.status || 'draft').replace(/_/g, '-');
             const id = A.esc(event.id);
-            const reportCell = event.report_submitted
-                ? '<span class="badge badge-green"><i class="fa-solid fa-check mr-1"></i>Submitted</span>'
-                : '<span class="text-[10px] text-slate-400">Not submitted</span>';
+            const approver = isApprover();
+            const mine = manageCheck(event).ok;
+            const projectPending = event.status === 'pending_approval';
+            const rPending = reportPending(event);
+            const reportCell = rPending
+                ? '<span class="badge badge-yellow"><i class="fa-solid fa-clock mr-1"></i>Awaiting approval</span>'
+                : (event.report_submitted
+                    ? '<span class="badge badge-green"><i class="fa-solid fa-check mr-1"></i>Submitted</span>'
+                    : '<span class="text-[10px] text-slate-400">Not submitted</span>');
 
             return `
                 <tr>
@@ -408,11 +445,15 @@
                     <td>
                         <div class="flex items-center gap-1.5 flex-wrap">
                             <button type="button" class="btn-secondary btn-xs" onclick="AdminEvents.viewEvent('${id}')" title="View"><i class="fa-solid fa-eye"></i></button>
-                            <button type="button" class="btn-secondary btn-xs" onclick="AdminEvents.openCreateForm('${id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                            <button type="button" class="btn-primary btn-xs" onclick="AdminEvents.openReportForm('${id}')" title="Report"><i class="fa-solid fa-file-pen"></i></button>
-                            ${event.report_submitted ? `<button type="button" class="btn-secondary btn-xs" onclick="AdminEvents.downloadReport('${id}')" title="Download"><i class="fa-solid fa-download"></i></button>` : ''}
-                            ${['approved', 'completed'].includes(event.status) ? `<button type="button" class="btn-secondary btn-xs" onclick="AdminEvents.emailProject('${id}')" title="Email announcement with poster"><i class="fa-solid fa-envelope"></i></button>` : ''}
-                            <button type="button" class="btn-danger btn-xs" onclick="AdminEvents.deleteEvent('${id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                            ${approver && projectPending ? `<button type="button" class="btn-primary btn-xs" style="background:linear-gradient(135deg,#10b981,#059669);" onclick="AdminEvents.approveProject('${id}')" title="Approve this project"><i class="fa-solid fa-check mr-1"></i>Approve</button>
+                            <button type="button" class="btn-secondary btn-xs" onclick="AdminEvents.rejectProject('${id}')" title="Send back to the submitter"><i class="fa-solid fa-rotate-left"></i></button>` : ''}
+                            ${approver && rPending ? `<button type="button" class="btn-primary btn-xs" style="background:linear-gradient(135deg,#10b981,#059669);" onclick="AdminEvents.approveReport('${id}')" title="Approve this report"><i class="fa-solid fa-check mr-1"></i>Report</button>
+                            <button type="button" class="btn-secondary btn-xs" onclick="AdminEvents.rejectReport('${id}')" title="Send the report back"><i class="fa-solid fa-rotate-left"></i></button>` : ''}
+                            ${mine ? `<button type="button" class="btn-secondary btn-xs" onclick="AdminEvents.openCreateForm('${id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>` : ''}
+                            ${mine && ['approved', 'completed'].includes(event.status) ? `<button type="button" class="btn-primary btn-xs" onclick="AdminEvents.openReportForm('${id}')" title="Report"><i class="fa-solid fa-file-pen"></i></button>` : ''}
+                            ${event.report_submitted && (mine || approver) ? `<button type="button" class="btn-secondary btn-xs" onclick="AdminEvents.downloadReport('${id}')" title="Download"><i class="fa-solid fa-download"></i></button>` : ''}
+                            ${approver && ['approved', 'completed'].includes(event.status) && !rPending ? `<button type="button" class="btn-secondary btn-xs" onclick="AdminEvents.emailProject('${id}')" title="Email announcement with poster"><i class="fa-solid fa-envelope"></i></button>` : ''}
+                            ${mine && (approver || ['draft', 'pending_approval'].includes(event.status)) ? `<button type="button" class="btn-danger btn-xs" onclick="AdminEvents.deleteEvent('${id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </div>
                     </td>
                 </tr>`;
@@ -472,6 +513,8 @@
                 const projects = await ProjectsStore.get();
                 ev = projects.find(p => p.id === editEventId);
                 if (!ev) { A.notify('error', 'Project not found.'); return; }
+                const editScope = manageCheck(ev);
+                if (!editScope.ok) { A.notify('error', editScope.reason); return; }
                 ev.event_name = ev.event_name || ev.name;
                 ev.avenue_slug = ev.avenue_slug || ev.avenue || 'club_service';
                 ev.event_chair = ev.event_chair || ev.chair;
@@ -489,7 +532,12 @@
             const today = (A.ymd ? A.ymd() : new Date().toISOString().split('T')[0]);
             const v = (k, d = '') => A.esc(ev && ev[k] !== null && ev[k] !== undefined ? ev[k] : d);
             const sel = (k, val) => (ev && ev[k] === val ? 'selected' : '');
-            const status = ev?.status || 'approved';
+            const status = ev?.status || (isApprover() ? 'approved' : 'pending_approval');
+            const approver = isApprover();
+            const myAvenue = isRestrictedAvenueRole() ? window.normalizeAvenueSlug(window.avenueSlugOf(me())) : '';
+            const lockDpp = isRestrictedAvenueRole();
+            const forceDpp = me().role === 'dpp_chair';
+            const avenueChoices = myAvenue ? AVENUES.filter(a => a.slug === myAvenue) : AVENUES;
 
             A.createModal({
                 title: ev ? 'Edit Project' : 'Add New Project',
@@ -525,8 +573,8 @@
                                         <div class="admin-form-group">
                                             <label class="admin-form-label">Avenue Classification <span class="required">*</span></label>
                                             <select name="avenue_slug" required class="admin-form-input">
-                                                <option value="">Select Avenue</option>
-                                                ${AVENUES.map(a => `<option value="${a.slug}" ${sel('avenue_slug', a.slug)}>${a.label}</option>`).join('')}
+                                                ${avenueChoices.length === 1 ? '' : '<option value="">Select Avenue</option>'}
+                                                ${avenueChoices.map(a => `<option value="${a.slug}" ${(ev ? ev.avenue_slug === a.slug : avenueChoices.length === 1) ? 'selected' : ''}>${a.label}</option>`).join('')}
                                             </select>
                                         </div>
                                         <div class="admin-form-group">
@@ -547,9 +595,11 @@
                                         <div class="admin-form-group">
                                             <label class="admin-form-label">Project Classification</label>
                                             <label class="flex items-center gap-3 cursor-pointer mt-2.5">
-                                                <input type="checkbox" name="is_dpp" id="is-dpp-toggle" class="w-4 h-4 accent-yellow-500" ${isDPP ? 'checked' : ''} onchange="AdminEvents.toggleFormDPP(this.checked)">
+                                                <input type="checkbox" name="is_dpp" id="is-dpp-toggle" class="w-4 h-4 accent-yellow-500" ${(isDPP || forceDpp) ? 'checked' : ''} ${(lockDpp || forceDpp) ? 'disabled' : ''} onchange="AdminEvents.toggleFormDPP(this.checked)">
                                                 <span class="text-xs font-bold"><i class="fa-solid fa-star text-yellow-500 mr-1"></i>District Priority Project (DPP)</span>
                                             </label>
+                                            ${lockDpp ? '<p class="text-[10px] text-slate-400 mt-1.5">Avenue Directors cannot upload DPP projects.</p>' : ''}
+                                            ${myAvenue ? `<p class="text-[10px] text-slate-400 mt-1.5">You can upload ${A.esc(window.avenueLabelOf(myAvenue))} projects only.</p>` : ''}
                                         </div>
                                         <div class="admin-form-group full-width">
                                             <label class="admin-form-label">Execution Venue <span class="required">*</span></label>
@@ -708,6 +758,7 @@
                             <div class="admin-panel">
                                 <div class="admin-panel-header"><h3 class="admin-panel-title"><i class="fa-solid fa-paper-plane"></i> Finalization</h3></div>
                                 <div class="admin-panel-body">
+                                    ${approver ? `
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                         <label class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-brand-blue cursor-pointer transition-all">
                                             <input type="radio" name="status" value="draft" ${status === 'draft' ? 'checked' : ''} class="accent-brand-blue">
@@ -722,6 +773,18 @@
                                             <div><p class="text-xs font-bold text-green-700 dark:text-green-400">Publish Directly</p><p class="text-[10px] text-slate-400 mt-1">Visible immediately.</p></div>
                                         </label>
                                     </div>
+                                    ` : `
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <label class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-brand-blue cursor-pointer transition-all">
+                                            <input type="radio" name="status" value="draft" ${status === 'draft' ? 'checked' : ''} class="accent-brand-blue">
+                                            <div><p class="text-xs font-bold">Save as Draft</p><p class="text-[10px] text-slate-400 mt-1">Private.</p></div>
+                                        </label>
+                                        <label class="flex items-center gap-3 p-4 rounded-xl border border-brand-blue/40 bg-brand-blue/[0.03] hover:border-brand-blue cursor-pointer transition-all">
+                                            <input type="radio" name="status" value="pending_approval" ${status !== 'draft' ? 'checked' : ''} class="accent-brand-blue">
+                                            <div><p class="text-xs font-bold">Submit for Approval</p><p class="text-[10px] text-slate-400 mt-1">The President, Vice President, Secretary, Club Advisor or Super Admin approves it. Members are emailed and it appears under Upcoming Projects only after approval.</p></div>
+                                        </label>
+                                    </div>
+                                    `}
                                 </div>
                             </div>
                         </div>
@@ -953,7 +1016,12 @@
             if (!form) return;
 
             const fdCheck = new FormData(form);
-            const isDPP = fdCheck.get('is_dpp') === 'on';
+            // Disabled checkboxes are not submitted: DPP is forced off for avenue directors and on for the DPP chair.
+            const isDPP = me().role === 'dpp_chair' ? true : (isRestrictedAvenueRole() ? false : fdCheck.get('is_dpp') === 'on');
+
+            // Scope check (also enforced here in case the form was tampered with)
+            const scope = manageCheck({ avenue_slug: fdCheck.get('avenue_slug'), is_dpp: isDPP });
+            if (!scope.ok) { A.notify('error', scope.reason); return; }
             
             // Validate ALL pages in current wizard flow (except 'final')
             const pagesToValidate = isDPP 
@@ -1027,7 +1095,7 @@
                     dpp_target_group: isDPP ? val('dpp_target_group') : null,
                     dpp_impact_metric: isDPP ? val('dpp_impact_metric') : null,
                     dpp_sustainability_plan: isDPP ? val('dpp_sustainability_plan') : null,
-                    status: fd.get('status') || 'approved'
+                    status: fd.get('status') || (isApprover() ? 'approved' : 'pending_approval')
                 };
 
                 const projects = await ProjectsStore.get();
@@ -1037,6 +1105,9 @@
                     const idx = projects.findIndex(p => p.id === this.currentEventId);
                     if (idx !== -1) {
                         prevStatus = projects[idx].status;
+                        // An existing project may only be edited inside the user's own scope
+                        const own = manageCheck(projects[idx]);
+                        if (!own.ok) throw new Error(own.reason);
                         projects[idx] = { ...projects[idx], ...payload, updated_at: new Date().toISOString() };
                     }
                 } else {
@@ -1046,9 +1117,23 @@
                     projects.push(payload);
                 }
 
+                // APPROVAL GATE: anyone outside the approver roles can never publish.
+                const target = this.currentEventId ? projects.find(p => p.id === this.currentEventId) : payload;
+                if (!isApprover() && target) {
+                    if (prevStatus === 'completed') target.status = 'completed';          // finished project: keep its state
+                    else if (target.status === 'approved') target.status = 'pending_approval';
+                    payload.status = target.status;
+                } else if (isApprover() && target && target.status === 'approved' && prevStatus !== 'approved') {
+                    target.approved_by = me().id || null;
+                    target.approved_at = new Date().toISOString();
+                }
+
                 await ProjectsStore.set(projects);
 
-                A.notify('success', this.currentEventId ? 'Project updated.' : 'Project created.');
+                const waiting = !isApprover() && payload.status === 'pending_approval';
+                A.notify('success', waiting
+                    ? 'Submitted for approval. Members will be emailed and it will appear in Upcoming Projects once it is approved.'
+                    : (this.currentEventId ? 'Project updated.' : 'Project created.'));
                 if (A.logActivity) {
                     A.logActivity(this.currentEventId ? 'EVENT_UPDATE' : 'EVENT_CREATE', 'event', this.currentEventId || payload.id, { name: payload.event_name });
                 }
@@ -1059,7 +1144,7 @@
 
                 // Offer to announce the project by email when it has just been published
                 const savedId = this.currentEventId || payload.id;
-                if (payload.status === 'approved' && prevStatus !== 'approved' && ProjectsStore.isUuid(savedId) &&
+                if (isApprover() && payload.status === 'approved' && prevStatus !== 'approved' && ProjectsStore.isUuid(savedId) &&
                     confirm('Project published. Email the announcement (with poster) to all members now?')) {
                     await this.emailProject(savedId, true);
                 }
@@ -1204,9 +1289,9 @@
                         </div>`,
                     footer: `
                         <button type="button" class="btn-secondary" onclick="AdminPanel.closeModal()">Close</button>
-                        ${event.report_submitted ? `<button type="button" class="btn-secondary" onclick="AdminEvents.downloadReport('${A.esc(event.id)}')"><i class="fa-solid fa-download mr-1"></i> Download</button>` : ''}
-                        <button type="button" class="btn-secondary" onclick="AdminPanel.closeModal(); AdminEvents.openReportForm('${A.esc(event.id)}')"><i class="fa-solid fa-file-pen mr-1"></i> Report</button>
-                        <button type="button" class="btn-primary" onclick="AdminEvents.openCreateForm('${A.esc(event.id)}')"><i class="fa-solid fa-pen mr-1"></i> Edit</button>`
+                        ${event.report_submitted && (manageCheck(event).ok || isApprover()) ? `<button type="button" class="btn-secondary" onclick="AdminEvents.downloadReport('${A.esc(event.id)}')"><i class="fa-solid fa-download mr-1"></i> Download</button>` : ''}
+                        ${manageCheck(event).ok && ['approved', 'completed'].includes(event.status) ? `<button type="button" class="btn-secondary" onclick="AdminPanel.closeModal(); AdminEvents.openReportForm('${A.esc(event.id)}')"><i class="fa-solid fa-file-pen mr-1"></i> Report</button>` : ''}
+                        ${manageCheck(event).ok ? `<button type="button" class="btn-primary" onclick="AdminEvents.openCreateForm('${A.esc(event.id)}')"><i class="fa-solid fa-pen mr-1"></i> Edit</button>` : ''}`
                 });
             } catch (e) {
                 A.notify('error', 'Failed: ' + (e?.message || e));
@@ -1214,6 +1299,15 @@
         },
 
         async deleteEvent(eventId) {
+            try {
+                const target = (await ProjectsStore.get()).find(p => p.id === eventId);
+                const own = manageCheck(target || {});
+                if (!own.ok) { window.AdminPanel.notify('error', own.reason); return; }
+                if (target && !isApprover() && !['draft', 'pending_approval'].includes(target.status)) {
+                    window.AdminPanel.notify('error', 'Approved projects can only be deleted by the President, Vice President, Secretary, Club Advisor or Super Admin.');
+                    return;
+                }
+            } catch (e) { /* fall through to the confirmation */ }
             if (!confirm('Permanently delete this project?')) return;
             try {
                 await ProjectsStore.remove(eventId);
@@ -1225,12 +1319,80 @@
             }
         },
 
+
+        // ==========================================
+        // APPROVALS (Super Admin, President, Vice President, Secretary, Club Advisor)
+        // ==========================================
+        async _setEvent(id, fields) {
+            const db = window.DB_ADMIN || window.DB || window.supabaseClient;
+            const { error } = await db.from('events').update(fields).eq('id', id);
+            if (error) throw new Error(error.message);
+        },
+
+        async approveProject(id) {
+            const A = window.AdminPanel;
+            if (!isApprover()) { A.notify('error', 'You are not allowed to approve projects.'); return; }
+            try {
+                const ev = (await ProjectsStore.get()).find(p => p.id === id);
+                if (!ev) { A.notify('error', 'Project not found.'); return; }
+                if (!confirm(`Approve "${ev.event_name}"?\n\nIt will appear in Upcoming Projects and you can then email the announcement to members.`)) return;
+                await this._setEvent(id, { status: 'approved', approved_by: ProjectsStore.isUuid(me().id) ? me().id : null, approved_at: new Date().toISOString() });
+                A.logActivity && A.logActivity('EVENT_APPROVE', 'event', id, { name: ev.event_name });
+                A.notify('success', 'Project approved.');
+                await this.loadEvents();
+                if (typeof window.renderAllProjects === 'function') window.renderAllProjects();
+                if (confirm('Project approved. Email the announcement (with poster) to all members now?')) await this.emailProject(id, true);
+            } catch (e) { A.notify('error', 'Approval failed: ' + e.message); }
+        },
+
+        async rejectProject(id) {
+            const A = window.AdminPanel;
+            if (!isApprover()) { A.notify('error', 'You are not allowed to review projects.'); return; }
+            if (!confirm('Send this project back to the submitter as a draft? Nothing is emailed or published.')) return;
+            try {
+                await this._setEvent(id, { status: 'draft' });
+                A.logActivity && A.logActivity('EVENT_REJECT', 'event', id, {});
+                A.notify('info', 'Project returned to the submitter as a draft.');
+                await this.loadEvents();
+            } catch (e) { A.notify('error', 'Failed: ' + e.message); }
+        },
+
+        async approveReport(id) {
+            const A = window.AdminPanel;
+            if (!isApprover()) { A.notify('error', 'You are not allowed to approve reports.'); return; }
+            try {
+                const ev = (await ProjectsStore.get()).find(p => p.id === id);
+                if (!ev) { A.notify('error', 'Project not found.'); return; }
+                if (!confirm(`Approve the report of "${ev.event_name}"?\n\nIt will count in the monthly report and you can then email it to members.`)) return;
+                await this._setEvent(id, { status: 'completed' });
+                A.logActivity && A.logActivity('REPORT_APPROVE', 'event', id, { name: ev.event_name });
+                A.notify('success', 'Report approved.');
+                await this.loadEvents();
+                if (typeof window.renderAllProjects === 'function') window.renderAllProjects();
+                if (window.Reports?.emailReport && confirm('Report approved. Email the report PDF with photographs to all members now?')) await window.Reports.emailReport(id, true);
+            } catch (e) { A.notify('error', 'Approval failed: ' + e.message); }
+        },
+
+        async rejectReport(id) {
+            const A = window.AdminPanel;
+            if (!isApprover()) { A.notify('error', 'You are not allowed to review reports.'); return; }
+            if (!confirm('Send this report back for changes? It stays unpublished and nothing is emailed.')) return;
+            try {
+                await this._setEvent(id, { report_submitted: false, report_submitted_at: null });
+                A.logActivity && A.logActivity('REPORT_REJECT', 'event', id, {});
+                A.notify('info', 'Report sent back to the submitter.');
+                await this.loadEvents();
+            } catch (e) { A.notify('error', 'Failed: ' + e.message); }
+        },
+
         async emailProject(eventId, silent) {
             const A = window.AdminPanel;
+            if (!isApprover()) { A.notify('error', 'Only the President, Vice President, Secretary, Club Advisor or Super Admin can email announcements.'); return; }
             try {
                 const projects = await ProjectsStore.get();
                 const ev = projects.find(p => p.id === eventId);
                 if (!ev) { A.notify('error', 'Project not found.'); return; }
+                if (!['approved', 'completed'].includes(ev.status)) { A.notify('warning', 'Approve the project first. Only approved projects are announced.'); return; }
 
                 if (!silent && !confirm(`Email the announcement for "${ev.event_name}" (with poster) to all active members?`)) return;
 
