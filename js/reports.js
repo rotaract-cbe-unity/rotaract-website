@@ -62,6 +62,15 @@
         return { role: u.role, name: u.full_name || u.name, email: u.email };
     }
 
+    // Approval rules (definitions live in auth.js):
+    //  - Super Admin, President, Vice President, Secretary and Club Advisor publish reports at once and approve others.
+    //  - Everybody else submits a report for approval: it is not emailed and does not count as completed until approved.
+    //  - Avenue Directors can only report on projects of their own avenue, never on DPP projects.
+    const me = () => window.AuthManager?.currentUser || {};
+    const isApprover = () => (typeof window.canAutoApprove === 'function' ? window.canAutoApprove(me().role) : true);
+    const manageCheck = (project) => (typeof window.canManageProject === 'function' ? window.canManageProject(me(), project) : { ok: true });
+    const reportPending = (e) => !!e && !!e.report_submitted && e.status !== 'completed' && e.status !== 'cancelled';
+
     const Reports = {
         // ==========================================
         // 1. STATE & CONFIGURATION
@@ -889,13 +898,19 @@
             workspace.innerHTML = '<div class="py-12 text-center text-xs text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading Reports Desk...</div>';
 
             try {
-                const { data: events, error } = await client
+                const { data: allEvents, error } = await client
                     .from('events')
                     .select('id, event_name, date, avenue_slug, is_dpp, status, report_submitted, report_submitted_at, avenue_id')
                     .order('date', { ascending: false })
-                    .limit(50);
+                    .limit(100);
 
                 if (error) throw error;
+                // Avenue Directors see (and can report on) their own avenue's projects only.
+                const approver = isApprover();
+                const events = (allEvents || [])
+                    .filter(e => manageCheck(e).ok || approver)
+                    .filter(e => approver || !['draft', 'pending_approval'].includes(e.status))
+                    .slice(0, 50);
 
                 workspace.innerHTML = `
                     <div class="p-6 lg:p-10">
@@ -978,16 +993,17 @@
                                                         <td class="text-xs capitalize">${(e.avenue_slug || '').replace(/_/g, ' ')}</td>
                                                         <td>${e.is_dpp ? '<span class="badge badge-yellow"><i class="fa-solid fa-star mr-1"></i>DPP</span>' : '<span class="badge badge-blue">Avenue</span>'}</td>
                                                         <td><span class="status-badge ${e.status}">${e.status}</span></td>
-                                                        <td>${e.report_submitted ? '<span class="text-green-500 font-bold text-xs"><i class="fa-solid fa-check mr-1"></i>Submitted</span>' : '<span class="text-slate-400 text-xs">Draft/Pending</span>'}</td>
+                                                        <td>${reportPending(e) ? '<span class="text-amber-500 font-bold text-xs"><i class="fa-solid fa-clock mr-1"></i>Awaiting approval</span>' : (e.report_submitted ? '<span class="text-green-500 font-bold text-xs"><i class="fa-solid fa-check mr-1"></i>Approved</span>' : '<span class="text-slate-400 text-xs">Draft/Pending</span>')}</td>
                                                         <td>
                                                             <div class="flex gap-1.5">
-                                                                <button class="btn-primary btn-xs" onclick="Reports.openReportForm('${e.id}')" title="Open Report Editor">
+                                                                ${approver && reportPending(e) ? `<button class="btn-primary btn-xs" style="background:linear-gradient(135deg,#10b981,#059669);" onclick="AdminEvents.approveReport('${e.id}').then(() => Reports.render(AdminPanel.workspace))" title="Approve this report"><i class="fa-solid fa-check mr-1"></i> Approve</button>` : ''}
+                                                                ${manageCheck(e).ok && ['approved', 'completed'].includes(e.status) ? `<button class="btn-primary btn-xs" onclick="Reports.openReportForm('${e.id}')" title="Open Report Editor">
                                                                     <i class="fa-solid fa-file-pen mr-1"></i> Report
-                                                                </button>
+                                                                </button>` : ''}
                                                                 ${e.report_submitted ? `
-                                                                    <button class="btn-secondary btn-xs text-blue-600" onclick="Reports.emailReport('${e.id}')" title="Email report with photos">
+                                                                    ${approver && e.status === 'completed' ? `<button class="btn-secondary btn-xs text-blue-600" onclick="Reports.emailReport('${e.id}')" title="Email report with photos">
                                                                         <i class="fa-solid fa-envelope"></i>
-                                                                    </button>
+                                                                    </button>` : ''}
                                                                     <button class="btn-secondary btn-xs text-[#E4345A]" onclick="Reports.generateDocument('${e.id}', 'docx')" title="Download Word">
                                                                         <i class="fa-solid fa-file-word"></i>
                                                                     </button>
@@ -1018,11 +1034,15 @@
         async openEventSelector(filterType = 'all') {
             const client = window.DB_ADMIN || window.supabaseClient;
             try {
-                let query = client.from('events').select('id, event_name, date, avenue_slug, is_dpp').order('date', { ascending: false }).limit(50);
+                let query = client.from('events').select('id, event_name, date, avenue_slug, is_dpp, status').order('date', { ascending: false }).limit(100);
                 if (filterType === 'dpp') query = query.eq('is_dpp', true);
                 else if (filterType === 'avenue') query = query.eq('is_dpp', false);
 
-                const { data: events } = await query;
+                const { data: rawEvents } = await query;
+                // Only projects this user may report on (avenue directors: own avenue, no DPP; unapproved projects excluded)
+                const events = (rawEvents || [])
+                    .filter(e => manageCheck(e).ok && (isApprover() || ['approved', 'completed'].includes(e.status)))
+                    .slice(0, 50);
 
                 window.AdminPanel.createModal({
                     title: filterType === 'dpp' ? 'Select DPP Project' : 'Select Project for Report',
@@ -1063,6 +1083,13 @@
 
                 if (error || !event) {
                     toast.error('Event record not found.');
+                    return;
+                }
+
+                const scope = manageCheck(event);
+                if (!scope.ok) { toast.error(scope.reason); return; }
+                if (!isApprover() && !['approved', 'completed'].includes(event.status)) {
+                    toast.warning('This project has not been approved yet. A report can be written once it is approved.');
                     return;
                 }
 
@@ -2412,7 +2439,9 @@
                 this.clearDraft();
                 window.AdminPanel.closeModal();
                 await this.render(window.AdminPanel.workspace);
-                if (action === 'submit' && confirm('Report submitted. Email the report PDF with photographs to all members now?')) {
+                if (action === 'submit' && !isApprover()) {
+                    toast.info('Report sent for approval. It will be emailed to members once it is approved.');
+                } else if (action === 'submit' && confirm('Report submitted. Email the report PDF with photographs to all members now?')) {
                     await this.emailReport(submittedEventId, true);
                 }
             } catch (e) {
@@ -2444,7 +2473,9 @@
                 this.clearDraft();
                 window.AdminPanel.closeModal();
                 await this.render(window.AdminPanel.workspace);
-                if (action === 'submit' && confirm('Report submitted. Email the report PDF with photographs to all members now?')) {
+                if (action === 'submit' && !isApprover()) {
+                    toast.info('Report sent for approval. It will be emailed to members once it is approved.');
+                } else if (action === 'submit' && confirm('Report submitted. Email the report PDF with photographs to all members now?')) {
                     await this.emailReport(submittedEventId, true);
                 }
             } catch (e) {
@@ -2456,6 +2487,8 @@
 
         async saveReportData(fd, action) {
             const eventId = this.currentEvent.id;
+            const scope = manageCheck(this.currentEvent);
+            if (!scope.ok) throw new Error(scope.reason);
             const reportText = [
                 fd.get('objectives') && `**Objectives:**\n${fd.get('objectives')}`,
                 fd.get('description') && `\n\n**Description:**\n${fd.get('description')}`,
@@ -2485,7 +2518,8 @@
                 interactors_count: att.interactors_count,
                 council_members_details: att.council_members_details,
                 trainers_details: att.trainers_details,
-                status: action === 'submit' ? 'completed' : this.currentEvent.status
+                // Only approvers complete a report directly; for everybody else it waits for approval.
+                status: (action === 'submit' && isApprover()) ? 'completed' : this.currentEvent.status
             };
 
             if (fd.get('collaborator_name')) updates.collaborator_name = fd.get('collaborator_name');
@@ -2610,10 +2644,12 @@
         // Emails the submitted report: PDF + attendance block + geo-tagged photos (inline gallery and attachments)
         async emailReport(eventId, silent) {
             const client = window.DB_ADMIN || window.supabaseClient;
+            if (!isApprover()) { toast.error('Only the President, Vice President, Secretary, Club Advisor or Super Admin can email reports.'); return; }
             try {
                 const { data: ev, error } = await client.from('events').select('*').eq('id', eventId).single();
                 if (error || !ev) { toast.error('Event record not found.'); return; }
                 if (!ev.report_submitted) { toast.warning('Submit the report first, then email it.'); return; }
+                if (ev.status !== 'completed') { toast.warning('Approve the report first. Only approved reports are emailed.'); return; }
 
                 const { data: photoRows } = await client
                     .from('event_photos')
