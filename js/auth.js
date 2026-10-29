@@ -152,6 +152,58 @@
         return ['super_admin', 'advisor', 'president', 'ipp', 'vice_president', 'secretary', 'secretary_admin', 'secretary_comm'].includes(role);
     };
 
+    // ------------------------------------------------------------------
+    // PROJECT / REPORT APPROVAL RULES
+    // Projects and reports uploaded by these roles go live at once. Anything uploaded by any
+    // other member (including avenue directors) waits for one of them to approve it; only
+    // after approval is it announced by email and shown under Upcoming Projects.
+    // ------------------------------------------------------------------
+    const AUTO_APPROVE_ROLES = ['super_admin', 'advisor', 'president', 'ipp', 'vice_president', 'secretary', 'secretary_admin', 'secretary_comm'];
+    window.canAutoApprove = function (role) { return AUTO_APPROVE_ROLES.includes(role); };
+    window.canApproveProjects = window.canAutoApprove;
+    window.needsApproval = function (role) { return !window.canAutoApprove(role); };
+
+    const AVENUE_LABELS = {
+        club_service: 'Club Service', community_service: 'Community Service',
+        professional_service: 'Professional Service', international_service: 'International Service'
+    };
+    window.normalizeAvenueSlug = function (v) {
+        return String(v || '').toLowerCase().trim()
+            .replace(/[^a-z0-9]+/g, '_').replace(/_(director|chair)$/, '').replace(/^_+|_+$/g, '');
+    };
+    // The avenue an avenue director belongs to (from the account, falling back to the portfolio title).
+    window.avenueSlugOf = function (user) {
+        if (!user) return '';
+        return window.normalizeAvenueSlug(user.avenue) || window.normalizeAvenueSlug(user.portfolio);
+    };
+    window.avenueLabelOf = function (slug) {
+        return AVENUE_LABELS[window.normalizeAvenueSlug(slug)] || String(slug || '').replace(/_/g, ' ');
+    };
+
+    // Can this user create / edit / report on this project?  -> { ok, reason }
+    // Avenue directors: only projects of their own avenue, and never DPP projects.
+    window.canManageProject = function (user, project) {
+        const deny = (reason) => ({ ok: false, reason });
+        if (!user) return deny('Please sign in.');
+        const role = user.role;
+        const p = project || {};
+        if (window.isExecutiveRole(role)) return { ok: true };
+        if (role === 'avenue_director' || role === 'avenue_chair') {
+            if (p.is_dpp) return deny('Avenue directors cannot upload DPP projects or their reports.');
+            const mine = window.avenueSlugOf(user);
+            if (!mine) return deny('No avenue is assigned to your account. Ask the Super Admin to set it.');
+            const target = window.normalizeAvenueSlug(p.avenue_slug || p.avenue);
+            if (target && target !== mine) {
+                return deny('You can only upload ' + window.avenueLabelOf(mine) + ' projects and reports, not ' + window.avenueLabelOf(target) + '.');
+            }
+            return { ok: true };
+        }
+        if (role === 'dpp_chair') {
+            return (p.is_dpp || window.normalizeAvenueSlug(p.avenue_slug) === 'dpp') ? { ok: true } : deny('The DPP Chair can only manage DPP projects.');
+        }
+        return deny('Your role cannot manage projects.');
+    };
+
     window.canAccessTreasury = function (role, fullAccess) {
         if (fullAccess) {
             return ['super_admin', 'advisor', 'president', 'treasurer'].includes(role);
@@ -583,33 +635,26 @@
                 case 'edit_event':
                     // Executive officers can create/edit anything
                     if (window.isExecutiveRole(role)) return true;
-                    // Avenue directors can only create/edit events bound to their specific avenue
-                    if (role === 'avenue_director' || role === 'avenue_chair') {
-                        if (!metadata || !metadata.avenue_slug) return true;
-                        return metadata.avenue_slug === avenue;
-                    }
-                    if (role === 'dpp_chair') {
-                        if (!metadata || !metadata.is_dpp) return true;
-                        return metadata.is_dpp === true || metadata.avenue_slug === 'dpp';
+                    // Avenue directors: own avenue only, never DPP. DPP chair: DPP only.
+                    if (role === 'avenue_director' || role === 'avenue_chair' || role === 'dpp_chair') {
+                        if (!metadata) return true;
+                        return window.canManageProject(this.currentUser, metadata).ok;
                     }
                     return false;
 
                 case 'approve_event':
-                    return window.canApprove(role);
+                    return window.canApproveProjects(role);
 
                 case 'submit_report':
                     if (window.isExecutiveRole(role)) return true;
-                    if (role === 'avenue_director' || role === 'avenue_chair') {
-                        if (!metadata || !metadata.avenue_slug) return true;
-                        return metadata.avenue_slug === avenue;
-                    }
-                    if (role === 'dpp_chair') {
-                        return metadata && (metadata.is_dpp === true || metadata.avenue_slug === 'dpp');
+                    if (role === 'avenue_director' || role === 'avenue_chair' || role === 'dpp_chair') {
+                        if (!metadata) return true;
+                        return window.canManageProject(this.currentUser, metadata).ok;
                     }
                     return false;
 
                 case 'approve_report':
-                    return window.canApprove(role);
+                    return window.canApproveProjects(role);
 
                 case 'access_treasury':
                     return window.canAccessTreasury(role, true);
