@@ -1820,7 +1820,7 @@
                         dashboard: true, events: this.isExecutive(role) || ['avenue_director', 'avenue_chair', 'dpp_chair'].includes(role),
                         meetings: this.isExecutive(role) || user.isBoardMember || user.is_board_member,
                         treasury: ['super_admin', 'advisor', 'president', 'treasurer'].includes(role),
-                        members: this.isExecutive(role), applications: this.isExecutive(role), reports: this.isExecutive(role),
+                        members: this.isExecutive(role), applications: this.isExecutive(role), reports: this.isExecutive(role) || ['avenue_director', 'avenue_chair', 'dpp_chair'].includes(role),
                         emails: this.isExecutive(role), bulletins: this.isExecutive(role) || role === 'avenue_director',
                         blood: this.isExecutive(role) || role === 'avenue_chair', activity: this.isExecutive(role),
                         settings: ['super_admin', 'advisor'].includes(role)
@@ -2333,7 +2333,8 @@
         // ==========================================
         reports: {
             async render(workspace) {
-                if (!AdminPanel.isExecutive(window.AuthManager?.currentUser?.role)) {
+                const _rr = window.AuthManager?.currentUser?.role;
+                if (!AdminPanel.isExecutive(_rr) && !['avenue_director', 'avenue_chair', 'dpp_chair'].includes(_rr)) {
                     workspace.innerHTML = AdminPanel.renderUnauthorized();
                     return;
                 }
