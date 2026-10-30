@@ -161,6 +161,8 @@
     const AUTO_APPROVE_ROLES = ['super_admin', 'advisor', 'president', 'ipp', 'vice_president', 'secretary', 'secretary_admin', 'secretary_comm'];
     window.canAutoApprove = function (role) { return AUTO_APPROVE_ROLES.includes(role); };
     window.canApproveProjects = window.canAutoApprove;
+    // Board and General Body meetings: only these roles may schedule them. Everyone else may only call an emergency meeting.
+    window.canScheduleMainMeetings = function (role) { return AUTO_APPROVE_ROLES.includes(role); };
     window.needsApproval = function (role) { return !window.canAutoApprove(role); };
 
     const AVENUE_LABELS = {
