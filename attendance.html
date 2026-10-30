@@ -521,7 +521,7 @@
             if (!meeting) { showError('Meeting Not Found', 'This meeting does not exist or has been removed.'); return; }
             if (meeting.status === 'cancelled') { showError('Meeting Cancelled', 'This meeting has been cancelled.'); return; }
             currentMeeting = meeting;
-            loadMembers();
+            await loadMembers();
             renderMeetingInfo(meeting);
             document.getElementById('loader').classList.add('hidden');
             document.getElementById('form-container').classList.remove('hidden');
@@ -539,7 +539,9 @@
 
     async function loadMembers() {
         try {
-            const { data } = await sb.rpc('get_attendance_members', { p_meeting_id: meetingId });
+            // Emergency meetings: only the members selected for that meeting may be suggested or submit attendance
+            const fn = currentMeeting && currentMeeting.meeting_type === 'emergency' ? 'get_attendance_invited' : 'get_attendance_members';
+            const { data } = await sb.rpc(fn, { p_meeting_id: meetingId });
             allMembers = Array.isArray(data) ? data : [];
         } catch (e) {}
     }
@@ -553,17 +555,18 @@
 
     function renderMeetingInfo(m) {
         const date = new Date(m.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        const type = m.meeting_type === 'board_meeting' ? 'Board Meeting' : 'General Body Meeting';
-        const typeIcon = m.meeting_type === 'board_meeting' ? 'fa-user-tie' : 'fa-users';
-        const typeColor = m.meeting_type === 'board_meeting' ? 'purple' : 'blue';
+        const isEmergency = m.meeting_type === 'emergency';
+        const type = m.meeting_type === 'board_meeting' ? 'Board Meeting' : (isEmergency ? 'Emergency Meeting' : 'General Body Meeting');
+        const typeIcon = m.meeting_type === 'board_meeting' ? 'fa-user-tie' : (isEmergency ? 'fa-bolt' : 'fa-users');
+        const typeColor = m.meeting_type === 'board_meeting' ? 'purple' : (isEmergency ? 'red' : 'blue');
 
         document.getElementById('meeting-info-content').innerHTML = `
             <div class="flex items-start gap-4 mb-4">
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-${typeColor} to-brand-purple flex items-center justify-center flex-shrink-0 shadow-lg">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br ${typeColor === 'red' ? 'from-red-500 to-red-700' : 'from-brand-' + typeColor + ' to-brand-purple'} flex items-center justify-center flex-shrink-0 shadow-lg">
                     <i class="fa-solid ${typeIcon} text-white text-xl"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-brand-${typeColor} dark:text-blue-400">${type}</p>
+                    <p class="text-[10px] font-black uppercase tracking-widest ${typeColor === 'red' ? 'text-red-600 dark:text-red-400' : 'text-brand-' + typeColor + ' dark:text-blue-400'}">${type}</p>
                     <h2 class="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 mt-1 leading-tight">${esc(m.meeting_name)}</h2>
                 </div>
             </div>
@@ -769,6 +772,12 @@
         document.getElementById('attendance-form').addEventListener('submit', async e => {
             e.preventDefault();
 
+            if (currentMeeting && currentMeeting.meeting_type === 'emergency') {
+                const typed = (document.querySelector('[name="member_name"]').value || '').trim().toLowerCase();
+                const typedRi = (document.querySelector('[name="ri_id"]').value || '').trim();
+                const ok = allMembers.some(m => (m.full_name || '').trim().toLowerCase() === typed || (typedRi && String(m.ri_id || '') === typedRi));
+                if (!ok) { alert('⚠️ This is an emergency meeting for selected members only. Your name is not on the invited list.'); return; }
+            }
             if (!hasSignature) { alert('⚠️ Please upload your signature image.'); return; }
             if (selectedPortfolios.length === 0) { alert('⚠️ Please select at least one portfolio.'); return; }
             if (!document.getElementById('terms-checkbox').checked) { alert('⚠️ Please accept the terms.'); return; }
