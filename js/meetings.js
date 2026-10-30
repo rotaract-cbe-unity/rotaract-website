@@ -68,6 +68,26 @@
         return { role: u.role, name: u.full_name || u.name, email: u.email };
     }
 
+    // ------------------------------------------------------------------
+    // WHO MAY SCHEDULE WHAT
+    // Board and General Body meetings: Super Admin, President, IPP, Vice President, Secretary, Club Advisor only.
+    // Every other member (board members, treasurer, directors ...) can only schedule an EMERGENCY meeting,
+    // which is sent to the members they select and to nobody else.
+    // ------------------------------------------------------------------
+    const MAIN_MEETING_ROLES = ['super_admin', 'advisor', 'president', 'ipp', 'vice_president', 'secretary', 'secretary_admin', 'secretary_comm'];
+    function canScheduleMain(role) {
+        return typeof window.canScheduleMainMeetings === 'function' ? window.canScheduleMainMeetings(role) : MAIN_MEETING_ROLES.includes(role);
+    }
+    function meetingTypeName(t) {
+        return t === 'board_meeting' ? 'Board of Directors Meeting' : (t === 'emergency' ? 'Emergency Meeting' : 'General Body Assembly');
+    }
+    function invitedList(m) {
+        const v = m && m.invited_members;
+        if (Array.isArray(v)) return v;
+        if (typeof v === 'string') { try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch (e) { return []; } }
+        return [];
+    }
+
     const AdminMeetings = {
         currentView: 'list',
         currentPage: 1,
@@ -81,6 +101,9 @@
         attendanceEntries: [],
         meetingPhotos: [],
         canManage: false,
+        canScheduleMain: false,
+        sessionOwned: new Set(),
+        pickerUsers: [],
         formAgendaItems: [],
 
         // ==========================================
@@ -99,6 +122,71 @@
         },
 
         // ==========================================
+        // PERMISSIONS
+        // ==========================================
+        // Full control of a meeting: the six senior roles manage everything; anyone else only the
+        // emergency meetings they scheduled themselves.
+        canManageMeeting(m) {
+            const u = window.AuthManager?.currentUser;
+            if (!u || !m) return false;
+            if (canScheduleMain(u.role)) return true;
+            if (m.meeting_type !== 'emergency') return false;
+            return (!!m.created_by && m.created_by === u.id) || this.sessionOwned.has(m.id);
+        },
+        // Emergency meetings are private to the people invited (and whoever scheduled them).
+        canSeeMeeting(m) {
+            const u = window.AuthManager?.currentUser;
+            if (!u || !m) return false;
+            if (canScheduleMain(u.role)) return true;
+            if (m.meeting_type !== 'emergency') return true;
+            if (this.canManageMeeting(m)) return true;
+            return invitedList(m).some(p => p && (p.id === u.id || (p.email && u.email && String(p.email).toLowerCase() === String(u.email).toLowerCase())));
+        },
+        async assertCanManage(meetingId) {
+            const { data: m } = await window.DB_ADMIN.from('meetings').select('*').eq('id', meetingId).single();
+            if (!m) { window.AppToast?.error('Meeting not found.'); return null; }
+            if (!this.canManageMeeting(m)) {
+                window.AppToast?.error(m.meeting_type === 'emergency'
+                    ? 'Only the member who scheduled this emergency meeting (or a senior officer) can do that.'
+                    : 'Only the Super Admin, President, IPP, Vice President, Secretary or Club Advisor can manage Board and General Body meetings.');
+                return null;
+            }
+            return m;
+        },
+        // Who receives this meeting's invitation, attendance form and minutes.
+        // Emergency meeting -> ONLY the members selected for it. Never falls back to everyone.
+        async resolveRecipients(meeting) {
+            if (meeting.meeting_type === 'emergency') {
+                const invited = invitedList(meeting);
+                const ids = invited.map(p => p && p.id).filter(Boolean);
+                const emails = new Set();
+                const resolved = new Set();
+                try {
+                    if (ids.length) {
+                        const { data } = await window.DB_ADMIN.from('users').select('id, email').in('id', ids).not('email', 'is', null);
+                        (data || []).forEach(u => { if (u.email && u.email.includes('@')) { emails.add(u.email); resolved.add(u.id); } });
+                    }
+                } catch (e) { console.warn('Invited member lookup failed:', e); }
+                // Members whose current address could not be looked up keep the address saved with the meeting
+                invited.forEach(p => { if (p && p.email && String(p.email).includes('@') && !resolved.has(p.id)) emails.add(p.email); });
+                return Array.from(emails);
+            }
+            const recipientType = meeting.meeting_type === 'board_meeting' ? 'board' : 'all_members';
+            let recipients = [];
+            try {
+                if (window.getEmailRecipients) {
+                    recipients = await window.getEmailRecipients(recipientType);
+                } else {
+                    let query = window.DB_ADMIN.from('users').select('email, full_name').eq('is_active', true).neq('role', 'super_admin').not('email', 'is', null);
+                    if (recipientType === 'board') query = query.eq('is_board_member', true);
+                    const { data } = await query;
+                    recipients = (data || []).map(u => u.email).filter(e => e && e.includes('@'));
+                }
+            } catch (e) { console.warn('Recipient fetch failed:', e); }
+            return recipients;
+        },
+
+        // ==========================================
         // 1. MAIN RENDER
         // ==========================================
         async render(workspace) {
@@ -113,6 +201,7 @@
             const isExecOrBoard = ['super_admin', 'advisor', 'president', 'ipp', 'vice_president', 'secretary', 'secretary_admin', 'secretary_comm', 'treasurer'].includes(role) ||
                 currentUser.is_board_member || currentUser.isBoardMember;
             this.canManage = isExecOrBoard;
+            this.canScheduleMain = canScheduleMain(role);
 
             if (!this.canManage) { 
                 workspace.innerHTML = this.renderUnauthorized(); 
@@ -129,7 +218,7 @@
                                 <span>Meetings Desk</span>
                             </div>
                             <h1 class="admin-page-title">Meetings Command Center</h1>
-                            <p class="admin-page-subtitle">Schedule assembly sessions, build agenda points, dispatch email invitations, log minutes, and manage attendance registries.</p>
+                            <p class="admin-page-subtitle">Schedule assembly sessions, build agenda points, dispatch email invitations, log minutes, and manage attendance registries.${this.canScheduleMain ? '' : ' You can schedule emergency meetings for selected members.'}</p>
                         </div>
                         <div class="flex items-center gap-2 flex-wrap">
                             ${this.canManage ? `
@@ -241,7 +330,8 @@
 
                 const { data, count, error } = await query;
                 if (error) throw error;
-                this.renderMeetingsTable(data || [], count || 0);
+                const visible = (data || []).filter(m => this.canSeeMeeting(m));
+                this.renderMeetingsTable(visible, Math.max(0, (count || 0) - ((data || []).length - visible.length)));
             } catch (e) {
                 wrapper.innerHTML = `<div class="p-8 text-center text-xs text-red-500">${e.message}</div>`;
             }
@@ -285,9 +375,11 @@
         },
 
         renderMeetingRow(m) {
+            const isEmergency = m.meeting_type === 'emergency';
             const typeClass = m.meeting_type === 'board_meeting' ? 'meeting-row-board' : 'meeting-row-general';
-            const typeLabel = m.meeting_type === 'board_meeting' ? 'Board' : 'General Body';
-            const typeBadge = m.meeting_type === 'board_meeting' ? 'badge-purple' : 'badge-blue';
+            const typeLabel = m.meeting_type === 'board_meeting' ? 'Board' : (isEmergency ? 'Emergency' : 'General Body');
+            const typeBadge = m.meeting_type === 'board_meeting' ? 'badge-purple' : (isEmergency ? 'badge-red' : 'badge-blue');
+            const canManageThis = this.canManageMeeting(m);
             const statusClass = { scheduled: 'badge-blue', in_progress: 'badge-yellow', completed: 'badge-green', cancelled: 'badge-red' }[m.status] || 'badge-gray';
             const statusLabel = (m.status || 'scheduled').replace('_', ' ');
             const agendaCount = (m.agenda_items || []).length;
@@ -305,7 +397,7 @@
                             </div>
                         </div>
                     </td>
-                    <td><span class="badge ${typeBadge}">${typeLabel}</span></td>
+                    <td><span class="badge ${typeBadge}">${typeLabel}</span>${isEmergency ? `<p class="text-[10px] text-slate-400 font-bold mt-1"><i class="fa-solid fa-user-lock mr-1"></i>${invitedList(m).length} selected</p>` : ''}</td>
                     <td class="text-xs">
                         <p class="font-bold text-slate-700 dark:text-slate-300">${window.AdminPanel.fmtDate(m.date)}</p>
                         <p class="text-[10px] text-slate-400 font-semibold">${window.AdminPanel.fmtTime(m.start_time)}${m.end_time ? ' - ' + window.AdminPanel.fmtTime(m.end_time) : ''}</p>
@@ -326,7 +418,7 @@
                     <td>
                         <div class="flex items-center gap-1 flex-wrap">
                             <button onclick="AdminMeetings.viewMeeting('${m.id}')" class="btn-secondary btn-xs" title="View Details & Agenda"><i class="fa-solid fa-eye"></i></button>
-                            ${this.canManage ? `
+                            ${canManageThis ? `
                                 <button onclick="AdminMeetings.openMeetingForm('${m.id}')" class="btn-secondary btn-xs" title="Edit Meeting Details & Agenda"><i class="fa-solid fa-pen"></i></button>
                                 <button onclick="AdminMeetings.openMinutesEditor('${m.id}')" class="btn-secondary btn-xs text-brand-purple" title="Log Proceedings Minutes"><i class="fa-solid fa-file-pen"></i></button>
                                 <button onclick="AdminMeetings.openAttendanceEditor('${m.id}')" class="btn-secondary btn-xs text-green-500" title="Attendance Ledger"><i class="fa-solid fa-signature"></i></button>
@@ -350,6 +442,10 @@
             if (meetingId) {
                 const { data } = await window.DB_ADMIN.from('meetings').select('*').eq('id', meetingId).single();
                 existing = data;
+                if (existing && !this.canManageMeeting(existing)) {
+                    window.AppToast?.error('Only the Super Admin, President, IPP, Vice President, Secretary or Club Advisor can edit this meeting.');
+                    return;
+                }
                 this.currentMeetingId = meetingId;
                 this.formAgendaItems = Array.isArray(existing?.agenda_items)
                     ? existing.agenda_items.map(item => typeof item === 'string' ? { point: item } : { point: item.point || '' })
@@ -360,16 +456,21 @@
             }
 
             const today = new Date().toISOString().split('T')[0];
+            const mainAllowed = this.canScheduleMain;
+            const startType = !mainAllowed ? 'emergency' : (existing?.meeting_type || 'general_body');
+            const invitedIds = new Set(invitedList(existing).map(p => p && p.id).filter(Boolean));
+            await this.loadPickerUsers();
 
             window.AdminPanel.createModal({
-                title: existing ? 'Edit Meeting & Agenda' : 'Schedule Assembly & Draft Agenda',
+                title: existing ? 'Edit Meeting & Agenda' : (mainAllowed ? 'Schedule Assembly & Draft Agenda' : 'Schedule Emergency Meeting'),
                 size: 'wide',
                 icon: 'people-group',
                 body: `
                     <form id="meeting-form" onsubmit="return false;" class="space-y-5">
-                        <div class="grid grid-cols-2 gap-4">
-                            <label class="relative cursor-pointer">
-                                <input type="radio" name="meeting_type" value="general_body" class="peer sr-only" ${!existing || existing.meeting_type === 'general_body' ? 'checked' : ''}>
+                        ${mainAllowed ? '' : `<div class="p-3 rounded-xl bg-red-500/5 border border-red-500/20"><p class="text-xs font-semibold text-red-700 dark:text-red-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Board and General Body meetings can only be scheduled by the Super Admin, President, IPP, Vice President, Secretary or Club Advisor. You can schedule an emergency meeting for the members you select.</p></div>`}
+                        <div class="grid ${mainAllowed ? 'grid-cols-3' : 'grid-cols-1'} gap-4" id="meeting-type-cards">
+                            <label class="relative cursor-pointer ${mainAllowed ? '' : 'hidden'}">
+                                <input type="radio" name="meeting_type" value="general_body" class="peer sr-only" ${startType === 'general_body' ? 'checked' : ''}>
                                 <div class="p-5 rounded-2xl border-2 border-slate-200/60 dark:border-white/[0.08] peer-checked:border-brand-blue peer-checked:bg-brand-blue/5 transition-all">
                                     <div class="flex items-center gap-3">
                                         <div class="w-11 h-11 rounded-xl bg-brand-blue/15 flex items-center justify-center"><i class="fa-solid fa-users text-brand-blue text-lg"></i></div>
@@ -377,8 +478,8 @@
                                     </div>
                                 </div>
                             </label>
-                            <label class="relative cursor-pointer">
-                                <input type="radio" name="meeting_type" value="board_meeting" class="peer sr-only" ${existing?.meeting_type === 'board_meeting' ? 'checked' : ''}>
+                            <label class="relative cursor-pointer ${mainAllowed ? '' : 'hidden'}">
+                                <input type="radio" name="meeting_type" value="board_meeting" class="peer sr-only" ${startType === 'board_meeting' ? 'checked' : ''}>
                                 <div class="p-5 rounded-2xl border-2 border-slate-200/60 dark:border-white/[0.08] peer-checked:border-brand-purple peer-checked:bg-brand-purple/5 transition-all">
                                     <div class="flex items-center gap-3">
                                         <div class="w-11 h-11 rounded-xl bg-brand-purple/15 flex items-center justify-center"><i class="fa-solid fa-user-tie text-brand-purple text-lg"></i></div>
@@ -386,6 +487,41 @@
                                     </div>
                                 </div>
                             </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="meeting_type" value="emergency" class="peer sr-only" ${startType === 'emergency' ? 'checked' : ''}>
+                                <div class="p-5 rounded-2xl border-2 border-slate-200/60 dark:border-white/[0.08] peer-checked:border-red-500 peer-checked:bg-red-500/5 transition-all">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-11 h-11 rounded-xl bg-red-500/15 flex items-center justify-center"><i class="fa-solid fa-bolt text-red-500 text-lg"></i></div>
+                                        <div><p class="text-sm font-bold">Emergency Meeting</p><p class="text-[10px] text-slate-400">Only the members you select</p></div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Selected members (emergency meetings only) -->
+                        <div class="admin-panel" id="emergency-members-panel" style="border-left: 4px solid #ef4444 !important; ${startType === 'emergency' ? '' : 'display:none;'}">
+                            <div class="admin-panel-header">
+                                <h3 class="admin-panel-title"><i class="fa-solid fa-user-lock text-red-500"></i> Members Invited</h3>
+                                <span class="badge badge-red" id="emergency-selected-count">0 selected</span>
+                            </div>
+                            <div class="admin-panel-body">
+                                <p class="text-[11px] text-slate-500 mb-3 leading-relaxed">The invitation, attendance form and minutes of this meeting are emailed to these members only, and only they can see the meeting in the portal.</p>
+                                <div class="flex items-center gap-2 mb-3">
+                                    <input type="text" id="emergency-member-search" placeholder="Search members..." class="admin-form-input flex-1" oninput="AdminMeetings.filterPicker(this.value)">
+                                    <button type="button" class="btn-secondary btn-xs" onclick="AdminMeetings.pickerSelectAll(true)">Select all shown</button>
+                                    <button type="button" class="btn-secondary btn-xs" onclick="AdminMeetings.pickerSelectAll(false)">Clear</button>
+                                </div>
+                                <div id="emergency-member-list" class="space-y-1" style="max-height:260px;overflow-y:auto;">
+                                    ${this.pickerUsers.length === 0 ? '<p class="text-xs text-slate-400 text-center py-4">No members found.</p>' : this.pickerUsers.map(u => `
+                                        <label class="emergency-member-row flex items-center gap-3 p-2 rounded-lg border border-slate-200/50 dark:border-white/[0.06] cursor-pointer hover:bg-slate-50 dark:hover:bg-white/[0.03]" data-search="${window.AdminPanel.esc(((u.full_name || '') + ' ' + (u.email || '') + ' ' + (u.portfolio || '') + ' ' + (u.role || '')).toLowerCase())}">
+                                            <input type="checkbox" class="emergency-member-cb w-4 h-4 accent-red-500" value="${u.id}" ${invitedIds.has(u.id) ? 'checked' : ''} onchange="AdminMeetings.updatePickerCount()">
+                                            <div class="min-w-0 flex-1">
+                                                <p class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${window.AdminPanel.esc(u.full_name || u.email)}</p>
+                                                <p class="text-[10px] text-slate-400 truncate">${window.AdminPanel.esc(u.portfolio || (u.role || '').replace(/_/g, ' '))} · ${window.AdminPanel.esc(u.email || '')}</p>
+                                            </div>
+                                        </label>`).join('')}
+                                </div>
+                            </div>
                         </div>
 
                         <div class="admin-panel">
@@ -479,7 +615,7 @@
                                     <input type="checkbox" name="send_invitation" class="w-4 h-4 accent-indigo-500" ${!existing ? 'checked' : ''}>
                                     <div>
                                         <p class="text-xs font-bold text-indigo-700 dark:text-indigo-400">📧 Send Invitation with Poster & Agenda</p>
-                                        <p class="text-[10px] text-slate-400">Dispatches meeting announcement email containing poster, date, venue, and full numbered agenda</p>
+                                        <p class="text-[10px] text-slate-400">Dispatches meeting announcement email containing poster, date, venue, and full numbered agenda. Emergency meetings go to the selected members only.</p>
                                     </div>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-cyan-200/60 dark:border-cyan-800/20 bg-cyan-500/[0.02] hover:border-cyan-500 transition-all">
@@ -504,11 +640,47 @@
             setTimeout(() => {
                 this.bindPosterUpload(existing);
                 this.renderFormAgendaList();
+                this.bindMeetingTypeToggle();
+                this.updatePickerCount();
             }, 100);
 
             window._uploadedPosterUrl = existing?.poster_url || '';
             window._uploadedPosterProvider = existing?.poster_provider || '';
             window._uploadedPosterPublicId = existing?.poster_public_id || '';
+        },
+
+        async loadPickerUsers() {
+            try {
+                const { data } = await window.DB_ADMIN.from('users').select('id, full_name, email, role, portfolio').eq('is_active', true).not('email', 'is', null).order('full_name', { ascending: true });
+                const me = window.AuthManager?.currentUser?.id;
+                this.pickerUsers = (data || []).filter(u => u.email && u.email.includes('@') && u.id !== me);
+            } catch (e) { console.warn('Member list failed:', e); this.pickerUsers = []; }
+        },
+        bindMeetingTypeToggle() {
+            const panel = document.getElementById('emergency-members-panel');
+            document.querySelectorAll('input[name="meeting_type"]').forEach(r => r.addEventListener('change', () => {
+                const chosen = document.querySelector('input[name="meeting_type"]:checked')?.value;
+                if (panel) panel.style.display = chosen === 'emergency' ? '' : 'none';
+            }));
+        },
+        filterPicker(q) {
+            const needle = String(q || '').toLowerCase().trim();
+            document.querySelectorAll('.emergency-member-row').forEach(row => {
+                row.style.display = !needle || (row.getAttribute('data-search') || '').includes(needle) ? '' : 'none';
+            });
+        },
+        pickerSelectAll(on) {
+            document.querySelectorAll('.emergency-member-row').forEach(row => {
+                if (row.style.display === 'none') return;
+                const cb = row.querySelector('.emergency-member-cb');
+                if (cb) cb.checked = !!on;
+            });
+            this.updatePickerCount();
+        },
+        updatePickerCount() {
+            const n = document.querySelectorAll('.emergency-member-cb:checked').length;
+            const el = document.getElementById('emergency-selected-count');
+            if (el) el.textContent = `${n} selected`;
         },
 
         addFormAgendaItem() { this.formAgendaItems.push({ point: '' }); this.renderFormAgendaList(); },
@@ -581,9 +753,24 @@
 
             const cleanedAgenda = this.formAgendaItems.map(i => (i.point || '').trim()).filter(Boolean);
 
+            // Who may schedule which kind of meeting (checked again here in case the form was tampered with)
+            const chosenType = fd.get('meeting_type');
+            if (!['general_body', 'board_meeting', 'emergency'].includes(chosenType)) { window.AppToast?.warning('Choose a meeting type.'); return; }
+            if (chosenType !== 'emergency' && !this.canScheduleMain) {
+                window.AppToast?.error('Only the Super Admin, President, IPP, Vice President, Secretary or Club Advisor can schedule Board and General Body meetings. You can schedule an emergency meeting.');
+                return;
+            }
+            let invitedMembers = [];
+            if (chosenType === 'emergency') {
+                const picked = new Set(Array.from(document.querySelectorAll('.emergency-member-cb:checked')).map(c => c.value));
+                invitedMembers = this.pickerUsers.filter(u => picked.has(u.id)).map(u => ({ id: u.id, name: u.full_name || u.email, email: u.email, role: u.role || '' }));
+                if (invitedMembers.length === 0) { window.AppToast?.warning('Select at least one member for the emergency meeting.'); return; }
+            }
+
             const payload = {
                 meeting_name: fd.get('meeting_name'),
-                meeting_type: fd.get('meeting_type'),
+                meeting_type: chosenType,
+                invited_members: invitedMembers,
                 date: fd.get('date'),
                 start_time: fd.get('start_time'),
                 end_time: fd.get('end_time') || null,
@@ -604,14 +791,19 @@
             try {
                 let savedId = meetingId;
                 if (meetingId) {
-                    await window.DB_ADMIN.from('meetings').update(payload).eq('id', meetingId);
+                    const { data: cur } = await window.DB_ADMIN.from('meetings').select('*').eq('id', meetingId).single();
+                    if (!this.canManageMeeting(cur)) { window.AppToast?.error('You cannot edit this meeting.'); return; }
+                    const { error: upErr } = await window.DB_ADMIN.from('meetings').update(payload).eq('id', meetingId);
+                    if (upErr) throw upErr;
                     window.AppToast?.success('Assembly details updated.');
                 } else {
                     const uid = window.AuthManager?.currentUser?.id;
                     if (/^[0-9a-f-]{36}$/i.test(uid || '')) payload.created_by = uid;
                     payload.status = 'scheduled';
-                    const { data } = await window.DB_ADMIN.from('meetings').insert(payload).select('id').single();
+                    const { data, error: insErr } = await window.DB_ADMIN.from('meetings').insert(payload).select('id').single();
+                    if (insErr) throw insErr;
                     savedId = data?.id;
+                    if (savedId) this.sessionOwned.add(savedId);
                     window.AppToast?.success('Assembly session scheduled.');
                 }
 
@@ -622,7 +814,10 @@
                 window.AdminPanel.closeModal();
                 await this.loadMeetingsData();
             } catch (e) {
-                window.AppToast?.error('Save failed: ' + e.message);
+                const msg = String(e.message || e);
+                window.AppToast?.error(/invited_members|meeting_type.*check|violates check/i.test(msg)
+                    ? 'Save failed: the database needs the one-time emergency-meeting update (run meetings_emergency.sql in Supabase). ' + msg
+                    : 'Save failed: ' + msg);
             }
         },
 
@@ -638,31 +833,20 @@
             try {
                 const { data: meeting } = await window.DB_ADMIN.from('meetings').select('*').eq('id', meetingId).single();
                 if (!meeting) { window.AppToast?.error('Meeting not found.'); return; }
+                if (!this.canManageMeeting(meeting)) { window.AppToast?.error('You are not allowed to send this meeting.'); return; }
 
                 window.AppToast?.info('Preparing and sending meeting invitations...');
 
-                const recipientType = meeting.meeting_type === 'board_meeting' ? 'board' : 'all_members';
-                let recipients = [];
+                const recipients = await this.resolveRecipients(meeting);
 
-                try {
-                    if (window.getEmailRecipients) {
-                        recipients = await window.getEmailRecipients(recipientType);
-                    } else {
-                        let query = window.DB_ADMIN.from('users').select('email, full_name').eq('is_active', true).neq('role', 'super_admin').not('email', 'is', null);
-                        if (recipientType === 'board') query = query.eq('is_board_member', true);
-                        const { data } = await query;
-                        recipients = (data || []).map(u => u.email).filter(e => e && e.includes('@'));
-                    }
-                } catch (e) { console.warn('Recipient fetch failed:', e); }
-
-                if (recipients.length === 0) { window.AppToast?.warning('No recipients found.'); return; }
+                if (recipients.length === 0) { window.AppToast?.warning(meeting.meeting_type === 'emergency' ? 'No invited members with an email address. Edit the meeting and select members.' : 'No recipients found.'); return; }
 
                 const emailBody = this.buildInvitationEmailHTML(meeting);
                 const sender = window.AuthManager.currentUser;
 
                 const { data: logEntry } = await window.DB_ADMIN.from('email_log').insert({
                     email_type: 'meeting_invitation',
-                    subject: `📅 Meeting Invitation: ${meeting.meeting_name}`,
+                    subject: `${meeting.meeting_type === 'emergency' ? '🚨 Emergency Meeting' : '📅 Meeting Invitation'}: ${meeting.meeting_name}`,
                     html_body: emailBody,
                     sender_id: sender.id,
                     sender_name: sender.full_name || sender.name,
@@ -682,9 +866,10 @@
 
                     const result = await postToScript({
                         type: 'meeting_invitation',
+                        meeting_type: meeting.meeting_type,
                         meeting_id: meetingId,
                         recipients,
-                        subject: `📅 Meeting Invitation: ${meeting.meeting_name}`,
+                        subject: `${meeting.meeting_type === 'emergency' ? '🚨 Emergency Meeting' : '📅 Meeting Invitation'}: ${meeting.meeting_name}`,
                         html_body: emailBody,
                         attachment_urls: /^https?:\/\//i.test(meeting.poster_url || '') ? [meeting.poster_url] : [],
                         files,
@@ -715,7 +900,8 @@
             const dayName = new Date(meeting.date).toLocaleDateString('en-US', { weekday: 'long' });
             const time = window.AdminPanel.fmtTime(meeting.start_time);
             const endTime = meeting.end_time ? window.AdminPanel.fmtTime(meeting.end_time) : '';
-            const meetingTypeLabel = meeting.meeting_type === 'board_meeting' ? 'Board of Directors Meeting' : 'General Body Assembly';
+            const meetingTypeLabel = meetingTypeName(meeting.meeting_type);
+            const isEmergency = meeting.meeting_type === 'emergency';
             const CI = this.CLUB_INFO;
 
             let agendaHTML = '';
@@ -761,12 +947,12 @@
 <body style="margin:0;padding:20px;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;">
     <table width="100%" cellpadding="0" cellspacing="0" style="max-width:650px;margin:0 auto;background:white;border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.1);">
         <tr><td style="background:linear-gradient(135deg,${CI.primaryColor},${CI.secondaryColor});padding:40px 30px;text-align:center;">
-            <h1 style="color:white;margin:0 0 8px;font-size:26px;font-weight:900;">📅 Meeting Invitation</h1>
+            <h1 style="color:white;margin:0 0 8px;font-size:26px;font-weight:900;">${isEmergency ? '🚨 Emergency Meeting' : '📅 Meeting Invitation'}</h1>
             <p style="color:rgba(255,255,255,0.95);margin:0;font-size:13px;font-weight:700;letter-spacing:1px;">${CI.name}</p>
         </td></tr>
         <tr><td style="padding:36px 30px;">
             <p style="color:#1e293b;font-size:15px;line-height:1.7;margin:0 0 24px;font-weight:600;">Dear Fellow Rotaractor,</p>
-            <p style="color:#334155;font-size:14px;line-height:1.7;margin:0 0 24px;">You are cordially invited to attend the following meeting:</p>
+            <p style="color:#334155;font-size:14px;line-height:1.7;margin:0 0 24px;">${isEmergency ? 'An <strong style="color:#dc2626;">emergency meeting</strong> has been called. This invitation is sent only to the members selected for it. Your presence is requested:' : 'You are cordially invited to attend the following meeting:'}</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;">
                 <tr><td style="background:linear-gradient(135deg,${CI.primaryColor},${CI.secondaryColor});padding:24px;border-radius:16px;text-align:center;">
                     <p style="color:rgba(255,255,255,0.8);margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${meetingTypeLabel}</p>
@@ -819,6 +1005,7 @@
             try {
                 const { data: meeting } = await window.DB_ADMIN.from('meetings').select('*').eq('id', meetingId).single();
                 if (!meeting) { window.AppToast?.error('Meeting not found.'); return; }
+                if (!this.canManageMeeting(meeting)) { window.AppToast?.error('You are not allowed to send this meeting.'); return; }
 
                 if (!silent) {
                     const confirmed = window.confirm(`Send attendance submission form for "${meeting.meeting_name}"?\n\nMembers receive a link to submit:\n• Full Name\n• RI ID\n• Portfolios (multiple)\n• In-Time\n• E-Signature upload`);
@@ -827,21 +1014,9 @@
 
                 window.AppToast?.info('Preparing attendance emails...');
 
-                const recipientType = meeting.meeting_type === 'board_meeting' ? 'board' : 'all_members';
-                let recipients = [];
+                const recipients = await this.resolveRecipients(meeting);
 
-                try {
-                    if (window.getEmailRecipients) {
-                        recipients = await window.getEmailRecipients(recipientType);
-                    } else {
-                        let query = window.DB_ADMIN.from('users').select('email').eq('is_active', true).neq('role', 'super_admin').not('email', 'is', null);
-                        if (recipientType === 'board') query = query.eq('is_board_member', true);
-                        const { data } = await query;
-                        recipients = (data || []).map(u => u.email).filter(e => e && e.includes('@'));
-                    }
-                } catch (e) { console.warn('Recipient fetch failed:', e); }
-
-                if (recipients.length === 0) { window.AppToast?.warning('No recipients found.'); return; }
+                if (recipients.length === 0) { window.AppToast?.warning(meeting.meeting_type === 'emergency' ? 'No invited members with an email address. Edit the meeting and select members.' : 'No recipients found.'); return; }
 
                 const attendanceFormUrl = `${window.location.origin}/attendance.html?meeting=${meetingId}`;
                 const emailBody = this.buildAttendanceFormEmailHTML(meeting, attendanceFormUrl);
@@ -862,6 +1037,7 @@
                 try {
                     const result = await postToScript({
                         type: 'attendance_form',
+                        meeting_type: meeting.meeting_type,
                         meeting_id: meetingId,
                         recipients,
                         subject: `✍️ Attendance Required: ${meeting.meeting_name}`,
@@ -934,7 +1110,7 @@
         // ==========================================
         async openMinutesEditor(meetingId) {
             this.currentMeetingId = meetingId;
-            const { data: meeting } = await window.DB_ADMIN.from('meetings').select('*').eq('id', meetingId).single();
+            const meeting = await this.assertCanManage(meetingId);
             if (!meeting) return;
 
             this.minutesItems = Array.isArray(meeting.minutes_items) ? [...meeting.minutes_items] : [];
@@ -1065,6 +1241,7 @@
             try {
                 const { data: meeting } = await window.DB_ADMIN.from('meetings').select('*').eq('id', meetingId).single();
                 if (!meeting) { window.AppToast?.error('Meeting not found.'); return; }
+                if (!this.canManageMeeting(meeting)) { window.AppToast?.error('You are not allowed to send this meeting.'); return; }
 
                 const items = (meeting.minutes_items || []).filter(i => (i.heading || '').trim() || (i.details || '').trim());
                 if (items.length === 0) { window.AppToast?.warning('Log the minutes first, then email them.'); return; }
@@ -1073,19 +1250,8 @@
 
                 window.AppToast?.info('Preparing minutes email...');
 
-                const recipientType = meeting.meeting_type === 'board_meeting' ? 'board' : 'all_members';
-                let recipients = [];
-                try {
-                    if (window.getEmailRecipients) {
-                        recipients = await window.getEmailRecipients(recipientType);
-                    } else {
-                        let query = window.DB_ADMIN.from('users').select('email').eq('is_active', true).neq('role', 'super_admin').not('email', 'is', null);
-                        if (recipientType === 'board') query = query.eq('is_board_member', true);
-                        const { data } = await query;
-                        recipients = (data || []).map(u => u.email).filter(e => e && e.includes('@'));
-                    }
-                } catch (e) { console.warn('Recipient fetch failed:', e); }
-                if (recipients.length === 0) { window.AppToast?.warning('No recipients found.'); return; }
+                const recipients = await this.resolveRecipients(meeting);
+                if (recipients.length === 0) { window.AppToast?.warning(meeting.meeting_type === 'emergency' ? 'No invited members with an email address. Edit the meeting and select members.' : 'No recipients found.'); return; }
 
                 const base = this.safeFileName(meeting.meeting_name);
                 const files = [];
@@ -1120,9 +1286,11 @@
                 try {
                     const result = await postToScript({
                         type: 'meeting_minutes',
+                        meeting_type: meeting.meeting_type,
                         recipients,
                         meeting: {
                             meeting_name: meeting.meeting_name,
+                            meeting_type: meeting.meeting_type,
                             date: meeting.date,
                             venue: meeting.venue,
                             duration_minutes: meeting.duration_minutes,
@@ -1192,7 +1360,7 @@
         // ==========================================
         async openAttendanceEditor(meetingId) {
             this.currentMeetingId = meetingId;
-            const { data: meeting } = await window.DB_ADMIN.from('meetings').select('*').eq('id', meetingId).single();
+            const meeting = await this.assertCanManage(meetingId);
             if (!meeting) return;
             const { data: existing } = await window.DB_ADMIN.from('meeting_attendance').select('*').eq('meeting_id', meetingId).order('created_at');
             this.attendanceEntries = existing || [];
@@ -1282,7 +1450,16 @@
 
         async bulkAddFromMembers() {
             try {
-                const { data: users } = await window.DB_ADMIN.from('users').select('*').eq('is_active', true).neq('role', 'super_admin');
+                let users = [];
+                const { data: mtg } = await window.DB_ADMIN.from('meetings').select('meeting_type, invited_members').eq('id', this.currentMeetingId).single();
+                if (mtg?.meeting_type === 'emergency') {
+                    // Emergency meeting: only the selected members belong on the sheet
+                    const ids = invitedList(mtg).map(p => p && p.id).filter(Boolean);
+                    if (ids.length) { const r = await window.DB_ADMIN.from('users').select('*').in('id', ids); users = r.data || []; }
+                } else {
+                    const r = await window.DB_ADMIN.from('users').select('*').eq('is_active', true).neq('role', 'super_admin');
+                    users = r.data || [];
+                }
                 (users || []).forEach(u => {
                     if (!this.attendanceEntries.find(e => e.ri_id === u.ri_id && u.ri_id)) {
                         this.attendanceEntries.push({
@@ -1326,7 +1503,8 @@
             const wrapper = document.getElementById('meetings-table-wrapper');
             if (!wrapper) return;
             try {
-                const { data: meetings } = await window.DB_ADMIN.from('meetings').select('*, meeting_attendance(count)').order('date', { ascending: false }).limit(50);
+                const { data: allMeetings } = await window.DB_ADMIN.from('meetings').select('*, meeting_attendance(count)').order('date', { ascending: false }).limit(50);
+                const meetings = (allMeetings || []).filter(m => this.canSeeMeeting(m));
                 if (!meetings || meetings.length === 0) {
                     wrapper.innerHTML = '<div class="empty-state py-16"><i class="fa-solid fa-signature empty-state-icon"></i><p class="empty-state-desc">No attendance records found.</p></div>';
                     return;
@@ -1339,12 +1517,12 @@
                                 <tr>
                                     <td class="text-xs font-bold">${window.AdminPanel.esc(m.meeting_name)}</td>
                                     <td class="text-xs">${window.AdminPanel.fmtDate(m.date)}</td>
-                                    <td><span class="badge ${m.meeting_type === 'board_meeting' ? 'badge-purple' : 'badge-blue'}">${m.meeting_type === 'board_meeting' ? 'Board' : 'General'}</span></td>
+                                    <td><span class="badge ${m.meeting_type === 'board_meeting' ? 'badge-purple' : (m.meeting_type === 'emergency' ? 'badge-red' : 'badge-blue')}">${m.meeting_type === 'board_meeting' ? 'Board' : (m.meeting_type === 'emergency' ? 'Emergency' : 'General')}</span></td>
                                     <td class="text-center font-black text-brand-blue">${m.meeting_attendance?.[0]?.count || 0}</td>
                                     <td>
                                         <div class="flex items-center gap-1.5">
-                                            <button onclick="AdminMeetings.openAttendanceEditor('${m.id}')" class="btn-secondary btn-xs"><i class="fa-solid fa-pen"></i></button>
-                                            <button onclick="AdminMeetings.sendAttendanceForm('${m.id}')" class="btn-secondary btn-xs text-cyan-500" title="Email Attendance Form"><i class="fa-solid fa-paper-plane"></i></button>
+                                            ${this.canManageMeeting(m) ? `<button onclick="AdminMeetings.openAttendanceEditor('${m.id}')" class="btn-secondary btn-xs"><i class="fa-solid fa-pen"></i></button>
+                                            <button onclick="AdminMeetings.sendAttendanceForm('${m.id}')" class="btn-secondary btn-xs text-cyan-500" title="Email Attendance Form"><i class="fa-solid fa-paper-plane"></i></button>` : `<button onclick="AdminMeetings.viewMeeting('${m.id}')" class="btn-secondary btn-xs"><i class="fa-solid fa-eye"></i></button>`}
                                         </div>
                                     </td>
                                 </tr>
@@ -1357,7 +1535,8 @@
         // ==========================================
         // 7. AUTHENTICATED DOCUMENT GENERATION SYSTEM
         // ==========================================
-        showDownloadMenu(meetingId) {
+        async showDownloadMenu(meetingId) {
+            if (!(await this.assertCanManage(meetingId))) return;
             window.AdminPanel.createModal({
                 title: 'Download Official Documentation',
                 size: 'wide',
@@ -1491,6 +1670,7 @@
         async viewMeeting(id) {
             const { data: m } = await window.DB_ADMIN.from('meetings').select('*').eq('id', id).single();
             if (!m) return;
+            if (!this.canSeeMeeting(m)) { window.AppToast?.error('This emergency meeting is only for the members selected for it.'); return; }
             const { data: attendance } = await window.DB_ADMIN.from('meeting_attendance').select('*').eq('meeting_id', id);
 
             const agenda = m.agenda_items || [];
@@ -1514,7 +1694,7 @@
                 body: `
                     ${m.poster_url ? `<img src="${m.poster_url}" class="w-full rounded-2xl mb-5 border border-slate-200 dark:border-white/[0.08]" alt="">` : ''}
                     <div class="grid grid-cols-2 gap-4 mb-5 text-slate-800 dark:text-slate-100">
-                        <div><p class="text-[10px] text-slate-400 uppercase font-bold">Classification</p><p class="text-sm font-bold">${m.meeting_type === 'board_meeting' ? 'Board of Directors' : 'General Body Assembly'}</p></div>
+                        <div><p class="text-[10px] text-slate-400 uppercase font-bold">Classification</p><p class="text-sm font-bold">${meetingTypeName(m.meeting_type)}</p></div>${m.meeting_type === 'emergency' ? `<div class="col-span-2"><p class="text-[10px] text-slate-400 uppercase font-bold">Invited Members (${invitedList(m).length})</p><p class="text-xs font-semibold">${invitedList(m).map(p => window.AdminPanel.esc(p.name || p.email || '')).join(', ') || '—'}</p></div>` : ''}
                         <div><p class="text-[10px] text-slate-400 uppercase font-bold">Schedule Date</p><p class="text-sm font-bold">${window.AdminPanel.fmtDate(m.date)}</p></div>
                         <div><p class="text-[10px] text-slate-400 uppercase font-bold">Start & End Time</p><p class="text-sm font-bold">${window.AdminPanel.fmtTime(m.start_time)}${m.end_time ? ' - ' + window.AdminPanel.fmtTime(m.end_time) : ''}</p></div>
                         <div><p class="text-[10px] text-slate-400 uppercase font-bold">Current Status</p><p class="text-sm font-bold capitalize">${(m.status || '').replace('_', ' ')}</p></div>
@@ -1531,12 +1711,13 @@
                 `,
                 footer: `
                     <button class="btn-secondary" onclick="window.AdminPanel.closeModal()">Close</button>
-                    <button class="btn-primary" onclick="window.AdminPanel.closeModal();AdminMeetings.showDownloadMenu('${id}');"><i class="fa-solid fa-download"></i> All Documents</button>
+                    ${this.canManageMeeting(m) ? `<button class="btn-primary" onclick="window.AdminPanel.closeModal();AdminMeetings.showDownloadMenu('${id}');"><i class="fa-solid fa-download"></i> All Documents</button>` : ''}
                 `
             });
         },
 
         async deleteMeeting(id) {
+            if (!(await this.assertCanManage(id))) return;
             if (!confirm('Permanently delete this meeting session and all associated attendance records?')) return;
             try {
                 await window.DB_ADMIN.from('meeting_attendance').delete().eq('meeting_id', id);
