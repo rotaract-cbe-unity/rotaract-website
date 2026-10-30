@@ -908,9 +908,12 @@
                 // Avenue Directors see (and can report on) their own avenue's projects only.
                 const approver = isApprover();
                 const events = (allEvents || [])
-                    .filter(e => manageCheck(e).ok || approver)
-                    .filter(e => approver || !['draft', 'pending_approval'].includes(e.status))
+                    // Everyone with access to this desk can SEE every project's report status;
+                    // only the owner avenue (or an approver) gets the edit / report buttons below.
+                    .filter(e => approver || manageCheck(e).ok || !['draft', 'pending_approval'].includes(e.status))
                     .slice(0, 50);
+                const restrictedRole = ['avenue_director', 'avenue_chair'].includes(me().role);
+                const isDppChair = me().role === 'dpp_chair';
 
                 workspace.innerHTML = `
                     <div class="p-6 lg:p-10">
@@ -931,7 +934,7 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-                            <div class="admin-panel cursor-pointer hover-lift" onclick="Reports.openEventSelector('avenue')">
+                            ${isDppChair ? '' : `<div class="admin-panel cursor-pointer hover-lift" onclick="Reports.openEventSelector('avenue')">
                                 <div class="admin-panel-body text-center py-8">
                                     <div class="w-16 h-16 rounded-2xl bg-pink-500/10 flex items-center justify-center mx-auto mb-4 border border-pink-500/20">
                                         <i class="fa-solid fa-rocket text-2xl text-[#E4345A]"></i>
@@ -940,9 +943,9 @@
                                     <p class="text-[11px] text-slate-500 mb-4">Report with 6-8 geo-watermarked photos and statistics.</p>
                                     <button class="btn-primary btn-sm w-full" style="background:#E4345A;"><i class="fa-solid fa-file-pen mr-1.5"></i> Write Avenue Report</button>
                                 </div>
-                            </div>
+                            </div>`}
 
-                            <div class="admin-panel cursor-pointer hover-lift" onclick="Reports.openEventSelector('dpp')">
+                            ${restrictedRole ? '' : `<div class="admin-panel cursor-pointer hover-lift" onclick="Reports.openEventSelector('dpp')">
                                 <div class="admin-panel-body text-center py-8">
                                     <div class="w-16 h-16 rounded-2xl bg-yellow-500/10 flex items-center justify-center mx-auto mb-4 border border-yellow-500/20">
                                         <i class="fa-solid fa-star text-2xl text-[#F59E0B]"></i>
@@ -951,7 +954,7 @@
                                     <p class="text-[11px] text-slate-500 mb-4">District Priority Project report with Pillar & Category A/B/C.</p>
                                     <button class="btn-primary btn-sm w-full" style="background:#F59E0B;"><i class="fa-solid fa-star mr-1.5"></i> Write DPP Report</button>
                                 </div>
-                            </div>
+                            </div>`}
 
                             <div class="admin-panel cursor-pointer hover-lift" onclick="Reports.openMonthlyReportModal()">
                                 <div class="admin-panel-body text-center py-8">
@@ -990,7 +993,7 @@
                                                     <tr>
                                                         <td class="text-xs font-bold text-slate-800 dark:text-slate-100">${window.AdminPanel.esc(e.event_name)}</td>
                                                         <td class="text-xs text-slate-500">${window.AdminPanel.fmtDate(e.date)}</td>
-                                                        <td class="text-xs capitalize">${(e.avenue_slug || '').replace(/_/g, ' ')}</td>
+                                                        <td class="text-xs capitalize">${(e.avenue_slug || '').replace(/_/g, ' ')}${!approver && !manageCheck(e).ok ? ' <span class="badge badge-gray" title="Another avenue\'s project: view only"><i class="fa-solid fa-lock mr-1"></i>View only</span>' : ''}</td>
                                                         <td>${e.is_dpp ? '<span class="badge badge-yellow"><i class="fa-solid fa-star mr-1"></i>DPP</span>' : '<span class="badge badge-blue">Avenue</span>'}</td>
                                                         <td><span class="status-badge ${e.status}">${e.status}</span></td>
                                                         <td>${reportPending(e) ? '<span class="text-amber-500 font-bold text-xs"><i class="fa-solid fa-clock mr-1"></i>Awaiting approval</span>' : (e.report_submitted ? '<span class="text-green-500 font-bold text-xs"><i class="fa-solid fa-check mr-1"></i>Approved</span>' : '<span class="text-slate-400 text-xs">Draft/Pending</span>')}</td>
@@ -1000,7 +1003,7 @@
                                                                 ${manageCheck(e).ok && ['approved', 'completed'].includes(e.status) ? `<button class="btn-primary btn-xs" onclick="Reports.openReportForm('${e.id}')" title="Open Report Editor">
                                                                     <i class="fa-solid fa-file-pen mr-1"></i> Report
                                                                 </button>` : ''}
-                                                                ${e.report_submitted ? `
+                                                                ${e.report_submitted && (approver || manageCheck(e).ok || e.status === 'completed') ? `
                                                                     ${approver && e.status === 'completed' ? `<button class="btn-secondary btn-xs text-blue-600" onclick="Reports.emailReport('${e.id}')" title="Email report with photos">
                                                                         <i class="fa-solid fa-envelope"></i>
                                                                     </button>` : ''}
