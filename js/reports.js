@@ -78,8 +78,8 @@
         currentEvent: null,
         currentMode: 'avenue',
         reportPhotos: [],
-        minPhotos: 6,
-        maxPhotos: 8,
+        minPhotos: 2,
+        maxPhotos: 10,
         geoTaggingSupported: false,
 
         // Live GPS state
@@ -265,6 +265,8 @@
         renderAttendancePanel(event) {
             const council = this.parseJsonList(event.council_members_details);
             const trainers = this.parseJsonList(event.trainers_details);
+            const rotarians = this.parseJsonList(event.rotarians_details);
+            const interactors = this.parseJsonList(event.interactors_details);
             const num = (k) => this.esc(event[k] != null ? event[k] : 0);
             const rows = (type, list) => (list.length > 0 ? list : [{}]).map((p, i) => this.renderPersonRow(type, i, p)).join('');
 
@@ -276,7 +278,7 @@
                             <p class="text-xs font-bold text-brand-blue mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Record who actually attended</p>
                             <p class="text-[11px] text-slate-500 leading-relaxed">
                                 Enter how many council members, trainers, Rotarians and Interactors were present.
-                                If council members or trainers attended, add their names and portfolios below.
+                                Then add the names of the council members, trainers, Rotarians and Interactors who attended (with their portfolio / club or school).
                             </p>
                         </div>
                         <div class="admin-form-grid">
@@ -290,11 +292,11 @@
                             </div>
                             <div class="admin-form-group">
                                 <label class="admin-form-label"><i class="fa-solid fa-shield-halved text-green-600 mr-1"></i> Rotarians Present</label>
-                                <input type="number" name="rotarians_count" min="0" class="admin-form-input" value="${num('rotarians_count')}">
+                                <input type="number" name="rotarians_count" min="0" class="admin-form-input" value="${num('rotarians_count')}" onchange="Reports.toggleDetailSection('rotarian', this.value)">
                             </div>
                             <div class="admin-form-group">
                                 <label class="admin-form-label"><i class="fa-solid fa-children text-orange-500 mr-1"></i> Interactors Present</label>
-                                <input type="number" name="interactors_count" min="0" class="admin-form-input" value="${num('interactors_count')}">
+                                <input type="number" name="interactors_count" min="0" class="admin-form-input" value="${num('interactors_count')}" onchange="Reports.toggleDetailSection('interactor', this.value)">
                             </div>
                         </div>
 
@@ -313,6 +315,22 @@
                             </div>
                             <div id="trainer-details-container">${rows('trainer', trainers)}</div>
                         </div>
+
+                        <div class="mt-5 ${(parseInt(event.rotarians_count, 10) || 0) > 0 || rotarians.length ? '' : 'hidden'}" id="rotarian-details-section">
+                            <div class="flex items-center justify-between mb-3">
+                                <p class="text-xs font-black text-green-600"><i class="fa-solid fa-shield-halved mr-1"></i> Rotarians Details</p>
+                                <button type="button" class="btn-secondary btn-xs" onclick="Reports.addPersonRow('rotarian')"><i class="fa-solid fa-plus mr-1"></i> Add Rotarian</button>
+                            </div>
+                            <div id="rotarian-details-container">${rows('rotarian', rotarians)}</div>
+                        </div>
+
+                        <div class="mt-5 ${(parseInt(event.interactors_count, 10) || 0) > 0 || interactors.length ? '' : 'hidden'}" id="interactor-details-section">
+                            <div class="flex items-center justify-between mb-3">
+                                <p class="text-xs font-black text-orange-500"><i class="fa-solid fa-children mr-1"></i> Interactors Details</p>
+                                <button type="button" class="btn-secondary btn-xs" onclick="Reports.addPersonRow('interactor')"><i class="fa-solid fa-plus mr-1"></i> Add Interactor</button>
+                            </div>
+                            <div id="interactor-details-container">${rows('interactor', interactors)}</div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -321,7 +339,8 @@
         renderPersonRow(type, index, data) {
             const nameVal = this.esc(data && data.name || '');
             const portfolioVal = this.esc(data && data.portfolio || '');
-            const label = type === 'council' ? 'Council Member' : 'Trainer';
+            const label = { council: 'Council Member', trainer: 'Trainer', rotarian: 'Rotarian', interactor: 'Interactor' }[type] || 'Person';
+            const second = { council: 'Portfolio / Designation', trainer: 'Designation / Topic', rotarian: 'Club / Designation', interactor: 'School / Club' }[type] || 'Portfolio / Designation';
             return `
                 <div class="flex items-center gap-3 mb-3 ${type}-person-row" id="${type}-row-${index}">
                     <div class="w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center flex-shrink-0">
@@ -331,7 +350,7 @@
                         <input type="text" class="admin-form-input" placeholder="${label} Full Name" value="${nameVal}" data-type="${type}" data-index="${index}" data-field="name">
                     </div>
                     <div class="flex-1">
-                        <input type="text" class="admin-form-input" placeholder="Portfolio / Designation" value="${portfolioVal}" data-type="${type}" data-index="${index}" data-field="portfolio">
+                        <input type="text" class="admin-form-input" placeholder="${second}" value="${portfolioVal}" data-type="${type}" data-index="${index}" data-field="portfolio">
                     </div>
                     <button type="button" class="btn-danger btn-xs flex-shrink-0" onclick="Reports.removePersonRow('${type}', ${index})" title="Remove">
                         <i class="fa-solid fa-xmark"></i>
@@ -385,16 +404,22 @@
         collectAttendance(fd) {
             const council = this.collectPersonDetails('council');
             const trainers = this.collectPersonDetails('trainer');
+            const rotarians = this.collectPersonDetails('rotarian');
+            const interactors = this.collectPersonDetails('interactor');
             const n = (k) => Math.max(0, parseInt(fd.get(k), 10) || 0);
             return {
                 council_members_count: Math.max(n('council_members_count'), council.length),
                 trainers_count: Math.max(n('trainers_count'), trainers.length),
-                rotarians_count: n('rotarians_count'),
-                interactors_count: n('interactors_count'),
+                rotarians_count: Math.max(n('rotarians_count'), rotarians.length),
+                interactors_count: Math.max(n('interactors_count'), interactors.length),
                 council_members_details: council.length > 0 ? JSON.stringify(council) : null,
                 trainers_details: trainers.length > 0 ? JSON.stringify(trainers) : null,
+                rotarians_details: rotarians.length > 0 ? JSON.stringify(rotarians) : null,
+                interactors_details: interactors.length > 0 ? JSON.stringify(interactors) : null,
                 _council: council,
-                _trainers: trainers
+                _trainers: trainers,
+                _rotarians: rotarians,
+                _interactors: interactors
             };
         },
 
@@ -940,7 +965,7 @@
                                         <i class="fa-solid fa-rocket text-2xl text-[#E4345A]"></i>
                                     </div>
                                     <h4 class="text-sm font-black mb-1">Avenue Project Report</h4>
-                                    <p class="text-[11px] text-slate-500 mb-4">Report with 6-8 geo-watermarked photos and statistics.</p>
+                                    <p class="text-[11px] text-slate-500 mb-4">Report with 2-10 geo-watermarked photos and statistics.</p>
                                     <button class="btn-primary btn-sm w-full" style="background:#E4345A;"><i class="fa-solid fa-file-pen mr-1.5"></i> Write Avenue Report</button>
                                 </div>
                             </div>`}
@@ -2411,6 +2436,8 @@
                         <p><strong>Council:</strong> ${att.council_members_count} &bull; <strong>Trainers:</strong> ${att.trainers_count} &bull; <strong>Rotarians:</strong> ${att.rotarians_count} &bull; <strong>Interactors:</strong> ${att.interactors_count}</p>
                         ${att._council.length ? `<p class="mt-2 text-[9px] text-slate-400 uppercase font-black">Council Members</p>${att._council.map(p => `<p>${this.esc(p.name)} <span class="text-slate-400">(${this.esc(p.portfolio || 'N/A')})</span></p>`).join('')}` : ''}
                         ${att._trainers.length ? `<p class="mt-2 text-[9px] text-slate-400 uppercase font-black">Trainers</p>${att._trainers.map(p => `<p>${this.esc(p.name)} <span class="text-slate-400">(${this.esc(p.portfolio || 'N/A')})</span></p>`).join('')}` : ''}
+                        ${att._rotarians.length ? `<p class="mt-2 text-[9px] text-slate-400 uppercase font-black">Rotarians</p>${att._rotarians.map(p => `<p>${this.esc(p.name)} <span class="text-slate-400">(${this.esc(p.portfolio || 'N/A')})</span></p>`).join('')}` : ''}
+                        ${att._interactors.length ? `<p class="mt-2 text-[9px] text-slate-400 uppercase font-black">Interactors</p>${att._interactors.map(p => `<p>${this.esc(p.name)} <span class="text-slate-400">(${this.esc(p.portfolio || 'N/A')})</span></p>`).join('')}` : ''}
                     </div>
 
                     <div class="p-3 rounded-xl bg-green-500/5 border border-green-500/15">
@@ -2521,6 +2548,8 @@
                 interactors_count: att.interactors_count,
                 council_members_details: att.council_members_details,
                 trainers_details: att.trainers_details,
+                rotarians_details: att.rotarians_details,
+                interactors_details: att.interactors_details,
                 // Only approvers complete a report directly; for everybody else it waits for approval.
                 status: (action === 'submit' && isApprover()) ? 'completed' : this.currentEvent.status
             };
@@ -2697,7 +2726,8 @@
                         beneficiaries_count: ev.beneficiaries_count, volunteers_count: ev.volunteers_count, service_hours: ev.service_hours,
                         council_members_count: ev.council_members_count, trainers_count: ev.trainers_count,
                         rotarians_count: ev.rotarians_count, interactors_count: ev.interactors_count,
-                        council_members_details: ev.council_members_details, trainers_details: ev.trainers_details
+                        council_members_details: ev.council_members_details, trainers_details: ev.trainers_details,
+                        rotarians_details: ev.rotarians_details, interactors_details: ev.interactors_details
                     },
                     photos,
                     files,
