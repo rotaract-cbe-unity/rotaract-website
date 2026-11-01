@@ -171,19 +171,26 @@
                 invited.forEach(p => { if (p && p.email && String(p.email).includes('@') && !resolved.has(p.id)) emails.add(p.email); });
                 return Array.from(emails);
             }
-            const recipientType = meeting.meeting_type === 'board_meeting' ? 'board' : 'all_members';
-            let recipients = [];
+            // Board meeting -> the Board Members Google Group; General Body -> the All Members Google Group
+            // (both addresses are filled in Site Settings). Never individual member emails.
+            const addr = await this.groupAddress(meeting.meeting_type === 'board_meeting' ? 'board' : 'members');
+            return addr ? [addr] : [];
+        },
+        async groupAddress(kind) {
+            const key = kind === 'board' ? 'mail_group_board' : 'mail_group_members';
+            const valid = (v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v || '').trim());
+            try {
+                const { data } = await window.DB_ADMIN.from('system_settings').select('value').eq('key', key).maybeSingle();
+                if (data && valid(data.value)) return String(data.value).trim();
+            } catch (e) { console.warn('Group lookup failed:', e); }
             try {
                 if (window.getEmailRecipients) {
-                    recipients = await window.getEmailRecipients(recipientType);
-                } else {
-                    let query = window.DB_ADMIN.from('users').select('email, full_name').eq('is_active', true).neq('role', 'super_admin').not('email', 'is', null);
-                    if (recipientType === 'board') query = query.eq('is_board_member', true);
-                    const { data } = await query;
-                    recipients = (data || []).map(u => u.email).filter(e => e && e.includes('@'));
+                    const r = await window.getEmailRecipients(kind === 'board' ? 'board' : 'all_members');
+                    if (r && valid(r[0])) return r[0];
                 }
-            } catch (e) { console.warn('Recipient fetch failed:', e); }
-            return recipients;
+            } catch (e) { console.warn('Group fallback failed:', e); }
+            window.AppToast?.warning('Set the ' + (kind === 'board' ? 'Board Members' : 'All Members') + ' group email in Site Settings.');
+            return '';
         },
 
         // ==========================================
@@ -841,13 +848,12 @@
 
                 if (recipients.length === 0) { window.AppToast?.warning(meeting.meeting_type === 'emergency' ? 'No invited members with an email address. Edit the meeting and select members.' : 'No recipients found.'); return; }
 
-                const emailBody = this.buildInvitationEmailHTML(meeting);
                 const sender = window.AuthManager.currentUser;
 
                 const { data: logEntry } = await window.DB_ADMIN.from('email_log').insert({
                     email_type: 'meeting_invitation',
                     subject: `${meeting.meeting_type === 'emergency' ? '🚨 Emergency Meeting' : '📅 Meeting Invitation'}: ${meeting.meeting_name}`,
-                    html_body: emailBody,
+                    html_body: `Meeting invitation: ${meeting.meeting_name} (${meeting.date}, ${meeting.venue || ''})`,
                     sender_id: sender.id,
                     sender_name: sender.full_name || sender.name,
                     sender_role: sender.role,
@@ -869,9 +875,14 @@
                         meeting_type: meeting.meeting_type,
                         meeting_id: meetingId,
                         recipients,
-                        subject: `${meeting.meeting_type === 'emergency' ? '🚨 Emergency Meeting' : '📅 Meeting Invitation'}: ${meeting.meeting_name}`,
-                        html_body: emailBody,
-                        attachment_urls: /^https?:\/\//i.test(meeting.poster_url || '') ? [meeting.poster_url] : [],
+                        // Structured payload: the mail service renders the invitation in the same branded template as every other club mail
+                        meeting: {
+                            meeting_name: meeting.meeting_name, meeting_type: meeting.meeting_type,
+                            date: meeting.date, start_time: meeting.start_time, end_time: meeting.end_time,
+                            venue: meeting.venue, group_number: meeting.group_number,
+                            poster_url: /^https?:\/\//i.test(meeting.poster_url || '') ? meeting.poster_url : '',
+                            agenda_items: meeting.agenda_items || []
+                        },
                         files,
                         sender: { role: sender.role, name: sender.full_name || sender.name, email: sender.email }
                     });
@@ -1019,13 +1030,12 @@
                 if (recipients.length === 0) { window.AppToast?.warning(meeting.meeting_type === 'emergency' ? 'No invited members with an email address. Edit the meeting and select members.' : 'No recipients found.'); return; }
 
                 const attendanceFormUrl = `${window.location.origin}/attendance.html?meeting=${meetingId}`;
-                const emailBody = this.buildAttendanceFormEmailHTML(meeting, attendanceFormUrl);
                 const sender = window.AuthManager.currentUser;
 
                 const { data: logEntry } = await window.DB_ADMIN.from('email_log').insert({
                     email_type: 'attendance_form',
                     subject: `✍️ Attendance Form: ${meeting.meeting_name}`,
-                    html_body: emailBody,
+                    html_body: `Attendance form: ${meeting.meeting_name} (${attendanceFormUrl})`,
                     sender_id: sender.id,
                     sender_name: sender.full_name || sender.name,
                     sender_role: sender.role,
@@ -1040,8 +1050,12 @@
                         meeting_type: meeting.meeting_type,
                         meeting_id: meetingId,
                         recipients,
-                        subject: `✍️ Attendance Required: ${meeting.meeting_name}`,
-                        html_body: emailBody,
+                        meeting: {
+                            meeting_name: meeting.meeting_name, meeting_type: meeting.meeting_type,
+                            date: meeting.date, start_time: meeting.start_time, end_time: meeting.end_time,
+                            venue: meeting.venue
+                        },
+                        form_url: attendanceFormUrl,
                         sender: { role: sender.role, name: sender.full_name || sender.name, email: sender.email }
                     });
                     if (result.success) {
