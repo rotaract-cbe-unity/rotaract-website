@@ -1516,23 +1516,16 @@
                         <div class="admin-panel-body">
                             <div class="admin-form-grid">
                                 <div class="admin-form-group">
-                                    <label class="admin-form-label text-yellow-600">DPP Pillar <span class="required">*</span></label>
-                                    <select name="dpp_pillar" required class="admin-form-input admin-form-select">
-                                        <option value="">Select Pillar</option>
-                                        ${this.DPP_PILLARS.map(p => `<option value="${this.esc(p)}" ${event.dpp_pillar === p ? 'selected' : ''}>${this.esc(p)}</option>`).join('')}
-                                        ${event.dpp_pillar && !pillarKnown ? `<option value="${this.esc(event.dpp_pillar)}" selected>${this.esc(event.dpp_pillar)}</option>` : ''}
-                                    </select>
+                                    <label class="admin-form-label text-yellow-600">DPP Pillar <small class="text-slate-400 font-normal">(optional)</small></label>
+                                    <input type="text" name="dpp_pillar" class="admin-form-input" maxlength="200" value="${this.esc(event.dpp_pillar || '')}" placeholder="Type the DPP pillar">
                                 </div>
                                 <div class="admin-form-group">
-                                    <label class="admin-form-label text-yellow-600">DPP Category <span class="required">*</span></label>
-                                    <select name="dpp_category" required class="admin-form-input admin-form-select" onchange="Reports.toggleCategoryC(this.value)">
-                                        <option value="">Select Category</option>
-                                        ${this.DPP_CATEGORIES.map(c => `<option value="${c.value}" ${catVal === c.value ? 'selected' : ''}>${c.label}</option>`).join('')}
-                                    </select>
+                                    <label class="admin-form-label text-yellow-600">DPP Category <small class="text-slate-400 font-normal">(optional)</small></label>
+                                    <input type="text" name="dpp_category" class="admin-form-input" maxlength="200" value="${this.esc(event.dpp_category || '')}" placeholder="Type the DPP category" oninput="Reports.toggleCategoryC(Reports.normalizeDppCategory(this.value))">
                                 </div>
                                 <div class="admin-form-group full-width">
-                                    <label class="admin-form-label text-yellow-600">Reason for Pillar Alignment <span class="required">*</span></label>
-                                    <textarea name="pillar_alignment_reason" required rows="3" class="admin-form-input admin-form-textarea">${this.esc(event.pillar_alignment_reason || '')}</textarea>
+                                    <label class="admin-form-label text-yellow-600">Reason for Pillar Alignment <small class="text-slate-400 font-normal">(optional)</small></label>
+                                    <textarea name="pillar_alignment_reason" rows="3" class="admin-form-input admin-form-textarea">${this.esc(event.pillar_alignment_reason || '')}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -2487,8 +2480,9 @@
                 await this.render(window.AdminPanel.workspace);
                 if (action === 'submit' && !isApprover()) {
                     toast.info('Report sent for approval. It will be emailed to members once it is approved.');
-                } else if (action === 'submit' && await window.mailSwitchOn('auto_report_mail')) {
-                    await this.emailReport(submittedEventId, true);
+                } else if (action === 'submit') {
+                    if (await window.mailSwitchOn('auto_report_mail')) await this.emailReport(submittedEventId, true);
+                    else toast.info('Report mail is switched off in Site Settings, so nothing was emailed.');
                 }
             } catch (e) {
                 toast.error('Failed: ' + e.message);
@@ -2521,8 +2515,9 @@
                 await this.render(window.AdminPanel.workspace);
                 if (action === 'submit' && !isApprover()) {
                     toast.info('Report sent for approval. It will be emailed to members once it is approved.');
-                } else if (action === 'submit' && await window.mailSwitchOn('auto_report_mail')) {
-                    await this.emailReport(submittedEventId, true);
+                } else if (action === 'submit') {
+                    if (await window.mailSwitchOn('auto_report_mail')) await this.emailReport(submittedEventId, true);
+                    else toast.info('Report mail is switched off in Site Settings, so nothing was emailed.');
                 }
             } catch (e) {
                 toast.error('Failed: ' + e.message);
