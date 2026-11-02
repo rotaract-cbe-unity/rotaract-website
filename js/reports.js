@@ -2559,18 +2559,30 @@
             const { error } = await window.DB_ADMIN.from('events').update(updates).eq('id', eventId);
             if (error) throw error;
 
-            const newPhotos = this.reportPhotos.filter(p => !p.existing);
-            if (newPhotos.length > 0) {
-                const inserts = newPhotos.map((p, i) => ({
-                    event_id: eventId,
-                    photo_url: p.url,
-                    storage_provider: p.provider,
-                    caption: p.caption || '',
-                    is_report_photo: true,
-                    sort_order: i + 1
-                }));
-                const { error: photoErr } = await window.DB_ADMIN.from('event_photos').insert(inserts);
-                if (photoErr) throw photoErr;
+            // Sync photos with the editor: removed photos are deleted, kept ones are re-ordered/re-captioned, new ones inserted.
+            const keptIds = this.reportPhotos.filter(p => p.existing && p.id).map(p => p.id);
+            const { data: dbPhotos } = await window.DB_ADMIN.from('event_photos').select('id').eq('event_id', eventId).eq('is_report_photo', true);
+            const removeIds = (dbPhotos || []).map(p => p.id).filter(id => !keptIds.includes(id));
+            if (removeIds.length) {
+                const { error: delErr } = await window.DB_ADMIN.from('event_photos').delete().in('id', removeIds);
+                if (delErr) throw delErr;
+            }
+            for (let i = 0; i < this.reportPhotos.length; i++) {
+                const p = this.reportPhotos[i];
+                if (p.existing && p.id) {
+                    const { error: upErr } = await window.DB_ADMIN.from('event_photos').update({ caption: p.caption || '', sort_order: i + 1 }).eq('id', p.id);
+                    if (upErr) throw upErr;
+                } else {
+                    const { error: photoErr } = await window.DB_ADMIN.from('event_photos').insert({
+                        event_id: eventId,
+                        photo_url: p.url,
+                        storage_provider: p.provider,
+                        caption: p.caption || '',
+                        is_report_photo: true,
+                        sort_order: i + 1
+                    });
+                    if (photoErr) throw photoErr;
+                }
             }
         },
 
@@ -2640,6 +2652,7 @@
             try {
                 const response = await fetch(targetUrl, {
                     method: 'POST',
+                    cache: 'no-store',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${window.supabaseClient?.supabaseKey || ''}`
