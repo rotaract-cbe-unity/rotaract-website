@@ -814,7 +814,10 @@
                     window.AppToast?.success('Assembly session scheduled.');
                 }
 
-                if (fd.get('send_invitation') === 'on' && savedId) await this.sendInvitationEmail(savedId);
+                if (fd.get('send_invitation') === 'on' && savedId) {
+                    if (await window.mailSwitchOn('auto_meeting_invite')) await this.sendInvitationEmail(savedId);
+                    else window.AppToast?.info('Invitation mail is switched off in Site Settings, so nothing was emailed.');
+                }
                 if (fd.get('send_attendance_form') === 'on' && savedId) await this.sendAttendanceForm(savedId, true);
 
                 window.AdminPanel.logActivity(meetingId ? 'UPDATE' : 'CREATE', 'meeting', savedId);
@@ -1366,7 +1369,7 @@
                 window.AdminPanel.closeModal();
                 await this.loadMeetingsData();
                 if (approved && !prev?.minutes_approved && payload.minutes_items.length > 0 &&
-                    window.confirm('Minutes approved. Email the minutes PDF (with attendance sheet and photos) to members now?')) {
+                    await window.mailSwitchOn('auto_minutes_distribution')) {
                     await this.sendMinutesEmail(mailMeetingId, true);
                 }
             } catch (e) {
