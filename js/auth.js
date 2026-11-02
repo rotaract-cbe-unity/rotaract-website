@@ -167,7 +167,8 @@
 
     const AVENUE_LABELS = {
         club_service: 'Club Service', community_service: 'Community Service',
-        professional_service: 'Professional Service', international_service: 'International Service'
+        professional_service: 'Professional Service', international_service: 'International Service',
+        dpp: 'District Priority Projects'
     };
     window.normalizeAvenueSlug = function (v) {
         return String(v || '').toLowerCase().trim()
@@ -211,6 +212,17 @@
             return ['super_admin', 'advisor', 'president', 'treasurer'].includes(role);
         }
         return ['super_admin', 'advisor', 'president', 'ipp', 'vice_president', 'secretary', 'secretary_admin', 'secretary_comm', 'treasurer'].includes(role);
+    };
+
+    // Site Settings > Auto mail triggers. Resolves true when the switch is on (or cannot be read), false when it is OFF.
+    window.mailSwitchOn = async function (key) {
+        try {
+            const c = window.DB_ADMIN || window.supabaseClient;
+            if (!c) return true;
+            const { data } = await c.from('system_settings').select('value').eq('key', key).maybeSingle();
+            if (!data || data.value === null || data.value === undefined) return true;
+            return !['false', '0', 'off', 'no', 'disabled'].includes(String(data.value).trim().toLowerCase());
+        } catch (e) { return true; }
     };
 
     window.formatRoleName = function (role) {
