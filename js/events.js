@@ -537,7 +537,9 @@
             const myAvenue = isRestrictedAvenueRole() ? window.normalizeAvenueSlug(window.avenueSlugOf(me())) : '';
             const lockDpp = isRestrictedAvenueRole();
             const forceDpp = me().role === 'dpp_chair';
-            const avenueChoices = myAvenue ? AVENUES.filter(a => a.slug === myAvenue) : AVENUES;
+            const DPP_CHOICE = { slug: 'dpp', label: 'District Priority Projects' };
+            const avenueChoices = myAvenue ? AVENUES.filter(a => a.slug === myAvenue)
+                : (forceDpp ? [DPP_CHOICE] : AVENUES.concat([DPP_CHOICE]));
 
             A.createModal({
                 title: ev ? 'Edit Project' : 'Add New Project',
@@ -545,14 +547,6 @@
                 icon: 'calendar-days',
                 body: `
                     <div class="flex items-center justify-between mb-8 overflow-x-auto pb-2" id="event-wizard-steps">${this.stepsBarHtml()}</div>
-
-                    <!-- Datalists for DPP text inputs -->
-                    <datalist id="dpp-pillar-list">
-                        ${DPP_PILLARS.map(p => `<option value="${A.esc(p)}">`).join('')}
-                    </datalist>
-                    <datalist id="dpp-category-list">
-                        ${DPP_CATEGORIES.map(c => `<option value="${A.esc(c)}">`).join('')}
-                    </datalist>
 
                     <form id="event-wizard-form" onsubmit="return false;" class="space-y-6" novalidate>
 
@@ -572,9 +566,9 @@
                                         </div>
                                         <div class="admin-form-group">
                                             <label class="admin-form-label">Avenue Classification <span class="required">*</span></label>
-                                            <select name="avenue_slug" required class="admin-form-input">
+                                            <select name="avenue_slug" required class="admin-form-input" onchange="AdminEvents.toggleFormDPP(this.value === 'dpp')">
                                                 ${avenueChoices.length === 1 ? '' : '<option value="">Select Avenue</option>'}
-                                                ${avenueChoices.map(a => `<option value="${a.slug}" ${(ev ? ev.avenue_slug === a.slug : avenueChoices.length === 1) ? 'selected' : ''}>${a.label}</option>`).join('')}
+                                                ${avenueChoices.map(a => `<option value="${a.slug}" ${(ev ? (a.slug === 'dpp' ? !!ev.is_dpp : (!ev.is_dpp && ev.avenue_slug === a.slug)) : avenueChoices.length === 1) ? 'selected' : ''}>${a.label}</option>`).join('')}
                                             </select>
                                         </div>
                                         <div class="admin-form-group">
@@ -593,11 +587,8 @@
                                             </select>
                                         </div>
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label">Project Classification</label>
-                                            <label class="flex items-center gap-3 cursor-pointer mt-2.5">
-                                                <input type="checkbox" name="is_dpp" id="is-dpp-toggle" class="w-4 h-4 accent-yellow-500" ${(isDPP || forceDpp) ? 'checked' : ''} ${(lockDpp || forceDpp) ? 'disabled' : ''} onchange="AdminEvents.toggleFormDPP(this.checked)">
-                                                <span class="text-xs font-bold"><i class="fa-solid fa-star text-yellow-500 mr-1"></i>District Priority Project (DPP)</span>
-                                            </label>
+                                            <label class="admin-form-label">Avenue Rules</label>
+                                            <p class="text-[10px] text-slate-400 mt-1.5">Choose <b>District Priority Projects</b> in the Avenue list for a DPP project. It then asks for the DPP details (pillar, category and so on).</p>
                                             ${lockDpp ? '<p class="text-[10px] text-slate-400 mt-1.5">Avenue Directors cannot upload DPP projects.</p>' : ''}
                                             ${myAvenue ? `<p class="text-[10px] text-slate-400 mt-1.5">You can upload ${A.esc(window.avenueLabelOf(myAvenue))} projects only.</p>` : ''}
                                         </div>
@@ -712,16 +703,16 @@
                                             <label class="admin-form-label text-yellow-700">
                                                 <i class="fa-solid fa-bullseye text-yellow-500 mr-1"></i> Area of Focus (Pillar) <span class="required">*</span>
                                             </label>
-                                            <input type="text" name="dpp_pillar" id="dpp-pillar" class="admin-form-input" list="dpp-pillar-list"
-                                                value="${v('dpp_pillar')}" placeholder="Type to search pillar..." style="border-color:rgba(234,179,8,0.4);"
+                                            <input type="text" name="dpp_pillar" id="dpp-pillar" class="admin-form-input"
+                                                value="${v('dpp_pillar')}" placeholder="Type the DPP pillar" style="border-color:rgba(234,179,8,0.4);"
                                                 autocomplete="off">
                                         </div>
                                         <div class="admin-form-group full-width">
                                             <label class="admin-form-label text-yellow-700">
                                                 <i class="fa-solid fa-layer-group text-yellow-500 mr-1"></i> Project Category <span class="required">*</span>
                                             </label>
-                                            <input type="text" name="dpp_category" id="dpp-category" class="admin-form-input" list="dpp-category-list"
-                                                value="${v('dpp_category')}" placeholder="Type to search category..." style="border-color:rgba(234,179,8,0.4);"
+                                            <input type="text" name="dpp_category" id="dpp-category" class="admin-form-input"
+                                                value="${v('dpp_category')}" placeholder="Type the DPP category" style="border-color:rgba(234,179,8,0.4);"
                                                 autocomplete="off">
                                         </div>
                                         <div class="admin-form-group full-width">
@@ -938,7 +929,7 @@
             const box = document.getElementById('review-container');
             if (!form || !box) return;
             const fd = new FormData(form);
-            const isDPP = fd.get('is_dpp') === 'on';
+            const isDPP = me().role === 'dpp_chair' || fd.get('avenue_slug') === 'dpp';
 
             const row = (label, value) => `
                 <div class="p-3 rounded-xl bg-white/20 border border-white/10">
@@ -1017,7 +1008,7 @@
 
             const fdCheck = new FormData(form);
             // Disabled checkboxes are not submitted: DPP is forced off for avenue directors and on for the DPP chair.
-            const isDPP = me().role === 'dpp_chair' ? true : (isRestrictedAvenueRole() ? false : fdCheck.get('is_dpp') === 'on');
+            const isDPP = me().role === 'dpp_chair' ? true : (isRestrictedAvenueRole() ? false : fdCheck.get('avenue_slug') === 'dpp');
 
             // Scope check (also enforced here in case the form was tampered with)
             const scope = manageCheck({ avenue_slug: fdCheck.get('avenue_slug'), is_dpp: isDPP });
@@ -1076,7 +1067,7 @@
                     start_time: val('start_time'),
                     end_time: val('end_time'),
                     venue: val('venue'),
-                    avenue_slug: val('avenue_slug'),
+                    avenue_slug: isDPP ? 'dpp' : val('avenue_slug'),
                     event_chair: val('event_chair'),
                     event_secretary: val('event_secretary'),
                     event_proposed_by: val('event_proposed_by'),
@@ -1142,10 +1133,10 @@
 
                 if (typeof window.renderAllProjects === 'function') window.renderAllProjects();
 
-                // Offer to announce the project by email when it has just been published
+                // Announce the project by email when it has just been published and the Site Settings switch is ON (no prompt)
                 const savedId = this.currentEventId || payload.id;
                 if (isApprover() && payload.status === 'approved' && prevStatus !== 'approved' && ProjectsStore.isUuid(savedId) &&
-                    confirm('Project published. Email the announcement (with poster) to all members now?')) {
+                    await window.mailSwitchOn('auto_project_approval_mail')) {
                     await this.emailProject(savedId, true);
                 }
             } catch (e) {
@@ -1341,7 +1332,7 @@
                 A.notify('success', 'Project approved.');
                 await this.loadEvents();
                 if (typeof window.renderAllProjects === 'function') window.renderAllProjects();
-                if (confirm('Project approved. Email the announcement (with poster) to all members now?')) await this.emailProject(id, true);
+                if (await window.mailSwitchOn('auto_project_approval_mail')) await this.emailProject(id, true);
             } catch (e) { A.notify('error', 'Approval failed: ' + e.message); }
         },
 
@@ -1369,7 +1360,7 @@
                 A.notify('success', 'Report approved.');
                 await this.loadEvents();
                 if (typeof window.renderAllProjects === 'function') window.renderAllProjects();
-                if (window.Reports?.emailReport && confirm('Report approved. Email the report PDF with photographs to all members now?')) await window.Reports.emailReport(id, true);
+                if (window.Reports?.emailReport && await window.mailSwitchOn('auto_report_mail')) await window.Reports.emailReport(id, true);
             } catch (e) { A.notify('error', 'Approval failed: ' + e.message); }
         },
 
