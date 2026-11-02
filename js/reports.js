@@ -791,18 +791,34 @@
             const lr = lat * Math.PI / 180;
             const fy = (1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2 * n;
             const tx = Math.floor(fx), ty = Math.floor(fy);
-            const load = (url) => new Promise(res => {
-                const im = new Image(); im.crossOrigin = 'anonymous';
-                const t = setTimeout(() => res(null), 6000);
-                im.onload = () => { clearTimeout(t); res(im); };
-                im.onerror = () => { clearTimeout(t); res(null); };
-                im.src = url;
-            });
+            // Tiles are fetched with a status check: a provider that answers "401/403 API key required" (or any
+            // error) still sends a picture, which <img> would happily draw. Only genuine 200 image replies are used.
+            const load = async (url) => {
+                try {
+                    const ctl = new AbortController();
+                    const t = setTimeout(() => ctl.abort(), 7000);
+                    const r = await fetch(url, { mode: 'cors', signal: ctl.signal, credentials: 'omit' });
+                    clearTimeout(t);
+                    if (!r.ok) return null;
+                    const type = r.headers.get('content-type') || '';
+                    if (type && !/^image\//i.test(type)) return null;
+                    const blob = await r.blob();
+                    if (!blob || blob.size < 200) return null;
+                    const obj = URL.createObjectURL(blob);
+                    return await new Promise(res => {
+                        const im = new Image();
+                        im.onload = () => { URL.revokeObjectURL(obj); res(im); };
+                        im.onerror = () => { URL.revokeObjectURL(obj); res(null); };
+                        im.src = obj;
+                    });
+                } catch (e) { return null; }
+            };
             const wrap = (x) => ((x % n) + n) % n;
             const sub = ['a', 'b', 'c', 'd'];
             const sources = [
                 { px: 512, url: (x, y, i) => `https://${sub[i % 4]}.basemaps.cartocdn.com/rastertiles/voyager/${z}/${wrap(x)}/${y}@2x.png` },
-                { px: 256, url: (x, y) => `https://tile.openstreetmap.org/${z}/${wrap(x)}/${y}.png` }
+                { px: 256, url: (x, y) => `https://tile.openstreetmap.org/${z}/${wrap(x)}/${y}.png` },
+                { px: 256, url: (x, y) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/${z}/${y}/${wrap(x)}` }
             ];
             let big = null, unit = 256;
             for (const src of sources) {
@@ -812,7 +828,7 @@
                 for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) jobs.push(load(src.url(tx + dx, ty + dy, i++)).then(im => ({ im, dx, dy })));
                 const tiles = await Promise.all(jobs);
                 const ok = tiles.filter(t => t.im);
-                if (ok.length >= 5) {
+                if (ok.length >= 7) {
                     ok.forEach(t => cx2.drawImage(t.im, (t.dx + 1) * src.px, (t.dy + 1) * src.px, src.px, src.px));
                     big = c; unit = src.px; break;
                 }
@@ -2471,7 +2487,7 @@
                 await this.render(window.AdminPanel.workspace);
                 if (action === 'submit' && !isApprover()) {
                     toast.info('Report sent for approval. It will be emailed to members once it is approved.');
-                } else if (action === 'submit' && confirm('Report submitted. Email the report PDF with photographs to all members now?')) {
+                } else if (action === 'submit' && await window.mailSwitchOn('auto_report_mail')) {
                     await this.emailReport(submittedEventId, true);
                 }
             } catch (e) {
@@ -2505,7 +2521,7 @@
                 await this.render(window.AdminPanel.workspace);
                 if (action === 'submit' && !isApprover()) {
                     toast.info('Report sent for approval. It will be emailed to members once it is approved.');
-                } else if (action === 'submit' && confirm('Report submitted. Email the report PDF with photographs to all members now?')) {
+                } else if (action === 'submit' && await window.mailSwitchOn('auto_report_mail')) {
                     await this.emailReport(submittedEventId, true);
                 }
             } catch (e) {
@@ -2661,7 +2677,7 @@
                         type: 'monthly_report',
                         month: monthStr,
                         avenueId: avId,
-                        avenue: avenueFilter === 'dpp' ? 'dpp' : undefined
+                        avenueScope: avenueFilter
                     })
                 });
 
@@ -2674,7 +2690,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `Monthly_Report_${monthStr}.${format}`;
+                a.download = `Monthly_Report_${avenueFilter === 'all' ? 'All' : avenueFilter}_${monthStr}.${format}`;
                 document.body.appendChild(a);
                 a.click();
                 URL.revokeObjectURL(url);
