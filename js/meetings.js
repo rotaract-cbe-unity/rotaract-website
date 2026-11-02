@@ -1260,7 +1260,7 @@
                 const items = (meeting.minutes_items || []).filter(i => (i.heading || '').trim() || (i.details || '').trim());
                 if (items.length === 0) { window.AppToast?.warning('Log the minutes first, then email them.'); return; }
 
-                if (!silent && !window.confirm(`Email the minutes of "${meeting.meeting_name}" to members?\n\nIncluded: Minutes PDF, Attendance sheet PDF (if recorded) and meeting photos (if any).`)) return;
+                if (!silent && !window.confirm(`Email the minutes of "${meeting.meeting_name}" to members?\n\nIncluded: combined Minutes and Attendance PDF and meeting photos (if any).`)) return;
 
                 window.AppToast?.info('Preparing minutes email...');
 
@@ -1269,13 +1269,18 @@
 
                 const base = this.safeFileName(meeting.meeting_name);
                 const files = [];
-                const minutesFile = await this.fetchDocFile('meeting_minutes', meetingId, `Minutes_${base}.pdf`);
-                if (minutesFile) files.push(minutesFile);
-
-                const { count: attCount } = await window.DB_ADMIN.from('meeting_attendance').select('id', { count: 'exact', head: true }).eq('meeting_id', meetingId);
-                if ((attCount || 0) > 0) {
-                    const attFile = await this.fetchDocFile('meeting_attendance', meetingId, `Attendance_${base}.pdf`);
-                    if (attFile) files.push(attFile);
+                // One combined document: minutes together with the attendance record.
+                const combinedFile = await this.fetchDocFile('meeting_combined', meetingId, `Minutes_${base}.pdf`);
+                if (combinedFile) {
+                    files.push(combinedFile);
+                } else {
+                    const minutesFile = await this.fetchDocFile('meeting_minutes', meetingId, `Minutes_${base}.pdf`);
+                    if (minutesFile) files.push(minutesFile);
+                    const { count: attCount } = await window.DB_ADMIN.from('meeting_attendance').select('id', { count: 'exact', head: true }).eq('meeting_id', meetingId);
+                    if ((attCount || 0) > 0) {
+                        const attFile = await this.fetchDocFile('meeting_attendance', meetingId, `Attendance_${base}.pdf`);
+                        if (attFile) files.push(attFile);
+                    }
                 }
 
                 const photos = (Array.isArray(meeting.meeting_photos) ? meeting.meeting_photos : [])
