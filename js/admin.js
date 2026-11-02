@@ -2815,6 +2815,7 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     ${this.toggleField('auto_birthday_wishes', 'Birthday Wishes Auto-Trigger', this.getValue('auto_birthday_wishes', 'true'))}
                                     ${this.toggleField('auto_project_approval_mail', 'Project Approval Member Alert', this.getValue('auto_project_approval_mail', 'true'))}
+                                    ${this.toggleField('auto_report_mail', 'Approved Report Member Alert', this.getValue('auto_report_mail', 'true'))}
                                     ${this.toggleField('auto_meeting_invite', 'Meeting Invitation Auto-Send', this.getValue('auto_meeting_invite', 'true'))}
                                     ${this.toggleField('auto_meeting_attendance', 'Meeting Attendance Form Auto-Send', this.getValue('auto_meeting_attendance', 'true'))}
                                     ${this.toggleField('auto_monthly_treasury', 'Monthly Treasury Statement Auto-Send', this.getValue('auto_monthly_treasury', 'true'))}
