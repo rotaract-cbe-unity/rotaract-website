@@ -1629,7 +1629,7 @@
                 // Generation Date
                 sheet1.mergeCells(r, 1, r, 6);
                 const dateCell = sheet1.getCell(r, 1);
-                dateCell.value = `Generated: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}  |  Prepared by: ${Auth.currentUser?.name || 'Treasurer'}`;
+                dateCell.value = `Prepared by: ${Auth.currentUser?.name || 'Treasurer'}`;
                 dateCell.font = { name: 'Calibri', size: 9, italic: true, color: { argb: CLUB_INFO.colors.gray } };
                 dateCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: CLUB_INFO.colors.light } };
                 dateCell.alignment = { horizontal: 'center' };
@@ -1787,7 +1787,7 @@
 
                 sheet2.mergeCells('A2:I2');
                 const lSub = sheet2.getCell('A2');
-                lSub.value = `GENERAL LEDGER  |  ${CLUB_INFO.district}  |  Generated: ${new Date().toLocaleDateString('en-IN')}`;
+                lSub.value = `GENERAL LEDGER  |  ${CLUB_INFO.district}`;
                 lSub.font = { name: 'Calibri', size: 10, color: { argb: 'FFFFFFFF' }, italic: true };
                 lSub.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: CLUB_INFO.colors.navy } };
                 lSub.alignment = { horizontal: 'center', vertical: 'middle' };
