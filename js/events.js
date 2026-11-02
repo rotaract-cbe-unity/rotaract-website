@@ -690,18 +690,18 @@
                                     <div class="p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/15 mb-5">
                                         <p class="text-xs font-bold text-yellow-700 mb-1"><i class="fa-solid fa-circle-info mr-1"></i> DPP Pillar & Category</p>
                                         <p class="text-[11px] text-slate-500 leading-relaxed">
-                                            Start typing to search from Rotary's official Areas of Focus pillars. You can also type a custom pillar or category if needed.
+                                            Type the pillar and category in your own words. All the fields on this step are optional.
                                         </p>
                                     </div>
 
                                     <div class="admin-form-grid">
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label text-yellow-700">DPP Project ID <span class="required">*</span></label>
+                                            <label class="admin-form-label text-yellow-700">DPP Project ID <small class="text-slate-400 font-normal">(optional)</small></label>
                                             <input type="text" name="dpp_project_number" id="dpp-project-number" class="admin-form-input" value="${v('dpp_project_number')}" placeholder="e.g. DPP-CBE-04" style="border-color:rgba(234,179,8,0.4);">
                                         </div>
                                         <div class="admin-form-group">
                                             <label class="admin-form-label text-yellow-700">
-                                                <i class="fa-solid fa-bullseye text-yellow-500 mr-1"></i> Area of Focus (Pillar) <span class="required">*</span>
+                                                <i class="fa-solid fa-bullseye text-yellow-500 mr-1"></i> Area of Focus (Pillar) <small class="text-slate-400 font-normal">(optional)</small>
                                             </label>
                                             <input type="text" name="dpp_pillar" id="dpp-pillar" class="admin-form-input"
                                                 value="${v('dpp_pillar')}" placeholder="Type the DPP pillar" style="border-color:rgba(234,179,8,0.4);"
@@ -709,27 +709,15 @@
                                         </div>
                                         <div class="admin-form-group full-width">
                                             <label class="admin-form-label text-yellow-700">
-                                                <i class="fa-solid fa-layer-group text-yellow-500 mr-1"></i> Project Category <span class="required">*</span>
+                                                <i class="fa-solid fa-layer-group text-yellow-500 mr-1"></i> Project Category <small class="text-slate-400 font-normal">(optional)</small>
                                             </label>
                                             <input type="text" name="dpp_category" id="dpp-category" class="admin-form-input"
                                                 value="${v('dpp_category')}" placeholder="Type the DPP category" style="border-color:rgba(234,179,8,0.4);"
                                                 autocomplete="off">
                                         </div>
                                         <div class="admin-form-group full-width">
-                                            <label class="admin-form-label text-yellow-700">Reason for Pillar Alignment <span class="required">*</span></label>
+                                            <label class="admin-form-label text-yellow-700">Reason for Pillar Alignment <small class="text-slate-400 font-normal">(optional)</small></label>
                                             <textarea name="pillar_alignment_reason" id="dpp-reason" rows="3" class="admin-form-input" placeholder="Explain how this project aligns with the selected pillar..." style="border-color:rgba(234,179,8,0.4);">${v('pillar_alignment_reason')}</textarea>
-                                        </div>
-                                        <div class="admin-form-group">
-                                            <label class="admin-form-label text-yellow-700">SDGs this project supports</label>
-                                            <input type="text" name="dpp_sdg_goals" id="dpp-sdg" class="admin-form-input" value="${v('dpp_sdg_goals')}" placeholder="e.g. SDG 3, SDG 4" style="border-color:rgba(234,179,8,0.4);">
-                                        </div>
-                                        <div class="admin-form-group">
-                                            <label class="admin-form-label text-yellow-700">Target Group <span class="required">*</span></label>
-                                            <input type="text" name="dpp_target_group" id="dpp-target-group" class="admin-form-input" value="${v('dpp_target_group')}" placeholder="e.g. School students Grades 6-8" style="border-color:rgba(234,179,8,0.4);">
-                                        </div>
-                                        <div class="admin-form-group full-width">
-                                            <label class="admin-form-label text-yellow-700">Impact Measurement <span class="required">*</span></label>
-                                            <textarea name="dpp_impact_metric" id="dpp-impact-metric" rows="2" class="admin-form-input" placeholder="e.g. 200 screened, 80% follow-up" style="border-color:rgba(234,179,8,0.4);">${v('dpp_impact_metric')}</textarea>
                                         </div>
                                         <div class="admin-form-group full-width">
                                             <label class="admin-form-label text-yellow-700">Sustainability Plan</label>
@@ -799,13 +787,7 @@
         // ==========================================
         applyDppRequired(isDPP) {
             const dppFieldIds = [
-                'dpp-project-number', 
-                'dpp-pillar', 
-                'dpp-category', 
-                'dpp-reason', 
-                'dpp-target-group', 
-                'dpp-impact-metric'
-            ];
+            ];  // DPP project ID, pillar, category and alignment reason are optional
             dppFieldIds.forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
@@ -1082,9 +1064,6 @@
                     dpp_pillar: isDPP ? val('dpp_pillar') : null,
                     dpp_category: isDPP ? val('dpp_category') : null,
                     pillar_alignment_reason: isDPP ? val('pillar_alignment_reason') : null,
-                    dpp_sdg_goals: isDPP ? val('dpp_sdg_goals') : null,
-                    dpp_target_group: isDPP ? val('dpp_target_group') : null,
-                    dpp_impact_metric: isDPP ? val('dpp_impact_metric') : null,
                     dpp_sustainability_plan: isDPP ? val('dpp_sustainability_plan') : null,
                     status: fd.get('status') || (isApprover() ? 'approved' : 'pending_approval')
                 };
@@ -1333,6 +1312,7 @@
                 await this.loadEvents();
                 if (typeof window.renderAllProjects === 'function') window.renderAllProjects();
                 if (await window.mailSwitchOn('auto_project_approval_mail')) await this.emailProject(id, true);
+                else A.notify('info', 'Project mail is switched off in Site Settings, so nothing was emailed.');
             } catch (e) { A.notify('error', 'Approval failed: ' + e.message); }
         },
 
@@ -1360,7 +1340,10 @@
                 A.notify('success', 'Report approved.');
                 await this.loadEvents();
                 if (typeof window.renderAllProjects === 'function') window.renderAllProjects();
-                if (window.Reports?.emailReport && await window.mailSwitchOn('auto_report_mail')) await window.Reports.emailReport(id, true);
+                if (window.Reports?.emailReport) {
+                    if (await window.mailSwitchOn('auto_report_mail')) await window.Reports.emailReport(id, true);
+                    else A.notify('info', 'Report mail is switched off in Site Settings, so nothing was emailed.');
+                }
             } catch (e) { A.notify('error', 'Approval failed: ' + e.message); }
         },
 
