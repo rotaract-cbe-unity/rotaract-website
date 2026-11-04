@@ -1516,15 +1516,15 @@
                         <div class="admin-panel-body">
                             <div class="admin-form-grid">
                                 <div class="admin-form-group">
-                                    <label class="admin-form-label text-yellow-600">DPP Pillar <small class="text-slate-400 font-normal">(optional)</small></label>
+                                    <label class="admin-form-label text-yellow-600">DPP Pillar</label>
                                     <input type="text" name="dpp_pillar" class="admin-form-input" maxlength="200" value="${this.esc(event.dpp_pillar || '')}" placeholder="Type the DPP pillar">
                                 </div>
                                 <div class="admin-form-group">
-                                    <label class="admin-form-label text-yellow-600">DPP Category <small class="text-slate-400 font-normal">(optional)</small></label>
+                                    <label class="admin-form-label text-yellow-600">DPP Category</label>
                                     <input type="text" name="dpp_category" class="admin-form-input" maxlength="200" value="${this.esc(event.dpp_category || '')}" placeholder="Type the DPP category" oninput="Reports.toggleCategoryC(Reports.normalizeDppCategory(this.value))">
                                 </div>
                                 <div class="admin-form-group full-width">
-                                    <label class="admin-form-label text-yellow-600">Reason for Pillar Alignment <small class="text-slate-400 font-normal">(optional)</small></label>
+                                    <label class="admin-form-label text-yellow-600">Reason for Pillar Alignment</label>
                                     <textarea name="pillar_alignment_reason" rows="3" class="admin-form-input admin-form-textarea">${this.esc(event.pillar_alignment_reason || '')}</textarea>
                                 </div>
                             </div>
