@@ -687,21 +687,14 @@
                             <div class="admin-panel" style="border-top:3px solid #eab308 !important;">
                                 <div class="admin-panel-header"><h3 class="admin-panel-title"><i class="fa-solid fa-star text-yellow-500"></i> District Priority Project Specification</h3></div>
                                 <div class="admin-panel-body">
-                                    <div class="p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/15 mb-5">
-                                        <p class="text-xs font-bold text-yellow-700 mb-1"><i class="fa-solid fa-circle-info mr-1"></i> DPP Pillar & Category</p>
-                                        <p class="text-[11px] text-slate-500 leading-relaxed">
-                                            Type the pillar and category in your own words. All the fields on this step are optional.
-                                        </p>
-                                    </div>
-
                                     <div class="admin-form-grid">
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label text-yellow-700">DPP Project ID <small class="text-slate-400 font-normal">(optional)</small></label>
+                                            <label class="admin-form-label text-yellow-700">DPP Project ID</label>
                                             <input type="text" name="dpp_project_number" id="dpp-project-number" class="admin-form-input" value="${v('dpp_project_number')}" placeholder="e.g. DPP-CBE-04" style="border-color:rgba(234,179,8,0.4);">
                                         </div>
                                         <div class="admin-form-group">
                                             <label class="admin-form-label text-yellow-700">
-                                                <i class="fa-solid fa-bullseye text-yellow-500 mr-1"></i> Area of Focus (Pillar) <small class="text-slate-400 font-normal">(optional)</small>
+                                                <i class="fa-solid fa-bullseye text-yellow-500 mr-1"></i> Area of Focus (Pillar)
                                             </label>
                                             <input type="text" name="dpp_pillar" id="dpp-pillar" class="admin-form-input"
                                                 value="${v('dpp_pillar')}" placeholder="Type the DPP pillar" style="border-color:rgba(234,179,8,0.4);"
@@ -709,14 +702,14 @@
                                         </div>
                                         <div class="admin-form-group full-width">
                                             <label class="admin-form-label text-yellow-700">
-                                                <i class="fa-solid fa-layer-group text-yellow-500 mr-1"></i> Project Category <small class="text-slate-400 font-normal">(optional)</small>
+                                                <i class="fa-solid fa-layer-group text-yellow-500 mr-1"></i> Project Category
                                             </label>
                                             <input type="text" name="dpp_category" id="dpp-category" class="admin-form-input"
                                                 value="${v('dpp_category')}" placeholder="Type the DPP category" style="border-color:rgba(234,179,8,0.4);"
                                                 autocomplete="off">
                                         </div>
                                         <div class="admin-form-group full-width">
-                                            <label class="admin-form-label text-yellow-700">Reason for Pillar Alignment <small class="text-slate-400 font-normal">(optional)</small></label>
+                                            <label class="admin-form-label text-yellow-700">Reason for Pillar Alignment</label>
                                             <textarea name="pillar_alignment_reason" id="dpp-reason" rows="3" class="admin-form-input" placeholder="Explain how this project aligns with the selected pillar..." style="border-color:rgba(234,179,8,0.4);">${v('pillar_alignment_reason')}</textarea>
                                         </div>
                                         <div class="admin-form-group full-width">
