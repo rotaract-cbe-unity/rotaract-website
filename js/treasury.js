@@ -591,12 +591,14 @@
                         <span><strong class="text-red-500">Expense:</strong> ${this.money(expense)}</span>
                         <span><strong class="${(income - expense) >= 0 ? 'text-brand-blue' : 'text-red-500'}">Net:</strong> ${this.money(income - expense)}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="AdminTreasury.exportToExcel()" class="text-[10px] font-bold text-green-600 hover:underline">
-                            <i class="fa-solid fa-file-excel"></i> Excel
+                    <div class="flex items-center gap-2.5">
+                        <button onclick="AdminTreasury.exportToExcel()" title="Download the ledger as an Excel workbook"
+                            style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:12px;border:0;cursor:pointer;color:#fff;font-size:12px;font-weight:800;letter-spacing:.3px;background:linear-gradient(135deg,#15803d,#22c55e);box-shadow:0 4px 12px rgba(22,163,74,.35);">
+                            <i class="fa-solid fa-file-excel" style="font-size:15px;"></i> Excel
                         </button>
-                        <button onclick="AdminTreasury.openPeriodPicker('range')" class="text-[10px] font-bold text-red-600 hover:underline">
-                            <i class="fa-solid fa-file-pdf"></i> PDF
+                        <button onclick="AdminTreasury.openPeriodPicker('range')" title="Download a PDF statement for a date range"
+                            style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:12px;border:0;cursor:pointer;color:#fff;font-size:12px;font-weight:800;letter-spacing:.3px;background:linear-gradient(135deg,#b91c1c,#ef4444);box-shadow:0 4px 12px rgba(220,38,38,.35);">
+                            <i class="fa-solid fa-file-pdf" style="font-size:15px;"></i> PDF
                         </button>
                     </div>
                 </div>
@@ -700,8 +702,12 @@
         },
 
         async renderAnalytics(container) {
+            const selRY = (this.analyticsRY !== undefined && this.analyticsRY !== null) ? this.analyticsRY : this.rotaryStartYear();
+            const ryNow = this.rotaryStartYear();
+            const ryChoices = [ryNow, ryNow - 1, ryNow - 2, ryNow - 3];
+            if (!ryChoices.includes(selRY)) ryChoices.push(selRY);
             const [monthly, yearly, categoryTrend, topTransactions] = await Promise.all([
-                this.getMonthlyTrends(12),
+                this.getMonthlyTrends(12, selRY),
                 this.getYearlyComparison(),
                 this.getCategoryTrends(),
                 this.getTopTransactions(10)
@@ -709,8 +715,11 @@
 
             container.innerHTML = `
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <div class="admin-panel"><div class="admin-panel-header"><h3 class="admin-panel-title"><i class="fa-solid fa-chart-column"></i> 12-Month Trend</h3></div><div class="admin-panel-body">${this.renderBarChart(monthly, true)}</div></div>
-                    <div class="admin-panel"><div class="admin-panel-header"><h3 class="admin-panel-title"><i class="fa-solid fa-chart-pie"></i> Year-over-Year</h3></div><div class="admin-panel-body">${this.renderYearlyComparison(yearly)}</div></div>
+                    <div class="admin-panel"><div class="admin-panel-header flex items-center justify-between gap-2"><h3 class="admin-panel-title"><i class="fa-solid fa-chart-column"></i> Rotary Year Trend (Jul &ndash; Jun)</h3>
+                        <select onchange="AdminTreasury.setAnalyticsRY(this.value)" class="text-xs font-bold p-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900" title="Choose Rotary year">
+                            ${ryChoices.sort((a, b) => b - a).map(y => `<option value="${y}" ${y === selRY ? 'selected' : ''}>RY ${this.rotaryLabel(y)}</option>`).join('')}
+                        </select></div><div class="admin-panel-body">${this.renderBarChart(monthly, true)}</div></div>
+                    <div class="admin-panel"><div class="admin-panel-header"><h3 class="admin-panel-title"><i class="fa-solid fa-chart-pie"></i> Rotary Year Comparison</h3></div><div class="admin-panel-body">${this.renderYearlyComparison(yearly)}</div></div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     <div class="admin-panel"><div class="admin-panel-header"><h3 class="admin-panel-title"><i class="fa-solid fa-tags"></i> Income by Category</h3></div><div class="admin-panel-body">${this.renderCategoryList(categoryTrend.income, 'income')}</div></div>
@@ -800,7 +809,7 @@
                         <div class="admin-panel-body text-center py-8">
                             <div class="w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-chart-pie text-2xl text-purple-500"></i></div>
                             <h4 class="text-sm font-bold mb-2">Quarterly Report</h4>
-                            <p class="text-[11px] text-slate-500 mb-4">3-month summary with trend analysis.</p>
+                            <p class="text-[11px] text-slate-500 mb-4">Rotary quarter summary (Jul&ndash;Sep, Oct&ndash;Dec, Jan&ndash;Mar, Apr&ndash;Jun) with trend analysis.</p>
                             <button class="btn-primary btn-sm w-full"><i class="fa-solid fa-calendar-check mr-1"></i> Select Quarter</button>
                         </div>
                     </div>
@@ -808,8 +817,8 @@
                         <div class="admin-panel-body text-center py-8">
                             <div class="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-file-invoice-dollar text-2xl text-green-500"></i></div>
                             <h4 class="text-sm font-bold mb-2">Annual Report</h4>
-                            <p class="text-[11px] text-slate-500 mb-4">Full Rotary year report.</p>
-                            <button class="btn-primary btn-sm w-full"><i class="fa-solid fa-calendar-check mr-1"></i> Select Year</button>
+                            <p class="text-[11px] text-slate-500 mb-4">Full Rotary year report, 1 July to 30 June.</p>
+                            <button class="btn-primary btn-sm w-full"><i class="fa-solid fa-calendar-check mr-1"></i> Select Rotary Year</button>
                         </div>
                     </div>
                     <div class="admin-panel cursor-pointer hover:scale-[1.02] transition-transform" onclick="AdminTreasury.openPeriodPicker('range')">
@@ -897,15 +906,19 @@
                 }
             }
 
+            // Rotary year runs 1 July - 30 June; the value of each option is the calendar year in which it starts.
+            const ryNow = this.rotaryStartYear(now);
             const years = [];
-            for (let y = currentYear; y >= currentYear - 3; y--) years.push(y);
+            for (let y = ryNow; y >= ryNow - 3; y--) years.push(y);
+            const ryText = (y) => `${this.rotaryLabel(y)}  (Jul ${y} - Jun ${y + 1})`;
 
             const quarters = [
-                { value: 'Q1', label: 'Q1 (Jan - Mar)' },
-                { value: 'Q2', label: 'Q2 (Apr - Jun)' },
-                { value: 'Q3', label: 'Q3 (Jul - Sep)' },
-                { value: 'Q4', label: 'Q4 (Oct - Dec)' },
+                { value: 'Q1', label: 'Q1 (Jul - Sep)' },
+                { value: 'Q2', label: 'Q2 (Oct - Dec)' },
+                { value: 'Q3', label: 'Q3 (Jan - Mar)' },
+                { value: 'Q4', label: 'Q4 (Apr - Jun)' },
             ];
+            const curQuarter = this.rotaryQuarterOf(now);
 
             let title = '', icon = '', bodyContent = '';
 
@@ -926,37 +939,39 @@
                     </div>
                 `;
             } else if (mode === 'quarterly') {
-                title = 'Select Quarter';
+                title = 'Select Rotary Quarter';
                 icon = 'chart-pie';
                 bodyContent = `
                     <div class="space-y-4 text-left">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-bold mb-2">Year</label>
+                                <label class="block text-xs font-bold mb-2">Rotary Year</label>
                                 <select id="period-year-select" class="w-full text-sm p-3 rounded-xl border-2 border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 font-bold">
-                                    ${years.map(y => `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`).join('')}
+                                    ${years.map(y => `<option value="${y}" ${y === ryNow ? 'selected' : ''}>${ryText(y)}</option>`).join('')}
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold mb-2">Quarter</label>
                                 <select id="period-quarter-select" class="w-full text-sm p-3 rounded-xl border-2 border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 font-bold">
-                                    ${quarters.map(q => `<option value="${q.value}">${q.label}</option>`).join('')}
+                                    ${quarters.map(q => `<option value="${q.value}" ${q.value === curQuarter ? 'selected' : ''}>${q.label}</option>`).join('')}
                                 </select>
                             </div>
                         </div>
+                        <p class="text-[11px] text-slate-500"><i class="fa-solid fa-info-circle text-brand-blue mr-1"></i>The Rotary year runs from 1 July to 30 June, so Q1 is July&ndash;September.</p>
                     </div>
                 `;
             } else if (mode === 'annual') {
-                title = 'Select Year';
+                title = 'Select Rotary Year';
                 icon = 'file-invoice-dollar';
                 bodyContent = `
                     <div class="space-y-4 text-left">
                         <div>
-                            <label class="block text-xs font-bold mb-2">Choose Year</label>
+                            <label class="block text-xs font-bold mb-2">Choose Rotary Year</label>
                             <select id="period-year-select" class="w-full text-sm p-3 rounded-xl border-2 border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 font-bold">
-                                ${years.map(y => `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`).join('')}
+                                ${years.map(y => `<option value="${y}" ${y === ryNow ? 'selected' : ''}>${ryText(y)}</option>`).join('')}
                             </select>
                         </div>
+                        <p class="text-[11px] text-slate-500"><i class="fa-solid fa-info-circle text-brand-blue mr-1"></i>Covers the full Rotary year, 1 July to 30 June.</p>
                     </div>
                 `;
             } else {
@@ -1001,16 +1016,16 @@
                 } else if (mode === 'quarterly') {
                     const year = document.getElementById('period-year-select')?.value;
                     const quarter = document.getElementById('period-quarter-select')?.value;
-                    if (!year || !quarter) { toast.error('Please select year and quarter'); return; }
-                    const qMap = { Q1: ['01-01', '03-31'], Q2: ['04-01', '06-30'], Q3: ['07-01', '09-30'], Q4: ['10-01', '12-31'] };
-                    const [start, end] = qMap[quarter];
+                    if (!year || !quarter) { toast.error('Please select Rotary year and quarter'); return; }
+                    const { start, end } = this.rotaryRange(year, quarter);
                     this.closeFallbackModal();
-                    await this.generateRangeReport(`${year}-${start}`, `${year}-${end}`);
+                    await this.generateRangeReport(start, end);
                 } else if (mode === 'annual') {
                     const year = document.getElementById('period-year-select')?.value;
-                    if (!year) { toast.error('Please select a year'); return; }
+                    if (!year) { toast.error('Please select a Rotary year'); return; }
+                    const { start, end } = this.rotaryRange(year);
                     this.closeFallbackModal();
-                    await this.generateRangeReport(`${year}-01-01`, `${year}-12-31`);
+                    await this.generateRangeReport(start, end);
                 } else {
                     const start = document.getElementById('period-start-date')?.value;
                     const end = document.getElementById('period-end-date')?.value;
@@ -1268,12 +1283,40 @@
         // ============================================
         // DATA FETCHERS
         // ============================================
+        // ============================================
+        // ROTARY YEAR HELPERS  (Rotary year = 1 July to 30 June)
+        // ============================================
+        ymd(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; },
+        rotaryStartYear(d) { d = d || new Date(); return d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1; },
+        rotaryLabel(y) { y = parseInt(y); return `${y}-${String((y + 1) % 100).padStart(2, '0')}`; },
+        rotaryYearOfDate(s) {
+            const y = parseInt(String(s || '').substring(0, 4)), m = parseInt(String(s || '').substring(5, 7));
+            if (!y || !m) return null;
+            return m >= 7 ? y : y - 1;
+        },
+        rotaryQuarterOf(d) {
+            const m = (d || new Date()).getMonth() + 1;
+            return m >= 7 && m <= 9 ? 'Q1' : m >= 10 ? 'Q2' : m <= 3 ? 'Q3' : 'Q4';
+        },
+        // Whole Rotary year (quarter omitted) or one Rotary quarter. `startYear` is the year in which the Rotary year begins.
+        rotaryRange(startYear, quarter) {
+            const y = parseInt(startYear);
+            if (!quarter) return { start: `${y}-07-01`, end: `${y + 1}-06-30` };
+            return {
+                Q1: { start: `${y}-07-01`, end: `${y}-09-30` },
+                Q2: { start: `${y}-10-01`, end: `${y}-12-31` },
+                Q3: { start: `${y + 1}-01-01`, end: `${y + 1}-03-31` },
+                Q4: { start: `${y + 1}-04-01`, end: `${y + 1}-06-30` }
+            }[quarter];
+        },
+        setAnalyticsRY(v) { this.analyticsRY = parseInt(v); this.switchView('analytics'); },
+
         async getOverallSummary() {
             try {
                 const txns = await DB.get('treasury', DEFAULT_TREASURY_SEED);
                 const now = new Date();
-                const first = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-                const last = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+                const first = this.ymd(new Date(now.getFullYear(), now.getMonth(), 1));
+                const last = this.ymd(new Date(now.getFullYear(), now.getMonth() + 1, 0));
 
                 let totalIncome = 0, totalExpense = 0, incomeCount = 0, expenseCount = 0;
                 let monthlyIncome = 0, monthlyExpense = 0, monthlyTxns = 0;
@@ -1305,15 +1348,20 @@
             }
         },
 
-        async getMonthlyTrends(months = 6) {
+        // months: rolling window ending this month. rotaryStart: when given, returns the 12 months Jul..Jun of that Rotary year.
+        async getMonthlyTrends(months = 6, rotaryStart = null) {
             try {
                 const now = new Date();
                 const txns = await DB.get('treasury', []);
                 const trends = {};
-                for (let i = months - 1; i >= 0; i--) {
-                    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                    const key = d.toISOString().substring(0, 7);
+                const addMonth = (d) => {
+                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;   // local month, never UTC
                     trends[key] = { label: d.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }), income: 0, expense: 0 };
+                };
+                if (rotaryStart !== null && rotaryStart !== undefined) {
+                    for (let i = 0; i < 12; i++) addMonth(new Date(rotaryStart, 6 + i, 1));
+                } else {
+                    for (let i = months - 1; i >= 0; i--) addMonth(new Date(now.getFullYear(), now.getMonth() - i, 1));
                 }
                 txns.forEach(t => {
                     const key = (t.transaction_date || '').substring(0, 7);
@@ -1359,16 +1407,17 @@
 
         async getYearlyComparison() {
             try {
-                const now = new Date();
-                const currentYear = now.getFullYear();
+                const current = this.rotaryStartYear();
                 const txns = await DB.get('treasury', []);
                 const result = {};
-                for (let y = currentYear - 2; y <= currentYear; y++) result[y] = { income: 0, expense: 0 };
+                const keyOf = (y) => `RY ${this.rotaryLabel(y)}`;
+                for (let y = current - 2; y <= current; y++) result[keyOf(y)] = { income: 0, expense: 0 };
                 txns.forEach(t => {
-                    const year = parseInt((t.transaction_date || '').substring(0, 4));
-                    if (result[year]) {
-                        result[year].income += parseFloat(t.income) || 0;
-                        result[year].expense += parseFloat(t.expense) || 0;
+                    const ry = this.rotaryYearOfDate(t.transaction_date);
+                    const k = ry === null ? null : keyOf(ry);
+                    if (k && result[k]) {
+                        result[k].income += parseFloat(t.income) || 0;
+                        result[k].expense += parseFloat(t.expense) || 0;
                     }
                 });
                 return result;
