@@ -805,18 +805,23 @@
             if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
         },
 
-        // ---- Mini map: Google-Maps-style "Voyager" tiles (retina) drawn to a canvas, OSM as fallback ----
+        // ---- Mini map: key-free street tiles drawn to a canvas ----
+        // CARTO's free "Voyager" tiles now answer EVERY request with HTTP 200 and a grey picture that says
+        // "API KEY REQUIRED", which no status check can tell apart from a real tile, so only providers that need
+        // no key are used: OpenStreetMap first, then OpenStreetMap France, then Esri. Tiles are requested one zoom
+        // level deeper (z+1) and the same ground area is cropped, which keeps the map sharp without retina tiles.
         async buildMapCanvas(lat, lng, size, zoom) {
             const key = [lat.toFixed(5), lng.toFixed(5), size, zoom].join('|');
             if (this._mapCache && this._mapCache.key === key) return this._mapCache.canvas;
-            const z = zoom || 17;
-            const n = Math.pow(2, z);
-            const fx = (lng + 180) / 360 * n;
+            const z0 = zoom || 17;
             const lr = lat * Math.PI / 180;
-            const fy = (1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2 * n;
-            const tx = Math.floor(fx), ty = Math.floor(fy);
-            // Tiles are fetched with a status check: a provider that answers "401/403 API key required" (or any
-            // error) still sends a picture, which <img> would happily draw. Only genuine 200 image replies are used.
+            const geo = (zz) => {
+                const n = Math.pow(2, zz);
+                const fx = (lng + 180) / 360 * n;
+                const fy = (1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2 * n;
+                return { n, fx, fy, tx: Math.floor(fx), ty: Math.floor(fy) };
+            };
+            // Only genuine 200 image replies are used (an error status can still carry a picture that <img> would draw).
             const load = async (url) => {
                 try {
                     const ctl = new AbortController();
@@ -837,38 +842,44 @@
                     });
                 } catch (e) { return null; }
             };
-            const wrap = (x) => ((x % n) + n) % n;
-            const sub = ['a', 'b', 'c', 'd'];
+            const wrap = (x, n) => ((x % n) + n) % n;
             const sources = [
-                { px: 512, url: (x, y, i) => `https://${sub[i % 4]}.basemaps.cartocdn.com/rastertiles/voyager/${z}/${wrap(x)}/${y}@2x.png` },
-                { px: 256, url: (x, y) => `https://tile.openstreetmap.org/${z}/${wrap(x)}/${y}.png` },
-                { px: 256, url: (x, y) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/${z}/${y}/${wrap(x)}` }
+                { attr: '\u00A9 OpenStreetMap contributors', zOff: 1, url: (z, x, y, n) => `https://tile.openstreetmap.org/${z}/${wrap(x, n)}/${y}.png` },
+                { attr: '\u00A9 OpenStreetMap contributors', zOff: 1, url: (z, x, y, n, i) => `https://${['a', 'b', 'c'][i % 3]}.tile.openstreetmap.fr/osmfr/${z}/${wrap(x, n)}/${y}.png` },
+                { attr: '\u00A9 Esri', zOff: 1, url: (z, x, y, n) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/${z}/${y}/${wrap(x, n)}` }
             ];
-            let big = null, unit = 256;
+            const unit = 256;
+            let big = null, used = null, g = null;
             for (const src of sources) {
-                const c = document.createElement('canvas'); c.width = c.height = src.px * 3;
+                const z = z0 + src.zOff;
+                g = geo(z);
+                const c = document.createElement('canvas'); c.width = c.height = unit * 3;
                 const cx2 = c.getContext('2d'); cx2.fillStyle = '#e8eaed'; cx2.fillRect(0, 0, c.width, c.height);
                 const jobs = []; let i = 0;
-                for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) jobs.push(load(src.url(tx + dx, ty + dy, i++)).then(im => ({ im, dx, dy })));
+                for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) jobs.push(load(src.url(z, g.tx + dx, g.ty + dy, g.n, i++)).then(im => ({ im, dx, dy })));
                 const tiles = await Promise.all(jobs);
                 const ok = tiles.filter(t => t.im);
                 if (ok.length >= 7) {
-                    ok.forEach(t => cx2.drawImage(t.im, (t.dx + 1) * src.px, (t.dy + 1) * src.px, src.px, src.px));
-                    big = c; unit = src.px; break;
+                    ok.forEach(t => cx2.drawImage(t.im, (t.dx + 1) * unit, (t.dy + 1) * unit, unit, unit));
+                    big = c; used = src; break;
                 }
             }
             if (!big) {
-                big = document.createElement('canvas'); big.width = big.height = 768; unit = 256;
-                const g = big.getContext('2d'); g.fillStyle = '#e8eaed'; g.fillRect(0, 0, 768, 768);
-                g.strokeStyle = '#fff'; g.lineWidth = 10; for (let i = 0; i <= 768; i += 96) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 768); g.moveTo(0, i); g.lineTo(768, i); g.stroke(); }
+                // offline / every provider refused: plain grid (no fake map), same geometry
+                used = { attr: '', zOff: 1 };
+                g = geo(z0 + 1);
+                big = document.createElement('canvas'); big.width = big.height = 768;
+                const gc = big.getContext('2d'); gc.fillStyle = '#e8eaed'; gc.fillRect(0, 0, 768, 768);
+                gc.strokeStyle = '#fff'; gc.lineWidth = 10; for (let i = 0; i <= 768; i += 96) { gc.beginPath(); gc.moveTo(i, 0); gc.lineTo(i, 768); gc.moveTo(0, i); gc.lineTo(768, i); gc.stroke(); }
             }
-            const cx = (fx - tx + 1) * unit, cy = (fy - ty + 1) * unit;
+            const cx = (g.fx - g.tx + 1) * unit, cy = (g.fy - g.ty + 1) * unit;
             const out = document.createElement('canvas'); out.width = out.height = size;
             const octx = out.getContext('2d');
             octx.imageSmoothingQuality = 'high';
-            // `size` px of output cover size/2 standard 256px tile-pixels, i.e. a street-level view
-            const crop = (size / 2) * (unit / 256);
+            // `size` px of output cover size/2 tile-pixels at zoom z0 (a street-level view) = (size/2) * 2^zOff tile-pixels at z0+zOff
+            const crop = (size / 2) * Math.pow(2, used.zOff);
             octx.drawImage(big, cx - crop / 2, cy - crop / 2, crop, crop, 0, 0, size, size);
+            out._attr = used.attr;
             this._mapCache = { key, canvas: out };
             return out;
         },
@@ -2192,7 +2203,7 @@
             }
             ctx.save();
             ctx.font = `600 ${8.5 * s}px ${FONT}`; ctx.fillStyle = 'rgba(60,64,67,.85)'; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
-            ctx.fillText('\u00A9 OpenStreetMap \u00A9 CARTO', mx + ms - 8 * s, my + ms - 5 * s);
+            if (!mapImg || mapImg._attr) ctx.fillText((mapImg && mapImg._attr) || '\u00A9 OpenStreetMap contributors', mx + ms - 8 * s, my + ms - 5 * s);
             ctx.restore();
 
             // ---- right column ----
