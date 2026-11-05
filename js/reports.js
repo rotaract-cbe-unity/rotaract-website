@@ -165,11 +165,7 @@
         async reverseGeocodeLive() {
             if (!this.liveLocation) return;
             try {
-                const resp = await fetch(
-                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.liveLocation.latitude}&lon=${this.liveLocation.longitude}&zoom=18`,
-                    { headers: { 'Accept-Language': 'en' } }
-                );
-                const data = await resp.json();
+                const data = await this.geoFetch('reverse', { lat: this.liveLocation.latitude, lon: this.liveLocation.longitude, zoom: 18 });
                 if (data?.display_name) {
                     this.liveLocationName = data.display_name;
                     this.liveLocation.address = data.display_name;
@@ -501,17 +497,49 @@
             return null;
         },
 
+        // geocode.maps.co API key. Geocoding tries this service first and falls back to OpenStreetMap
+        // Nominatim, so a wrong key or an exhausted quota never stops the geo-tag tools.
+        // The key is readable by anyone who opens this file: if it is ever abused, create a new one at
+        // geocode.maps.co and replace it here.
+        GEOCODE_KEY: '6aec32204ed3d785882579oci5e523b',
+
+        /**
+         * path: 'reverse' (lat/lon -> address) or 'search' (text -> lat/lon). Both services answer in the same JSON shape.
+         * Falls through to the next service on a network error, an HTTP error (e.g. 429 rate limit), an error body or
+         * an empty search result. Throws only when every service failed.
+         */
+        async geoFetch(path, params) {
+            const qs = new URLSearchParams(params).toString();
+            const sources = [];
+            if (this.GEOCODE_KEY) {
+                // geocode.maps.co documents only q (search) and lat/lon (reverse) plus api_key; send just those.
+                // No custom headers either, which keeps it a simple cross-origin request (no preflight).
+                const mapsQs = new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([k]) => ['q', 'lat', 'lon'].includes(k)))).toString();
+                sources.push({ url: `https://geocode.maps.co/${path}?${mapsQs}&api_key=${encodeURIComponent(this.GEOCODE_KEY)}`, init: {} });
+            }
+            sources.push({ url: `https://nominatim.openstreetmap.org/${path}?format=json&${qs}`, init: { headers: { 'Accept-Language': 'en' } } });
+            let lastErr = null, emptyResult = null;
+            for (const src of sources) {
+                try {
+                    const resp = await fetch(src.url, src.init);
+                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                    const data = await resp.json();
+                    if (!data || data.error) throw new Error((data && data.error) || 'empty response');
+                    if (Array.isArray(data) && data.length === 0) { emptyResult = data; continue; }
+                    return data;
+                } catch (e) { lastErr = e; }
+            }
+            if (emptyResult) return emptyResult;
+            throw lastErr || new Error('Geocoding unavailable');
+        },
+
         /**
          * Forward geocodes a text query (e.g., "Codissia Trade Centre, Coimbatore")
-         * to a lat/lng using Nominatim.
+         * to a lat/lng.
          */
         async forwardGeocode(query) {
             try {
-                const resp = await fetch(
-                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
-                    { headers: { 'Accept-Language': 'en' } }
-                );
-                const data = await resp.json();
+                const data = await this.geoFetch('search', { q: query, limit: 1 });
                 if (data && data.length > 0) {
                     const r = data[0];
                     return {
@@ -606,11 +634,7 @@
 
         async reverseGeocodeCustom(lat, lng, hint) {
             try {
-                const resp = await fetch(
-                    `https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=${lat}&lon=${lng}&zoom=18`,
-                    { headers: { 'Accept-Language': 'en' } }
-                );
-                const data = await resp.json();
+                const data = await this.geoFetch('reverse', { addressdetails: 1, lat, lon: lng, zoom: 18 });
                 return {
                     address: data?.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
                     name: this.buildShortName(data, hint),
