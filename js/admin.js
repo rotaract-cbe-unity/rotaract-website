@@ -2551,7 +2551,7 @@
                                     <p class="admin-page-subtitle">Super Admin exclusive — manage every single aspect of the website.</p>
                                 </div>
                                 <div class="flex gap-2">
-                                    ${userRole === 'super_admin' ? `<button class="btn-secondary btn-sm" onclick="AdminPanel.modules.settings.openTestConsole()" title="Open the Test Console (Super Admin only)" aria-label="Open Test Console" style="border-color:rgba(239,68,68,.45)"><span style="font-size:15px;line-height:1">&#128520;</span></button>` : ''}
+                                    ${userRole === 'super_admin' ? `<button class="btn-secondary btn-sm" onclick="AdminPanel.modules.settings.openTestConsole()" title="Open the Test Console (Super Admin only)" aria-label="Open Test Console" style="border-color:rgba(239,68,68,.45)"><svg width="26" height="19" aria-hidden="true" style="display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 72" fill="currentColor"><path d="M6 4l34 17v8L6 25z"/><path d="M94 4L60 21v8l34-4z"/><path fill-rule="evenodd" d="M0 41q50 24 100 0-6 31-50 31T0 41zM27 49l8 17 4-13zM73 49l-8 17-4-13zM40 53h20v11H40z" /></svg></button>` : ''}
                                     <button class="btn-secondary btn-sm" onclick="AdminPanel.modules.settings.exportSettings()"><i class="fa-solid fa-download mr-1"></i> Export</button>
                                     <button class="btn-primary btn-sm" onclick="AdminPanel.modules.settings.importSettings()"><i class="fa-solid fa-upload mr-1"></i> Import</button>
                                 </div>
