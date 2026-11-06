@@ -16,126 +16,126 @@
     <style>
         body{font-family:'Poppins',sans-serif;background:linear-gradient(135deg,#f0f6ff 0%,#e8f0fe 50%,#f5f0ff 100%);min-height:100vh}
         .dark body{background:linear-gradient(135deg,#050a18 0%,#0a0f1d 50%,#060a14 100%)}
-        .test-card{background:rgba(255,255,255,0.65);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.5);border-radius:20px;transition:all 300ms}
+        .test-card{background:rgba(255,255,255,0.65);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.5);border-radius:20px;transition:box-shadow 300ms}
         .dark .test-card{background:rgba(12,18,37,0.6);border-color:rgba(255,255,255,0.06)}
-        .test-card:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,0.08)}
+        .test-card:hover{box-shadow:0 12px 32px rgba(0,0,0,0.08)}
         .test-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border-radius:10px;font-size:11px;font-weight:700;transition:all 180ms;cursor:pointer;border:none;font-family:'Poppins',sans-serif}
+        .test-btn:disabled{opacity:.55;cursor:not-allowed}
         .test-btn-primary{background:linear-gradient(135deg,#1a73e8,#7c3aed);color:white;box-shadow:0 4px 14px rgba(26,115,232,0.25)}
-        .test-btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(26,115,232,0.35)}
-        .test-btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+        .test-btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 20px rgba(26,115,232,0.35)}
         .test-btn-secondary{background:white;border:1px solid #e2e8f0;color:#475569}
         .dark .test-btn-secondary{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);color:#94a3b8}
         .test-btn-success{background:linear-gradient(135deg,#22c55e,#16a34a);color:white}
         .test-btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:white}
         .test-btn-warning{background:linear-gradient(135deg,#eab308,#ca8a04);color:white}
-        .input-field{width:100%;padding:8px 12px;border:1px solid rgba(226,232,240,0.6);border-radius:10px;background:rgba(255,255,255,0.5);font-size:12px;color:#0f172a;transition:all 180ms;font-family:'Poppins',sans-serif}
+        .input-field{width:100%;padding:8px 12px;border:1px solid rgba(203,213,225,0.8);border-radius:10px;background:rgba(255,255,255,0.7);font-size:12px;color:#0f172a;transition:all 180ms;font-family:'Poppins',sans-serif}
         .dark .input-field{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);color:#f1f5f9}
-        .input-field:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 3px rgba(26,115,232,0.1)}
-        .log-console{background:#0a0f1d;color:#22c55e;font-family:'JetBrains Mono',monospace;font-size:11px;border-radius:12px;padding:16px;max-height:400px;overflow-y:auto;line-height:1.6}
-        .log-line{padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
-        .log-info{color:#06b6d4}
-        .log-success{color:#22c55e}
-        .log-error{color:#ef4444}
-        .log-warning{color:#eab308}
+        .dark select.input-field option{background:#0f172a;color:#f1f5f9}
+        .input-field:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 3px rgba(26,115,232,0.12)}
+        .lbl{display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
+        .log-console{background:#0a0f1d;color:#22c55e;font-family:'JetBrains Mono',monospace;font-size:11px;border-radius:12px;padding:16px;height:340px;overflow-y:auto;line-height:1.6}
+        .log-line{padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03);word-break:break-word}
+        .log-info{color:#06b6d4}.log-success{color:#22c55e}.log-error{color:#ef4444}.log-warning{color:#eab308}
         .log-timestamp{color:#64748b;font-size:10px}
         .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
         .status-online{background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.5)}
-        .status-offline{background:#ef4444}
-        .status-pending{background:#eab308}
+        .status-offline{background:#ef4444}.status-pending{background:#eab308}
         .category-tab{padding:10px 16px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;transition:all 180ms;white-space:nowrap}
         .category-tab.active{background:linear-gradient(135deg,#1a73e8,#7c3aed);color:white;box-shadow:0 4px 14px rgba(26,115,232,0.25)}
         .category-tab:not(.active){background:rgba(255,255,255,0.5);color:#64748b;border:1px solid rgba(226,232,240,0.6)}
         .dark .category-tab:not(.active){background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.08);color:#94a3b8}
         .category-tab:not(.active):hover{color:#1a73e8;border-color:#1a73e8}
-        .result-box{padding:10px 14px;border-radius:10px;font-size:11px;margin-top:8px;font-family:'JetBrains Mono',monospace;max-height:200px;overflow-y:auto;word-break:break-all}
+        .result-box{padding:10px 14px;border-radius:10px;font-size:11px;margin-top:8px;font-family:'JetBrains Mono',monospace;max-height:240px;overflow:auto;white-space:pre-wrap;word-break:break-word}
         .result-success{background:rgba(34,197,94,0.08);color:#16a34a;border:1px solid rgba(34,197,94,0.2)}
         .result-error{background:rgba(239,68,68,0.08);color:#dc2626;border:1px solid rgba(239,68,68,0.2)}
-        .scrollbar-none::-webkit-scrollbar{display:none}
-        .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
-        ::-webkit-scrollbar{width:6px;height:6px}
-        ::-webkit-scrollbar-track{background:transparent}
-        ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:100px}
-        .dark ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1)}
+        .result-warn{background:rgba(234,179,8,0.10);color:#a16207;border:1px solid rgba(234,179,8,0.3)}
+        .dark .result-warn{color:#facc15}
+        .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:9px;font-weight:800;text-transform:uppercase}
+        .badge-green{background:rgba(34,197,94,.15);color:#16a34a}.badge-red{background:rgba(239,68,68,.15);color:#dc2626}
+        .badge-amber{background:rgba(234,179,8,.18);color:#a16207}.badge-slate{background:rgba(100,116,139,.15);color:#64748b}
+        .mini-table{width:100%;font-size:11px;border-collapse:collapse}
+        .mini-table th{text-align:left;font-size:9px;text-transform:uppercase;color:#64748b;padding:6px 8px;border-bottom:1px solid rgba(148,163,184,.3)}
+        .mini-table td{padding:6px 8px;border-bottom:1px solid rgba(148,163,184,.15);vertical-align:top}
+        .mini-table td.num,.mini-table th.num{text-align:right;font-variant-numeric:tabular-nums}
+        .bar{height:8px;border-radius:99px;background:linear-gradient(90deg,#22c55e,#16a34a)}.bar.exp{background:linear-gradient(90deg,#ef4444,#dc2626)}
+        .tile-img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid rgba(148,163,184,.4);background:#e2e8f0 repeating-conic-gradient(#cbd5e1 0 25%,#e2e8f0 0 50%) 0 0/16px 16px}
+        .scrollbar-none::-webkit-scrollbar{display:none}.scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:100px}.dark ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1)}
+        .modal-bg{position:fixed;inset:0;background:rgba(2,6,23,.6);backdrop-filter:blur(4px);z-index:80;display:none;align-items:center;justify-content:center;padding:16px}
+        .modal-bg.open{display:flex}
+        .modal-box{background:#fff;color:#0f172a;border-radius:20px;max-width:520px;width:100%;max-height:90vh;overflow:auto;padding:24px}
+        .dark .modal-box{background:#0c1225;color:#f1f5f9;border:1px solid rgba(255,255,255,.08)}
+        details>summary{cursor:pointer;list-style:none}details>summary::-webkit-details-marker{display:none}
     </style>
 </head>
 <body class="text-slate-800 dark:text-slate-100 min-h-screen">
 
-<!-- Header -->
 <header class="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-brand-dark/70 border-b border-slate-200/50 dark:border-white/[0.06]">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-3">
         <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center">
-                <i class="fa-solid fa-terminal text-white text-lg"></i>
-            </div>
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center"><i class="fa-solid fa-terminal text-white text-lg"></i></div>
             <div>
-                <h1 class="text-lg font-black tracking-tight">Unity Portal Test Console</h1>
-                <p class="text-[10px] text-slate-500">Comprehensive A-Z testing suite for Rotaract Unity</p>
+                <h1 class="text-lg font-black tracking-tight">Unity Portal Test Console <span class="text-[10px] font-bold text-brand-purple align-middle">v6</span></h1>
+                <p class="text-[10px] text-slate-500 font-semibold">Rotaract Club of Coimbatore Unity &middot; mails, documents, treasury, maps</p>
             </div>
         </div>
-        <div class="flex items-center gap-3">
-            <div id="connection-status" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-bold">
-                <span class="status-dot status-pending"></span>
-                <span id="status-text">Connecting...</span>
+        <div class="flex items-center gap-2 sm:gap-3">
+            <div id="connection-status" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 text-yellow-600 text-[10px] font-bold">
+                <span class="status-dot status-pending"></span><span id="status-text">Connecting...</span>
             </div>
-            <button id="theme-toggle" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.05] border border-slate-200/60 dark:border-white/[0.08] flex items-center justify-center">
+            <button onclick="openSettings()" class="test-btn test-btn-secondary" title="Keys and URLs"><i class="fa-solid fa-gear"></i><span class="hidden sm:inline">Settings</span></button>
+            <button id="theme-toggle" class="w-9 h-9 rounded-xl bg-white/60 dark:bg-white/[0.05] border border-slate-200/60 dark:border-white/[0.08] flex items-center justify-center relative" title="Theme">
                 <i class="fa-solid fa-sun text-yellow-500 absolute dark:opacity-100 opacity-0 transition-opacity"></i>
                 <i class="fa-solid fa-moon text-slate-600 absolute dark:opacity-0 opacity-100 transition-opacity"></i>
             </button>
-            <a href="index.html" class="test-btn test-btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i>Back to Portal
-            </a>
+            <a href="index.html" class="test-btn test-btn-secondary"><i class="fa-solid fa-arrow-left"></i><span class="hidden sm:inline">Back to Portal</span></a>
         </div>
     </div>
 </header>
 
-<!-- Main Container -->
 <main class="max-w-7xl mx-auto px-6 py-8">
+    <div id="setup-banner" class="hidden test-card p-4 mb-6 border-yellow-400/40">
+        <p class="text-xs font-bold text-yellow-700 dark:text-yellow-400"><i class="fa-solid fa-key mr-1"></i>Add your Supabase service key in Settings to run tests that read or write the database. Mail, PDF and DOCX tests work without it.</p>
+    </div>
 
-    <!-- Category Tabs -->
-    <div class="flex items-center gap-2 overflow-x-auto scrollbar-none pb-4 mb-6">
-        <button class="category-tab active" data-category="emails" onclick="switchCategory('emails')"><i class="fa-solid fa-envelope mr-1"></i>Emails</button>
-        <button class="category-tab" data-category="downloads" onclick="switchCategory('downloads')"><i class="fa-solid fa-download mr-1"></i>Downloads</button>
-        <button class="category-tab" data-category="attendance" onclick="switchCategory('attendance')"><i class="fa-solid fa-signature mr-1"></i>Attendance</button>
-        <button class="category-tab" data-category="birthday" onclick="switchCategory('birthday')"><i class="fa-solid fa-cake-candles mr-1"></i>Birthdays</button>
-        <button class="category-tab" data-category="blood" onclick="switchCategory('blood')"><i class="fa-solid fa-droplet mr-1"></i>Blood Request</button>
-        <button class="category-tab" data-category="treasury" onclick="switchCategory('treasury')"><i class="fa-solid fa-wallet mr-1"></i>Treasury</button>
-        <button class="category-tab" data-category="database" onclick="switchCategory('database')"><i class="fa-solid fa-database mr-1"></i>Database</button>
-        <button class="category-tab" data-category="functions" onclick="switchCategory('functions')"><i class="fa-solid fa-bolt mr-1"></i>Functions</button>
-        <button class="category-tab" data-category="auth" onclick="switchCategory('auth')"><i class="fa-solid fa-key mr-1"></i>Auth</button>
+    <div class="flex items-center gap-2 overflow-x-auto scrollbar-none pb-4 mb-6" id="tabs">
+        <button class="category-tab active" data-category="emails"><i class="fa-solid fa-envelope mr-1"></i>Emails</button>
+        <button class="category-tab" data-category="downloads"><i class="fa-solid fa-download mr-1"></i>Documents</button>
+        <button class="category-tab" data-category="treasury"><i class="fa-solid fa-wallet mr-1"></i>Treasury</button>
+        <button class="category-tab" data-category="geotag"><i class="fa-solid fa-location-dot mr-1"></i>Geotag Map</button>
+        <button class="category-tab" data-category="maillog"><i class="fa-solid fa-inbox mr-1"></i>Mail Log</button>
+        <button class="category-tab" data-category="attendance"><i class="fa-solid fa-signature mr-1"></i>Attendance</button>
+        <button class="category-tab" data-category="birthday"><i class="fa-solid fa-cake-candles mr-1"></i>Birthdays</button>
+        <button class="category-tab" data-category="blood"><i class="fa-solid fa-droplet mr-1"></i>Blood</button>
+        <button class="category-tab" data-category="database"><i class="fa-solid fa-database mr-1"></i>Database</button>
+        <button class="category-tab" data-category="functions"><i class="fa-solid fa-bolt mr-1"></i>Health</button>
+        <button class="category-tab" data-category="auth"><i class="fa-solid fa-key mr-1"></i>Auth</button>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left: Test Panels -->
-        <div class="lg:col-span-2 space-y-6">
-            <div id="category-content"></div>
-        </div>
+        <div class="lg:col-span-2 space-y-6"><div id="category-content"></div></div>
 
-        <!-- Right: Live Log Console -->
         <div class="lg:col-span-1">
-            <div class="sticky top-24">
+            <div class="lg:sticky lg:top-24">
                 <div class="test-card p-5 mb-4">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="text-sm font-black flex items-center gap-2"><i class="fa-solid fa-rectangle-list text-brand-purple"></i>Live Log</h3>
-                        <div class="flex items-center gap-2">
-                            <button onclick="clearLog()" class="text-[10px] font-bold text-red-500 hover:underline">
-                                <i class="fa-solid fa-trash mr-1"></i>Clear
-                            </button>
+                        <div class="flex items-center gap-3">
+                            <button onclick="copyLog()" class="text-[10px] font-bold text-brand-blue hover:underline"><i class="fa-solid fa-copy mr-1"></i>Copy</button>
+                            <button onclick="saveLog()" class="text-[10px] font-bold text-brand-blue hover:underline"><i class="fa-solid fa-file-arrow-down mr-1"></i>Save</button>
+                            <button onclick="clearLog()" class="text-[10px] font-bold text-red-500 hover:underline"><i class="fa-solid fa-trash mr-1"></i>Clear</button>
                         </div>
                     </div>
                     <div id="log-console" class="log-console"></div>
                 </div>
-
                 <div class="test-card p-5">
                     <h3 class="text-sm font-black mb-3 flex items-center gap-2"><i class="fa-solid fa-chart-bar text-green-500"></i>Test Stats</h3>
-                    <div class="grid grid-cols-2 gap-3 text-center">
-                        <div class="p-3 rounded-lg bg-green-500/5">
-                            <p class="text-2xl font-black text-green-600" id="stat-success">0</p>
-                            <p class="text-[9px] text-slate-500 uppercase font-bold">Success</p>
-                        </div>
-                        <div class="p-3 rounded-lg bg-red-500/5">
-                            <p class="text-2xl font-black text-red-600" id="stat-failed">0</p>
-                            <p class="text-[9px] text-slate-500 uppercase font-bold">Failed</p>
-                        </div>
+                    <div class="grid grid-cols-4 gap-2 text-center">
+                        <div class="p-2 rounded-lg bg-green-500/5"><p class="text-xl font-black text-green-600" id="stat-success">0</p><p class="text-[9px] text-slate-500 uppercase font-bold">Passed</p></div>
+                        <div class="p-2 rounded-lg bg-red-500/5"><p class="text-xl font-black text-red-600" id="stat-failed">0</p><p class="text-[9px] text-slate-500 uppercase font-bold">Failed</p></div>
+                        <div class="p-2 rounded-lg bg-yellow-500/5"><p class="text-xl font-black text-yellow-600" id="stat-warn">0</p><p class="text-[9px] text-slate-500 uppercase font-bold">Skipped</p></div>
+                        <div class="p-2 rounded-lg bg-blue-500/5"><p class="text-xl font-black text-blue-600" id="stat-avg">-</p><p class="text-[9px] text-slate-500 uppercase font-bold">Avg ms</p></div>
                     </div>
                 </div>
             </div>
@@ -143,1218 +143,1091 @@
     </div>
 </main>
 
-<!-- Supabase -->
+<!-- Settings -->
+<div id="settings-modal" class="modal-bg" onclick="if(event.target===this)closeSettings()">
+    <div class="modal-box">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-black"><i class="fa-solid fa-gear mr-2 text-brand-purple"></i>Console Settings</h3>
+            <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <p class="text-[11px] text-slate-500 mb-4">Keys are never stored in this file. They stay in this browser only (this tab, or this device if you tick Remember).</p>
+        <div class="space-y-3">
+            <div><label class="lbl">Supabase URL</label><input id="cfg-url" class="input-field" placeholder="https://xxxx.supabase.co"></div>
+            <div><label class="lbl">Anon key (optional, sent to edge functions)</label><input id="cfg-anon" type="password" class="input-field" autocomplete="off"></div>
+            <div><label class="lbl">Service role key (database tests)</label><input id="cfg-service" type="password" class="input-field" autocomplete="off"></div>
+            <div><label class="lbl">Apps Script web-app URL</label><input id="cfg-gas" class="input-field" placeholder="https://script.google.com/macros/s/.../exec"></div>
+            <div><label class="lbl">geocode.maps.co key (Geotag tab)</label><input id="cfg-geo" type="password" class="input-field" autocomplete="off"></div>
+            <div><label class="lbl">Default test recipient</label><input id="cfg-mail" type="email" class="input-field" placeholder="you@example.com"></div>
+            <label class="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" id="cfg-remember"> Remember on this device</label>
+        </div>
+        <div class="flex gap-2 mt-5">
+            <button onclick="saveSettings()" class="test-btn test-btn-primary flex-1"><i class="fa-solid fa-floppy-disk"></i>Save and reconnect</button>
+            <button onclick="forgetSettings()" class="test-btn test-btn-secondary"><i class="fa-solid fa-eraser"></i>Forget</button>
+        </div>
+        <p class="text-[10px] text-slate-500 mt-3">The service role key bypasses all database security. Do not host this page on a public site, and replace any service key that was ever pasted into a shared file.</p>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 // ============================================
-// CONFIG
+// SETTINGS (no secrets in this file)
 // ============================================
-const CONFIG = {
-    SUPABASE_URL: 'https://sbpwmkoxuokrscddhhuw.supabase.co',
-    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNicHdta294dW9rcnNjZGRoaHV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwNTI1MDksImV4cCI6MjEwNjYyODUwOX0.s6-r3bywFii-ZcMowwjZnI1WtrpluJ5MQ1_UJJFcDQU',
-    SUPABASE_SERVICE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNicHdta294dW9rcnNjZGRoaHV3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MTA1MjUwOSwiZXhwIjoyMTA2NjI4NTA5fQ.XME9xM1FhB5HOOMi2bQHV699scfTn6Cp8ROW0PT1i8U',
-    GAS_URL: 'https://script.google.com/macros/s/AKfycbwiPZ3D7xPhbJ617w4xH2pCP_7EpIWH9HgEdJEEmVEuKD7tMcUMS1ei114jmE-fK8cPew/exec',
-    FUNCTIONS: {
-        SEND_EMAIL: 'https://sbpwmkoxuokrscddhhuw.supabase.co/functions/v1/send-email',
-        GENERATE_PDF: 'https://sbpwmkoxuokrscddhhuw.supabase.co/functions/v1/generate-pdf',
-        GENERATE_DOCX: 'https://sbpwmkoxuokrscddhhuw.supabase.co/functions/v1/generate-docx',
-        BIRTHDAY_CHECK: 'https://sbpwmkoxuokrscddhhuw.supabase.co/functions/v1/birthday-check',
-        ATTENDANCE_FORM: 'https://sbpwmkoxuokrscddhhuw.supabase.co/functions/v1/attendance-form'
-    }
+const DEFAULTS = {
+    url: 'https://sbpwmkoxuokrscddhhuw.supabase.co',
+    gas: 'https://script.google.com/macros/s/AKfycbwiPZ3D7xPhbJ617w4xH2pCP_7EpIWH9HgEdJEEmVEuKD7tMcUMS1ei114jmE-fK8cPew/exec',
+    anon: '', service: '', geo: '', mail: ''
 };
+const STORE_KEY = 'unity_tc_cfg_v6';
+let cfg = loadCfg();
+// Opened from the portal's Site Settings (evil-face button)? Take the connection from that tab. Nothing is stored unless you save in Settings.
+(function fromPortal() {
+    try {
+        const o = window.opener;
+        if (!o || o === window || !o.DB_ADMIN) return;
+        if (!cfg.url || cfg.url === DEFAULTS.url) cfg.url = o.DB_ADMIN.supabaseUrl || cfg.url;
+        if (!cfg.service) cfg.service = o.DB_ADMIN.supabaseKey || '';
+        if (!cfg.anon && o.DB && o.DB.supabaseKey) cfg.anon = o.DB.supabaseKey;
+        if (!cfg.geo && o.Reports && o.Reports.GEOCODE_KEY) cfg.geo = o.Reports.GEOCODE_KEY;
+        const g = o.AdminPanel && o.AdminPanel.modules && o.AdminPanel.modules.settings && o.AdminPanel.modules.settings.settingsCache;
+        if (g && g.google_apps_script_url) cfg.gas = g.google_apps_script_url;
+        cfg._portal = true;
+    } catch (e) { /* cross-origin opener: use Settings instead */ }
+})();
+function loadCfg() {
+    let saved = {};
+    try { saved = JSON.parse(sessionStorage.getItem(STORE_KEY) || localStorage.getItem(STORE_KEY) || '{}'); } catch (e) {}
+    return Object.assign({}, DEFAULTS, saved);
+}
+function fnUrl(name) { return cfg.url.replace(/\/+$/, '') + '/functions/v1/' + name; }
+const FN = { SEND_EMAIL: 'send-email', GENERATE_PDF: 'generate-pdf', GENERATE_DOCX: 'generate-docx', BIRTHDAY_CHECK: 'birthday-check', ATTENDANCE_FORM: 'attendance-form' };
 
-const db = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_SERVICE_KEY);
-let stats = { success: 0, failed: 0 };
+let db = null;
+function initDb() {
+    db = null;
+    if (cfg.url && cfg.service) {
+        try { db = supabase.createClient(cfg.url, cfg.service, { auth: { persistSession: false, autoRefreshToken: false } }); } catch (e) { log('Database client failed: ' + e.message, 'error'); }
+    }
+    document.getElementById('setup-banner').classList.toggle('hidden', !!db);
+}
+function needDb(resultId) {
+    if (db) return true;
+    if (resultId) showResult(resultId, 'Add the service role key in Settings first.', 'warn');
+    return false;
+}
+function openSettings() {
+    document.getElementById('cfg-url').value = cfg.url || '';
+    document.getElementById('cfg-anon').value = cfg.anon || '';
+    document.getElementById('cfg-service').value = cfg.service || '';
+    document.getElementById('cfg-gas').value = cfg.gas || '';
+    document.getElementById('cfg-geo').value = cfg.geo || '';
+    document.getElementById('cfg-mail').value = cfg.mail || '';
+    document.getElementById('cfg-remember').checked = !!localStorage.getItem(STORE_KEY);
+    document.getElementById('settings-modal').classList.add('open');
+}
+function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
+async function saveSettings() {
+    cfg = {
+        url: document.getElementById('cfg-url').value.trim() || DEFAULTS.url,
+        anon: document.getElementById('cfg-anon').value.trim(),
+        service: document.getElementById('cfg-service').value.trim(),
+        gas: document.getElementById('cfg-gas').value.trim() || DEFAULTS.gas,
+        geo: document.getElementById('cfg-geo').value.trim(),
+        mail: document.getElementById('cfg-mail').value.trim()
+    };
+    const remember = document.getElementById('cfg-remember').checked;
+    try {
+        sessionStorage.setItem(STORE_KEY, JSON.stringify(cfg));
+        if (remember) localStorage.setItem(STORE_KEY, JSON.stringify(cfg)); else localStorage.removeItem(STORE_KEY);
+    } catch (e) { log('Browser storage unavailable: settings last for this page only', 'warning'); }
+    closeSettings();
+    log('Settings saved', 'success');
+    await boot(true);
+}
+function forgetSettings() {
+    try { sessionStorage.removeItem(STORE_KEY); localStorage.removeItem(STORE_KEY); } catch (e) {}
+    cfg = Object.assign({}, DEFAULTS);
+    closeSettings(); initDb(); setConn('pending', 'Not connected'); log('Stored settings removed', 'warning');
+}
 
 // ============================================
-// LOGGING
+// HELPERS
 // ============================================
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = (n) => String(n).padStart(2, '0');
+const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;      // local date (toISOString shifts a day in IST)
+const ym = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+const inr = (n) => 'Rs ' + (Number(n) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const hasTamil = (s) => /[஀-௿]/.test(String(s || ''));
+const hasIndic = (s) => /[ऀ-෿]/.test(String(s || ''));
+const MONTHS = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+const val = (id) => { const el = $(id); return el ? el.value : ''; };
+const chk = (id) => { const el = $(id); return !!(el && el.checked); };
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+function prevMonthYM() { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1); return ym(d); }
+function monthLabel(ymStr) { const [y, m] = ymStr.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }); }
+
+// Rotary year: 1 July to 30 June. Quarters Q1 Jul-Sep, Q2 Oct-Dec, Q3 Jan-Mar, Q4 Apr-Jun
+function ryStart(d) { d = d || new Date(); return d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1; }
+function ryLabel(y) { return `RY ${y}-${String(y + 1).slice(2)}`; }
+function rotaryRange(y, q) {
+    y = parseInt(y, 10);
+    if (!q) return { start: `${y}-07-01`, end: `${y + 1}-06-30` };
+    return { Q1: { start: `${y}-07-01`, end: `${y}-09-30` }, Q2: { start: `${y}-10-01`, end: `${y}-12-31` },
+             Q3: { start: `${y + 1}-01-01`, end: `${y + 1}-03-31` }, Q4: { start: `${y + 1}-04-01`, end: `${y + 1}-06-30` } }[q];
+}
+function ryOptions(selected) {
+    const cur = ryStart(); let o = '';
+    for (let y = cur + 1; y >= cur - 4; y--) o += `<option value="${y}" ${y === selected ? 'selected' : ''}>${ryLabel(y)}</option>`;
+    return o;
+}
+
+// ============================================
+// LOGGING + STATS
+// ============================================
+let stats = { success: 0, failed: 0, warn: 0, ms: [] };
+const logBuffer = [];
 function log(msg, type = 'info') {
-    const console = document.getElementById('log-console');
+    const el = $('log-console'); if (!el) return;
     const time = new Date().toLocaleTimeString('en-IN', { hour12: false });
     const line = document.createElement('div');
     line.className = `log-line log-${type}`;
-    line.innerHTML = `<span class="log-timestamp">[${time}]</span> ${msg}`;
-    console.appendChild(line);
-    console.scrollTop = console.scrollHeight;
+    line.innerHTML = `<span class="log-timestamp">[${time}]</span> ${esc(msg)}`;
+    el.appendChild(line); el.scrollTop = el.scrollHeight;
+    logBuffer.push(`[${time}] ${type.toUpperCase()} ${msg}`);
+    if (logBuffer.length > 1000) logBuffer.shift();
 }
-
-function clearLog() {
-    document.getElementById('log-console').innerHTML = '';
-    log('Log cleared', 'info');
+function clearLog() { $('log-console').innerHTML = ''; logBuffer.length = 0; log('Log cleared', 'info'); }
+async function copyLog() { try { await navigator.clipboard.writeText(logBuffer.join('\n')); log('Log copied', 'success'); } catch (e) { log('Copy blocked by the browser', 'warning'); } }
+function saveLog() { download(new Blob([logBuffer.join('\n')], { type: 'text/plain' }), `console-log_${Date.now()}.txt`); }
+function record(state, ms) {
+    if (state === true || state === 'ok') stats.success++; else if (state === 'warn') stats.warn++; else stats.failed++;
+    if (typeof ms === 'number') stats.ms.push(ms);
+    $('stat-success').textContent = stats.success; $('stat-failed').textContent = stats.failed; $('stat-warn').textContent = stats.warn;
+    $('stat-avg').textContent = stats.ms.length ? Math.round(stats.ms.reduce((a, b) => a + b, 0) / stats.ms.length) : '-';
 }
-
-function updateStats(success) {
-    if (success) stats.success++;
-    else stats.failed++;
-    document.getElementById('stat-success').textContent = stats.success;
-    document.getElementById('stat-failed').textContent = stats.failed;
+// state: true | false | 'warn'
+function showResult(id, result, state, ms) {
+    const el = $(id);
+    if (el) {
+        el.className = 'result-box ' + (state === true ? 'result-success' : state === 'warn' ? 'result-warn' : 'result-error');
+        el.textContent = typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result);
+    }
+    record(state, ms);
 }
-
-function showResult(elementId, result, isSuccess) {
-    const el = document.getElementById(elementId);
-    if (!el) return;
-    el.className = `result-box ${isSuccess ? 'result-success' : 'result-error'}`;
-    el.innerHTML = typeof result === 'object' ? JSON.stringify(result, null, 2) : result;
-    updateStats(isSuccess);
+function download(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+function busy(btn, on) { if (!btn) return; btn.disabled = on; }
+function fnHeaders() {
+    const h = { 'Content-Type': 'application/json' };
+    if (cfg.anon) { h['Authorization'] = 'Bearer ' + cfg.anon; h['apikey'] = cfg.anon; }
+    return h;
+}
+async function callFn(key, payload, query) {
+    const t0 = performance.now();
+    const res = await fetch(fnUrl(FN[key]) + (query || ''), { method: 'POST', headers: fnHeaders(), body: JSON.stringify(payload) });
+    return { res, ms: Math.round(performance.now() - t0) };
+}
+function blobToB64(blob) {
+    return new Promise((resolve, reject) => {
+        const r = new FileReader(); r.onload = () => resolve(String(r.result).split(',')[1]); r.onerror = reject; r.readAsDataURL(blob);
+    });
+}
+async function fileMagic(blob) {
+    const b = new Uint8Array(await blob.slice(0, 4).arrayBuffer());
+    const s = String.fromCharCode(...b);
+    if (s === '%PDF') return 'pdf'; if (b[0] === 0x50 && b[1] === 0x4B) return 'zip'; return 'unknown';
 }
 
 // ============================================
-// CONNECTION CHECK
+// CONNECTION
 // ============================================
+function setConn(state, text) {
+    const box = $('connection-status'), dot = box.querySelector('.status-dot');
+    $('status-text').textContent = text;
+    dot.className = 'status-dot status-' + (state === 'ok' ? 'online' : state === 'bad' ? 'offline' : 'pending');
+    const c = state === 'ok' ? 'green' : state === 'bad' ? 'red' : 'yellow';
+    box.className = `hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-${c}-500/10 text-${c}-600 text-[10px] font-bold`;
+}
 async function checkConnection() {
-    const statusEl = document.getElementById('status-text');
-    const dotEl = document.querySelector('#connection-status .status-dot');
+    if (!db) { setConn('pending', 'No service key'); return; }
     try {
-        const { data, error } = await db.from('site_settings').select('setting_key').limit(1);
+        const { error } = await db.from('system_settings').select('key').limit(1);
         if (error) throw error;
-        statusEl.textContent = 'Connected to Supabase';
-        dotEl.className = 'status-dot status-online';
-        document.getElementById('connection-status').className = 'flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-bold';
-        log('Supabase connection established', 'success');
-    } catch (e) {
-        statusEl.textContent = 'Connection failed';
-        dotEl.className = 'status-dot status-offline';
-        document.getElementById('connection-status').className = 'flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 text-[10px] font-bold';
-        log('Connection failed: ' + e.message, 'error');
-    }
+        setConn('ok', 'Connected to Supabase'); log('Supabase connection established', 'success');
+    } catch (e) { setConn('bad', 'Connection failed'); log('Connection failed: ' + (e.message || e), 'error'); }
 }
 
 // ============================================
-// CATEGORY SWITCHING
+// DATA CACHE (dropdowns)
 // ============================================
-function switchCategory(cat) {
-    document.querySelectorAll('.category-tab').forEach(t => t.classList.toggle('active', t.dataset.category === cat));
-    const content = document.getElementById('category-content');
-    switch (cat) {
-        case 'emails': content.innerHTML = renderEmails(); break;
-        case 'downloads': content.innerHTML = renderDownloads(); break;
-        case 'attendance': content.innerHTML = renderAttendance(); break;
-        case 'birthday': content.innerHTML = renderBirthday(); break;
-        case 'blood': content.innerHTML = renderBlood(); break;
-        case 'treasury': content.innerHTML = renderTreasury(); break;
-        case 'database': content.innerHTML = renderDatabase(); break;
-        case 'functions': content.innerHTML = renderFunctions(); break;
-        case 'auth': content.innerHTML = renderAuth(); break;
-    }
-}
-
-// ============================================
-// EMAILS CATEGORY
-// ============================================
-function renderEmails() {
-    return `
-    <div class="space-y-4">
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-envelope text-brand-blue"></i>Generic Email Test</h3>
-            <div class="space-y-3">
-                <input type="email" id="generic-recipient" class="input-field" placeholder="test@example.com">
-                <input type="text" id="generic-subject" class="input-field" placeholder="Test Email Subject" value="Unity Portal Test Email">
-                <textarea id="generic-body" class="input-field" rows="3" placeholder="Email body (HTML allowed)">This is a test email from Unity Portal console at ${new Date().toLocaleString()}.</textarea>
-                <button onclick="testGenericEmail()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-paper-plane"></i>Send Generic Email</button>
-                <div id="result-generic-email"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-rocket text-brand-purple"></i>Project Notification</h3>
-            <div class="space-y-3">
-                <input type="email" id="project-recipient" class="input-field" placeholder="recipient@example.com">
-                <select id="project-event" class="input-field">
-                    <option value="">Loading events...</option>
-                </select>
-                <button onclick="testProjectEmail()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-paper-plane"></i>Send Project Notification</button>
-                <div id="result-project-email"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-people-group text-brand-cyan"></i>Meeting Invitation</h3>
-            <div class="space-y-3">
-                <input type="email" id="meeting-recipient" class="input-field" placeholder="recipient@example.com">
-                <select id="meeting-select" class="input-field">
-                    <option value="">Loading meetings...</option>
-                </select>
-                <button onclick="testMeetingInvite()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-paper-plane"></i>Send Meeting Invitation</button>
-                <div id="result-meeting-email"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-file-pen text-green-500"></i>Meeting Minutes Email</h3>
-            <div class="space-y-3">
-                <input type="email" id="minutes-recipient" class="input-field" placeholder="recipient@example.com">
-                <select id="minutes-meeting-select" class="input-field">
-                    <option value="">Loading meetings...</option>
-                </select>
-                <button onclick="testMinutesEmail()" class="test-btn test-btn-success w-full"><i class="fa-solid fa-paper-plane"></i>Send Minutes Email</button>
-                <div id="result-minutes-email"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-wallet text-yellow-500"></i>Monthly Treasury Statement</h3>
-            <div class="space-y-3">
-                <input type="email" id="treasury-recipient" class="input-field" placeholder="recipient@example.com">
-                <button onclick="testTreasuryEmail()" class="test-btn test-btn-warning w-full"><i class="fa-solid fa-paper-plane"></i>Send Treasury Statement</button>
-                <div id="result-treasury-email"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-newspaper text-indigo-500"></i>Bulletin Published Email</h3>
-            <div class="space-y-3">
-                <input type="email" id="bulletin-recipient" class="input-field" placeholder="recipient@example.com">
-                <select id="bulletin-select" class="input-field">
-                    <option value="">Loading bulletins...</option>
-                </select>
-                <button onclick="testBulletinEmail()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-paper-plane"></i>Send Bulletin Email</button>
-                <div id="result-bulletin-email"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-user-check text-pink-500"></i>Membership Approved</h3>
-            <div class="space-y-3">
-                <input type="email" id="member-approved-recipient" class="input-field" placeholder="newmember@example.com">
-                <input type="text" id="member-approved-name" class="input-field" placeholder="Rtr. New Member Name">
-                <button onclick="testMembershipApproved()" class="test-btn test-btn-success w-full"><i class="fa-solid fa-paper-plane"></i>Send Welcome Email</button>
-                <div id="result-member-approved"></div>
-            </div>
-        </div>
-    </div>`;
-}
-
-// ============================================
-// DOWNLOADS CATEGORY
-// ============================================
-function renderDownloads() {
-    return `
-    <div class="space-y-4">
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-500"></i>PDF Downloads</h3>
-            <div class="space-y-3">
-                <div class="grid grid-cols-2 gap-2">
-                    <select id="pdf-event-select" class="input-field col-span-2">
-                        <option value="">Select Event for Report PDF...</option>
-                    </select>
-                    <button onclick="downloadPDF('event_report', document.getElementById('pdf-event-select').value)" class="test-btn test-btn-danger"><i class="fa-solid fa-download"></i>Event Report PDF</button>
-                    <button onclick="downloadPDF('dpp_report', document.getElementById('pdf-event-select').value)" class="test-btn test-btn-warning"><i class="fa-solid fa-download"></i>DPP Report PDF</button>
-                </div>
-                <div class="grid grid-cols-2 gap-2 pt-2">
-                    <select id="pdf-meeting-select" class="input-field col-span-2">
-                        <option value="">Select Meeting for PDFs...</option>
-                    </select>
-                    <button onclick="downloadPDF('meeting_agenda', null, document.getElementById('pdf-meeting-select').value)" class="test-btn test-btn-primary"><i class="fa-solid fa-list-check"></i>Agenda PDF</button>
-                    <button onclick="downloadPDF('meeting_minutes', null, document.getElementById('pdf-meeting-select').value)" class="test-btn test-btn-primary"><i class="fa-solid fa-file-pen"></i>Minutes PDF</button>
-                    <button onclick="downloadPDF('meeting_attendance', null, document.getElementById('pdf-meeting-select').value)" class="test-btn test-btn-success"><i class="fa-solid fa-signature"></i>Attendance PDF</button>
-                </div>
-                <div class="pt-2 space-y-2">
-                    <input type="month" id="pdf-month" class="input-field" value="${new Date().toISOString().substring(0, 7)}">
-                    <button onclick="downloadPDF('monthly_report', null, null, document.getElementById('pdf-month').value)" class="test-btn test-btn-warning w-full"><i class="fa-solid fa-calendar"></i>Monthly Report PDF</button>
-                </div>
-                <div class="pt-2 grid grid-cols-2 gap-2">
-                    <input type="date" id="pdf-start" class="input-field">
-                    <input type="date" id="pdf-end" class="input-field">
-                    <button onclick="downloadPDF('treasury_statement', null, null, null, document.getElementById('pdf-start').value, document.getElementById('pdf-end').value)" class="test-btn test-btn-warning col-span-2"><i class="fa-solid fa-wallet"></i>Treasury PDF</button>
-                </div>
-                <div id="result-pdf-download"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-file-word text-brand-blue"></i>DOCX Downloads</h3>
-            <div class="space-y-3">
-                <select id="docx-event-select" class="input-field">
-                    <option value="">Select Event for DOCX...</option>
-                </select>
-                <button onclick="downloadDOCX('event_report', document.getElementById('docx-event-select').value)" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-download"></i>Event Report DOCX</button>
-                <select id="docx-meeting-select" class="input-field">
-                    <option value="">Select Meeting for DOCX...</option>
-                </select>
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="downloadDOCX('meeting_agenda', null, document.getElementById('docx-meeting-select').value)" class="test-btn test-btn-primary"><i class="fa-solid fa-list-check"></i>Agenda</button>
-                    <button onclick="downloadDOCX('meeting_minutes', null, document.getElementById('docx-meeting-select').value)" class="test-btn test-btn-primary"><i class="fa-solid fa-file-pen"></i>Minutes</button>
-                    <button onclick="downloadDOCX('meeting_attendance', null, document.getElementById('docx-meeting-select').value)" class="test-btn test-btn-success"><i class="fa-solid fa-signature"></i>Attendance</button>
-                </div>
-                <div id="result-docx-download"></div>
-            </div>
-        </div>
-    </div>`;
-}
-
-// ============================================
-// ATTENDANCE CATEGORY
-// ============================================
-function renderAttendance() {
-    return `
-    <div class="space-y-4">
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-file-signature text-green-500"></i>Attendance Form</h3>
-            <div class="space-y-3">
-                <select id="attendance-meeting-select" class="input-field">
-                    <option value="">Select Meeting...</option>
-                </select>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="createAttendanceForm()" class="test-btn test-btn-primary"><i class="fa-solid fa-plus"></i>Create Form</button>
-                    <button onclick="triggerAttendanceForm()" class="test-btn test-btn-success"><i class="fa-solid fa-paper-plane"></i>Trigger + Email</button>
-                </div>
-                <button onclick="getAttendanceResponses()" class="test-btn test-btn-secondary w-full"><i class="fa-solid fa-list"></i>Get All Responses</button>
-                <div id="result-attendance-form"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-link text-brand-cyan"></i>Open Attendance Form (Preview)</h3>
-            <div class="space-y-3">
-                <select id="preview-meeting-select" class="input-field">
-                    <option value="">Select Meeting...</option>
-                </select>
-                <button onclick="previewAttendanceForm()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-external-link"></i>Open Form in New Tab</button>
-                <div id="result-attendance-preview"></div>
-            </div>
-        </div>
-    </div>`;
-}
-
-// ============================================
-// BIRTHDAY CATEGORY
-// ============================================
-function renderBirthday() {
-    return `
-    <div class="space-y-4">
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-cake-candles text-pink-500"></i>Birthday Check</h3>
-            <div class="space-y-3">
-                <button onclick="triggerBirthdayCheck()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-play"></i>Trigger Birthday Check Now</button>
-                <button onclick="getTodaysBirthdays()" class="test-btn test-btn-secondary w-full"><i class="fa-solid fa-list"></i>List Today's Birthdays</button>
-                <div id="result-birthday-check"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-user-plus text-brand-purple"></i>Send Individual Birthday Wish</h3>
-            <div class="space-y-3">
-                <select id="birthday-member-select" class="input-field">
-                    <option value="">Select Member...</option>
-                </select>
-                <button onclick="sendIndividualBirthdayWish()" class="test-btn test-btn-success w-full"><i class="fa-solid fa-paper-plane"></i>Send Wish</button>
-                <div id="result-birthday-individual"></div>
-            </div>
-        </div>
-    </div>`;
-}
-
-// ============================================
-// BLOOD CATEGORY
-// ============================================
-function renderBlood() {
-    return `
-    <div class="space-y-4">
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-droplet text-red-500"></i>Submit Blood Request</h3>
-            <div class="space-y-3">
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="blood-patient" class="input-field" placeholder="Patient Name">
-                    <select id="blood-group" class="input-field">
-                        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
-                        <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
-                    </select>
-                    <input type="number" id="blood-units" class="input-field" placeholder="Units" value="2" min="1">
-                    <select id="blood-urgency" class="input-field">
-                        <option value="normal">Normal</option>
-                        <option value="urgent">Urgent</option>
-                        <option value="emergency">EMERGENCY</option>
-                    </select>
-                </div>
-                <input type="text" id="blood-hospital" class="input-field" placeholder="Hospital Name">
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="blood-contact" class="input-field" placeholder="Contact Person">
-                    <input type="tel" id="blood-phone" class="input-field" placeholder="Phone">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="submitBloodRequest()" class="test-btn test-btn-danger"><i class="fa-solid fa-database"></i>Save to DB</button>
-                    <button onclick="sendBloodAlert()" class="test-btn test-btn-warning"><i class="fa-solid fa-paper-plane"></i>Send Email Alert</button>
-                </div>
-                <button onclick="sendBloodWhatsApp()" class="test-btn test-btn-success w-full"><i class="fa-brands fa-whatsapp"></i>Open WhatsApp Alert</button>
-                <div id="result-blood"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-list text-brand-blue"></i>Active Blood Requests</h3>
-            <button onclick="loadBloodRequests()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-refresh"></i>Load Active Requests</button>
-            <div id="blood-requests-list" class="mt-3 space-y-2"></div>
-        </div>
-    </div>`;
-}
-
-// ============================================
-// TREASURY CATEGORY
-// ============================================
-function renderTreasury() {
-    return `
-    <div class="space-y-4">
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-green-500"></i>Treasury Summary</h3>
-            <div class="space-y-3">
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="date" id="treasury-start" class="input-field" value="${new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().substring(0,10)}">
-                    <input type="date" id="treasury-end" class="input-field" value="${new Date().toISOString().substring(0,10)}">
-                </div>
-                <button onclick="getTreasurySummary()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-calculator"></i>Calculate Summary</button>
-                <div id="result-treasury-summary"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-plus text-brand-blue"></i>Add Test Transaction</h3>
-            <div class="space-y-3">
-                <div class="grid grid-cols-2 gap-2">
-                    <select id="txn-type" class="input-field">
-                        <option value="income">Income</option>
-                        <option value="expense">Expense</option>
-                    </select>
-                    <input type="number" id="txn-amount" class="input-field" placeholder="Amount (Rs)" step="0.01">
-                </div>
-                <input type="text" id="txn-particular" class="input-field" placeholder="Particular / Description">
-                <select id="txn-category" class="input-field">
-                    <option value="membership_fee">Membership Fee</option>
-                    <option value="donation">Donation</option>
-                    <option value="event_expense">Event Expense</option>
-                    <option value="misc_income">Misc Income</option>
-                    <option value="misc_expense">Misc Expense</option>
-                </select>
-                <input type="date" id="txn-date" class="input-field" value="${new Date().toISOString().substring(0,10)}">
-                <button onclick="addTestTransaction()" class="test-btn test-btn-success w-full"><i class="fa-solid fa-save"></i>Add Transaction</button>
-                <button onclick="recalculateBalances()" class="test-btn test-btn-warning w-full"><i class="fa-solid fa-sync"></i>Recalculate All Balances</button>
-                <div id="result-txn"></div>
-            </div>
-        </div>
-    </div>`;
-}
-
-// ============================================
-// DATABASE CATEGORY
-// ============================================
-function renderDatabase() {
-    return `
-    <div class="space-y-4">
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-database text-brand-blue"></i>Table Row Counts</h3>
-            <button onclick="getTableCounts()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-table"></i>Check All Tables</button>
-            <div id="result-table-counts" class="mt-3"></div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-broom text-yellow-500"></i>Maintenance Functions</h3>
-            <div class="space-y-2">
-                <button onclick="runDailyCleanup()" class="test-btn test-btn-warning w-full"><i class="fa-solid fa-broom"></i>Run Daily Cleanup</button>
-                <button onclick="updateStatistics()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-chart-line"></i>Update Statistics</button>
-                <button onclick="cleanupCache()" class="test-btn test-btn-secondary w-full"><i class="fa-solid fa-trash"></i>Cleanup Expired Cache</button>
-                <div id="result-maintenance"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-hard-drive text-indigo-500"></i>Storage Usage</h3>
-            <button onclick="getStorageUsage()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-chart-bar"></i>Check Storage</button>
-            <div id="result-storage" class="mt-3"></div>
-        </div>
-    </div>`;
-}
-
-// ============================================
-// FUNCTIONS CATEGORY
-// ============================================
-function renderFunctions() {
-    return `
-    <div class="space-y-4">
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-bolt text-brand-purple"></i>Edge Function Health Check</h3>
-            <div class="space-y-2">
-                <button onclick="pingFunction('SEND_EMAIL')" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-envelope"></i>Ping Send Email</button>
-                <button onclick="pingFunction('GENERATE_PDF')" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-file-pdf"></i>Ping Generate PDF</button>
-                <button onclick="pingFunction('GENERATE_DOCX')" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-file-word"></i>Ping Generate DOCX</button>
-                <button onclick="pingFunction('BIRTHDAY_CHECK')" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-cake-candles"></i>Ping Birthday Check</button>
-                <button onclick="pingFunction('ATTENDANCE_FORM')" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-signature"></i>Ping Attendance Form</button>
-                <div id="result-ping"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-link text-brand-cyan"></i>Google Apps Script Health</h3>
-            <button onclick="pingGAS()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-signal"></i>Test GAS Connection</button>
-            <div id="result-gas-ping" class="mt-3"></div>
-        </div>
-    </div>`;
-}
-
-// ============================================
-// AUTH CATEGORY
-// ============================================
-function renderAuth() {
-    return `
-    <div class="space-y-4">
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-key text-yellow-500"></i>User Login Test</h3>
-            <div class="space-y-3">
-                <input type="email" id="login-email" class="input-field" placeholder="Email" value="rc.cbeunity@gmail.com">
-                <input type="password" id="login-password" class="input-field" placeholder="Password" value="Unity@91594">
-                <button onclick="testLogin()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-unlock"></i>Test Login</button>
-                <div id="result-login"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-user-plus text-green-500"></i>Create Test User</h3>
-            <div class="space-y-3">
-                <input type="text" id="new-user-name" class="input-field" placeholder="Full Name">
-                <input type="email" id="new-user-email" class="input-field" placeholder="Email">
-                <input type="password" id="new-user-password" class="input-field" placeholder="Password">
-                <select id="new-user-role" class="input-field">
-                    <option value="member">Member</option>
-                    <option value="board_member">Board Member</option>
-                    <option value="secretary">Secretary</option>
-                    <option value="treasurer">Treasurer</option>
-                </select>
-                <button onclick="createTestUser()" class="test-btn test-btn-success w-full"><i class="fa-solid fa-user-plus"></i>Create User</button>
-                <div id="result-create-user"></div>
-            </div>
-        </div>
-
-        <div class="test-card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-users text-brand-blue"></i>User Statistics</h3>
-            <button onclick="getUserStats()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-chart-pie"></i>Load Stats</button>
-            <div id="result-user-stats" class="mt-3"></div>
-        </div>
-    </div>`;
-}
-
-// ============================================
-// HELPER: Load dropdowns
-// ============================================
-async function loadEventOptions() {
-    const { data } = await db.from('events').select('id, event_name, date, is_dpp').order('date', { ascending: false }).limit(50);
-    const selects = document.querySelectorAll('#project-event, #pdf-event-select, #docx-event-select');
-    selects.forEach(s => {
-        if (!s) return;
-        s.innerHTML = '<option value="">Select Event...</option>' + (data || []).map(e =>
-            `<option value="${e.id}">${e.event_name} (${e.date})${e.is_dpp ? ' [DPP]' : ''}</option>`
-        ).join('');
-    });
-}
-
-async function loadMeetingOptions() {
-    const { data } = await db.from('meetings').select('id, meeting_name, date, meeting_type').order('date', { ascending: false }).limit(50);
-    const selects = document.querySelectorAll('#meeting-select, #minutes-meeting-select, #pdf-meeting-select, #docx-meeting-select, #attendance-meeting-select, #preview-meeting-select');
-    selects.forEach(s => {
-        if (!s) return;
-        s.innerHTML = '<option value="">Select Meeting...</option>' + (data || []).map(m =>
-            `<option value="${m.id}">${m.meeting_name} (${m.date}) [${m.meeting_type}]</option>`
-        ).join('');
-    });
-}
-
-async function loadBulletinOptions() {
-    const { data } = await db.from('bulletins').select('id, bulletin_name, edition').order('created_at', { ascending: false }).limit(20);
-    const s = document.getElementById('bulletin-select');
-    if (s) s.innerHTML = '<option value="">Select Bulletin...</option>' + (data || []).map(b =>
-        `<option value="${b.id}">${b.bulletin_name} ${b.edition ? '- ' + b.edition : ''}</option>`
-    ).join('');
-}
-
-async function loadMemberOptions() {
-    const { data } = await db.from('users').select('id, full_name, email, date_of_birth').eq('is_active', true).limit(100);
-    const s = document.getElementById('birthday-member-select');
-    if (s) s.innerHTML = '<option value="">Select Member...</option>' + (data || []).map(m =>
-        `<option value="${m.id}">${m.full_name} ${m.date_of_birth ? '(' + m.date_of_birth + ')' : ''}</option>`
-    ).join('');
-}
-
-async function reloadAllOptions() {
+const DATA = { events: [], meetings: [], bulletins: [], members: [], avenues: [] };
+async function loadAll() {
+    if (!db) return;
+    const q = async (name, fn) => { try { const { data, error } = await fn(); if (error) throw error; DATA[name] = data || []; } catch (e) { log(`Could not load ${name}: ${e.message || e}`, 'warning'); } };
     await Promise.all([
-        loadEventOptions(),
-        loadMeetingOptions(),
-        loadBulletinOptions(),
-        loadMemberOptions()
+        q('events', () => db.from('events').select('*').order('date', { ascending: false }).limit(80)),
+        q('meetings', () => db.from('meetings').select('*').order('date', { ascending: false }).limit(60)),
+        q('bulletins', () => db.from('bulletins').select('*').order('created_at', { ascending: false }).limit(20)),
+        q('members', () => db.from('users').select('id, full_name, email, date_of_birth, photo_url, is_active').eq('is_active', true).order('full_name').limit(300)),
+        q('avenues', () => db.from('avenues').select('*'))
     ]);
+    log(`Loaded ${DATA.events.length} projects, ${DATA.meetings.length} meetings, ${DATA.bulletins.length} bulletins, ${DATA.members.length} members, ${DATA.avenues.length} avenues`, 'success');
+    fillSelects();
 }
+function evLabel(e) {
+    return `${e.event_name || e.title || 'Untitled'} (${e.date || 'no date'})${e.is_dpp ? ' [DPP]' : ''}${hasTamil(e.event_name) || hasTamil(e.venue) || hasTamil(e.description) ? ' [Tamil]' : hasIndic(e.event_name) ? ' [Indic]' : ''}`;
+}
+function opts(list, valueFn, labelFn, ph) {
+    return `<option value="">${esc(ph)}</option>` + list.map(x => `<option value="${esc(valueFn(x))}">${esc(labelFn(x))}</option>`).join('');
+}
+function fillSelects() {
+    const onlyDpp = chk('dl-dpp-only');
+    const evs = onlyDpp ? DATA.events.filter(e => e.is_dpp) : DATA.events;
+    document.querySelectorAll('select[data-src="events"]').forEach(s => { const keep = s.value; s.innerHTML = opts(evs, e => e.id, evLabel, 'Select project...'); s.value = keep; });
+    document.querySelectorAll('select[data-src="meetings"]').forEach(s => { const keep = s.value; s.innerHTML = opts(DATA.meetings, m => m.id, m => `${m.meeting_name} (${m.date}) [${m.meeting_type}]`, 'Select meeting...'); s.value = keep; });
+    document.querySelectorAll('select[data-src="bulletins"]').forEach(s => { s.innerHTML = opts(DATA.bulletins, b => b.id, b => `${b.bulletin_name}${b.edition ? ' - ' + b.edition : ''}`, 'Select bulletin...'); });
+    document.querySelectorAll('select[data-src="members"]').forEach(s => { s.innerHTML = opts(DATA.members, m => m.id, m => `${m.full_name}${m.date_of_birth ? ' (' + m.date_of_birth + ')' : ''}`, 'Select member...'); });
+    document.querySelectorAll('select[data-src="avenues"]').forEach(s => { s.innerHTML = `<option value="">All avenues</option>` + DATA.avenues.map(a => `<option value="${esc(a.id)}">${esc(a.name || a.slug)}</option>`).join(''); });
+}
+const byId = (list, id) => list.find(x => String(x.id) === String(id));
 
 // ============================================
-// EMAIL TESTS
+// TABS
 // ============================================
-async function testGenericEmail() {
-    const recipient = document.getElementById('generic-recipient').value;
-    const subject = document.getElementById('generic-subject').value;
-    const body = document.getElementById('generic-body').value;
-    if (!recipient) return showResult('result-generic-email', 'Recipient required', false);
-
-    log(`Sending generic email to ${recipient}...`, 'info');
-    try {
-        const res = await fetch(CONFIG.FUNCTIONS.SEND_EMAIL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: 'generic',
-                recipients: [recipient],
-                subject,
-                html_body: body,
-                sender: { role: 'club', name: 'Test Console', email: 'rc.cbeunity@gmail.com' }
-            })
-        });
-        const result = await res.json();
-        showResult('result-generic-email', result, result.success);
-        log(result.success ? `Email sent to ${recipient}` : 'Email failed: ' + result.error, result.success ? 'success' : 'error');
-    } catch (e) {
-        showResult('result-generic-email', e.message, false);
-        log('Error: ' + e.message, 'error');
-    }
+let currentTab = 'emails';
+const RENDER = {};
+function switchCategory(cat) {
+    currentTab = cat;
+    document.querySelectorAll('.category-tab').forEach(t => t.classList.toggle('active', t.dataset.category === cat));
+    $('category-content').innerHTML = RENDER[cat]();
+    fillSelects();
+    if (cat === 'downloads') syncRange();
+    if (cat === 'maillog' && db) loadMailLog();
+    if (cat === 'treasury' && db) runTreasury();
 }
-
-async function testProjectEmail() {
-    const recipient = document.getElementById('project-recipient').value;
-    const eventId = document.getElementById('project-event').value;
-    if (!recipient || !eventId) return showResult('result-project-email', 'Recipient and event required', false);
-
-    log(`Fetching event ${eventId}...`, 'info');
-    const { data: event } = await db.from('events').select('*').eq('id', eventId).single();
-    if (!event) return showResult('result-project-email', 'Event not found', false);
-
-    log(`Sending project notification...`, 'info');
-    try {
-        const res = await fetch(CONFIG.FUNCTIONS.SEND_EMAIL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: 'project_notification',
-                recipients: [recipient],
-                sender: { role: 'president', name: 'Test President', portfolio: 'President 2026-27' },
-                event
-            })
-        });
-        const result = await res.json();
-        showResult('result-project-email', result, result.success);
-        log(result.success ? 'Project email sent' : 'Failed: ' + result.error, result.success ? 'success' : 'error');
-    } catch (e) {
-        showResult('result-project-email', e.message, false);
-    }
-}
-
-async function testMeetingInvite() {
-    const recipient = document.getElementById('meeting-recipient').value;
-    const meetingId = document.getElementById('meeting-select').value;
-    if (!recipient || !meetingId) return showResult('result-meeting-email', 'Recipient and meeting required', false);
-
-    const { data: meeting } = await db.from('meetings').select('*').eq('id', meetingId).single();
-    if (!meeting) return showResult('result-meeting-email', 'Meeting not found', false);
-
-    log('Sending meeting invitation...', 'info');
-    try {
-        const res = await fetch(CONFIG.FUNCTIONS.SEND_EMAIL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: 'meeting_invitation',
-                recipients: [recipient],
-                sender: { role: 'secretary_admin', name: 'Test Secretary', portfolio: 'Secretary Administration' },
-                meeting
-            })
-        });
-        const result = await res.json();
-        showResult('result-meeting-email', result, result.success);
-        log(result.success ? 'Meeting invite sent' : 'Failed: ' + result.error, result.success ? 'success' : 'error');
-    } catch (e) {
-        showResult('result-meeting-email', e.message, false);
-    }
-}
-
-async function testMinutesEmail() {
-    const recipient = document.getElementById('minutes-recipient').value;
-    const meetingId = document.getElementById('minutes-meeting-select').value;
-    if (!recipient || !meetingId) return showResult('result-minutes-email', 'Recipient and meeting required', false);
-
-    const { data: meeting } = await db.from('meetings').select('*').eq('id', meetingId).single();
-    log('Sending minutes email...', 'info');
-    try {
-        const res = await fetch(CONFIG.FUNCTIONS.SEND_EMAIL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: 'meeting_minutes',
-                recipients: [recipient],
-                sender: { role: 'secretary_admin', name: 'Test Secretary', portfolio: 'Secretary Administration' },
-                meeting
-            })
-        });
-        const result = await res.json();
-        showResult('result-minutes-email', result, result.success);
-        log(result.success ? 'Minutes email sent' : 'Failed', result.success ? 'success' : 'error');
-    } catch (e) {
-        showResult('result-minutes-email', e.message, false);
-    }
-}
-
-async function testTreasuryEmail() {
-    const recipient = document.getElementById('treasury-recipient').value;
-    if (!recipient) return showResult('result-treasury-email', 'Recipient required', false);
-
-    log('Sending treasury statement...', 'info');
-    try {
-        const res = await fetch(CONFIG.FUNCTIONS.SEND_EMAIL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: 'monthly_treasury_statement',
-                recipients: [recipient],
-                sender: { role: 'treasurer', name: 'Test Treasurer', portfolio: 'Treasurer' },
-                month: new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }),
-                total_income: 50000,
-                total_expense: 32000,
-                net_balance: 18000,
-                transaction_count: 25
-            })
-        });
-        const result = await res.json();
-        showResult('result-treasury-email', result, result.success);
-        log(result.success ? 'Treasury email sent' : 'Failed', result.success ? 'success' : 'error');
-    } catch (e) {
-        showResult('result-treasury-email', e.message, false);
-    }
-}
-
-async function testBulletinEmail() {
-    const recipient = document.getElementById('bulletin-recipient').value;
-    const bulletinId = document.getElementById('bulletin-select').value;
-    if (!recipient || !bulletinId) return showResult('result-bulletin-email', 'Recipient and bulletin required', false);
-
-    const { data: bulletin } = await db.from('bulletins').select('*').eq('id', bulletinId).single();
-    log('Sending bulletin email...', 'info');
-    try {
-        const res = await fetch(CONFIG.FUNCTIONS.SEND_EMAIL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: 'bulletin_published',
-                recipients: [recipient],
-                sender: { role: 'club_editor', name: 'Test Editor', portfolio: 'Club Editor' },
-                bulletin
-            })
-        });
-        const result = await res.json();
-        showResult('result-bulletin-email', result, result.success);
-    } catch (e) {
-        showResult('result-bulletin-email', e.message, false);
-    }
-}
-
-async function testMembershipApproved() {
-    const recipient = document.getElementById('member-approved-recipient').value;
-    const name = document.getElementById('member-approved-name').value;
-    if (!recipient || !name) return showResult('result-member-approved', 'Email and name required', false);
-
-    log('Sending membership approval email...', 'info');
-    try {
-        const res = await fetch(CONFIG.FUNCTIONS.SEND_EMAIL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: 'membership_approved',
-                recipients: [recipient],
-                member: { full_name: name, email: recipient }
-            })
-        });
-        const result = await res.json();
-        showResult('result-member-approved', result, result.success);
-    } catch (e) {
-        showResult('result-member-approved', e.message, false);
-    }
-}
+$('tabs').addEventListener('click', (e) => { const b = e.target.closest('.category-tab'); if (b) switchCategory(b.dataset.category); });
 
 // ============================================
-// DOWNLOAD TESTS
+// EMAILS
 // ============================================
-async function downloadPDF(type, eventId, meetingId, month, startDate, endDate) {
-    const payload = { type };
-    if (eventId) payload.eventId = eventId;
-    if (meetingId) payload.meetingId = meetingId;
-    if (month) payload.month = month;
-    if (startDate) payload.startDate = startDate;
-    if (endDate) payload.endDate = endDate;
+const SENDERS = {
+    president: { role: 'president', name: 'Test President', portfolio: 'President' },
+    vice_president: { role: 'vice_president', name: 'Test Vice President', portfolio: 'Vice President' },
+    secretary: { role: 'secretary', name: 'Test Secretary', portfolio: 'Secretary' },
+    secretary_admin: { role: 'secretary_admin', name: 'Test Secretary', portfolio: 'Secretary - Administration' },
+    treasurer: { role: 'treasurer', name: 'Test Treasurer', portfolio: 'Treasurer' },
+    advisor: { role: 'advisor', name: 'Test Advisor', portfolio: 'Club Advisor' },
+    member: { role: 'member', name: 'Test Member', portfolio: '' }
+};
+function sender() { const s = Object.assign({ email: 'rc.cbeunity@gmail.com' }, SENDERS[val('mail-sender')] || SENDERS.president); return s; }
+function rcpt(id) { return (val(id) || val('mail-to') || cfg.mail || '').trim(); }
 
-    log(`Generating ${type} PDF...`, 'info');
+RENDER.emails = () => `
+<div class="space-y-4">
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-3 flex items-center gap-2"><i class="fa-solid fa-sliders text-brand-purple"></i>Mail test setup</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div><label class="lbl">Send every test to</label><input type="email" id="mail-to" class="input-field" placeholder="you@example.com" value="${esc(cfg.mail)}"></div>
+      <div><label class="lbl">Test as role</label>
+        <select id="mail-sender" class="input-field">
+          ${Object.keys(SENDERS).map(k => `<option value="${k}">${esc(SENDERS[k].portfolio || 'Member')} (${k})</option>`).join('')}
+        </select></div>
+    </div>
+    <p class="text-[10px] text-slate-500 mt-2">Project and report mails are refused for non-approver roles, and Board / General Body meeting mails for non-senior roles. Choose Member to confirm those guards work. Mails switched off in Site Settings come back as "Skipped".</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+      <button onclick="sendAllTemplates(this)" class="test-btn test-btn-primary"><i class="fa-solid fa-layer-group"></i>Send every template once</button>
+      <button onclick="listMailSwitches()" class="test-btn test-btn-secondary"><i class="fa-solid fa-toggle-on"></i>Show mail switches</button>
+    </div>
+    <div id="result-mail-all"></div>
+  </div>
+
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-envelope text-brand-blue"></i>Generic Email</h3>
+    <div class="space-y-3">
+      <input type="text" id="generic-subject" class="input-field" placeholder="Subject" value="Unity Portal Test Email">
+      <textarea id="generic-body" class="input-field" rows="3" placeholder="HTML body">&lt;p&gt;Test message sent from the Unity Portal console at ${esc(new Date().toLocaleString('en-IN'))}.&lt;/p&gt;&lt;p&gt;தமிழ் எழுத்துகள் சோதனை&lt;/p&gt;</textarea>
+      <button onclick="testGenericEmail(this)" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-paper-plane"></i>Send Generic Email</button>
+      <div id="result-generic-email"></div>
+    </div>
+  </div>
+
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-rocket text-brand-purple"></i>Project Notification / Approved / Report</h3>
+    <div class="space-y-3">
+      <select id="project-event" data-src="events" class="input-field"></select>
+      <div class="grid grid-cols-3 gap-2">
+        <select id="project-type" class="input-field col-span-2">
+          <option value="project_notification">Project notification</option>
+          <option value="project_approved">Project approved</option>
+          <option value="report_approved">Report approved</option>
+        </select>
+        <select id="project-status" class="input-field"><option value="">Wording: default</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select>
+      </div>
+      <label class="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" id="project-attach"> Attach the generated report PDF (tests PDF + attachment path)</label>
+      <button onclick="testProjectEmail(this)" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-paper-plane"></i>Send</button>
+      <div id="result-project-email"></div>
+    </div>
+  </div>
+
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-people-group text-brand-cyan"></i>Meeting Invitation</h3>
+    <div class="space-y-3">
+      <select id="meeting-select" data-src="meetings" class="input-field"></select>
+      <label class="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" id="meeting-attach"> Attach the agenda PDF</label>
+      <button onclick="testMeetingInvite(this)" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-paper-plane"></i>Send Meeting Invitation</button>
+      <div id="result-meeting-email"></div>
+    </div>
+  </div>
+
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-file-pen text-green-500"></i>Meeting Minutes + Attendance Form mail</h3>
+    <div class="space-y-3">
+      <select id="minutes-meeting-select" data-src="meetings" class="input-field"></select>
+      <label class="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" id="minutes-attach"> Attach minutes PDF and attendance PDF</label>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="testMinutesEmail(this)" class="test-btn test-btn-success"><i class="fa-solid fa-paper-plane"></i>Send Minutes</button>
+        <button onclick="testAttendanceMail(this)" class="test-btn test-btn-primary"><i class="fa-solid fa-signature"></i>Send Attendance Form</button>
+      </div>
+      <div id="result-minutes-email"></div>
+    </div>
+  </div>
+
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-wallet text-yellow-500"></i>Monthly Treasury Statement (real figures)</h3>
+    <div class="space-y-3">
+      <div class="grid grid-cols-2 gap-2">
+        <div><label class="lbl">Month</label><input type="month" id="treasury-mail-month" class="input-field" value="${prevMonthYM()}"></div>
+        <div><label class="lbl">&nbsp;</label><label class="flex items-center gap-2 text-xs font-semibold mt-2"><input type="checkbox" id="treasury-mail-attach"> Attach statement PDF</label></div>
+      </div>
+      <p class="text-[10px] text-slate-500">Figures come from the treasury table: approved entries only, with the opening balance from Site Settings. The scheduled Apps Script mail also adds the Excel ledger.</p>
+      <button onclick="testTreasuryEmail(this)" class="test-btn test-btn-warning w-full"><i class="fa-solid fa-paper-plane"></i>Send Treasury Statement</button>
+      <div id="result-treasury-email"></div>
+    </div>
+  </div>
+
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-newspaper text-indigo-500"></i>Bulletin Published</h3>
+    <div class="space-y-3">
+      <select id="bulletin-select" data-src="bulletins" class="input-field"></select>
+      <button onclick="testBulletinEmail(this)" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-paper-plane"></i>Send Bulletin Email</button>
+      <div id="result-bulletin-email"></div>
+    </div>
+  </div>
+
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-user-check text-pink-500"></i>Membership Emails</h3>
+    <div class="space-y-3">
+      <input type="text" id="member-approved-name" class="input-field" placeholder="Rtr. New Member Name" value="Rtr. Test Member">
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="testMembership('membership_approved', this)" class="test-btn test-btn-success"><i class="fa-solid fa-paper-plane"></i>Approved (Welcome)</button>
+        <button onclick="testMembership('membership_received', this)" class="test-btn test-btn-primary"><i class="fa-solid fa-inbox"></i>Application Received</button>
+      </div>
+      <div id="result-member-approved"></div>
+    </div>
+  </div>
+</div>`;
+
+// Generic send with timing, skipped/disabled handling and logging
+async function sendMail(resultId, label, payload, btn) {
+    const to = payload.recipients && payload.recipients[0];
+    if (!to) { showResult(resultId, 'Enter a recipient (top of the Emails tab or in Settings).', 'warn'); return null; }
+    busy(btn, true); log(`Sending ${label} to ${to}...`, 'info');
     try {
-        const res = await fetch(CONFIG.FUNCTIONS.GENERATE_PDF, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error('PDF generation failed: ' + res.status);
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${type}_${Date.now()}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showResult('result-pdf-download', `Downloaded ${type}.pdf (${(blob.size/1024).toFixed(1)} KB)`, true);
-        log(`PDF downloaded: ${type}`, 'success');
-    } catch (e) {
-        showResult('result-pdf-download', e.message, false);
-        log('PDF error: ' + e.message, 'error');
-    }
+        const { res, ms } = await callFn('SEND_EMAIL', payload);
+        const out = await res.json().catch(() => ({ error: 'Non-JSON reply, HTTP ' + res.status }));
+        const skipped = out.skipped || out.disabled;
+        const ok = !!out.success && !skipped;
+        showResult(resultId, out, ok ? true : skipped ? 'warn' : false, ms);
+        log(ok ? `${label} sent (${ms} ms)` : skipped ? `${label} skipped: ${out.message || out.error}` : `${label} failed: ${out.error || out.message || res.status}`, ok ? 'success' : skipped ? 'warning' : 'error');
+        return out;
+    } catch (e) { showResult(resultId, e.message, false); log(`${label} error: ${e.message}`, 'error'); return null; }
+    finally { busy(btn, false); }
+}
+async function makeFile(key, payload, name, mime) {
+    const { res } = await callFn(key, payload);
+    if (!res.ok) throw new Error(`${payload.type} ${key === 'GENERATE_PDF' ? 'PDF' : 'DOCX'} failed (HTTP ${res.status})`);
+    const blob = await res.blob();
+    return { name, mime, base64: await blobToB64(blob) };
 }
 
-async function downloadDOCX(type, eventId, meetingId) {
-    const payload = { type };
-    if (eventId) payload.eventId = eventId;
-    if (meetingId) payload.meetingId = meetingId;
-
-    log(`Generating ${type} DOCX...`, 'info');
-    try {
-        const res = await fetch(CONFIG.FUNCTIONS.GENERATE_DOCX, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error('DOCX generation failed: ' + res.status);
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${type}_${Date.now()}.docx`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showResult('result-docx-download', `Downloaded ${type}.docx (${(blob.size/1024).toFixed(1)} KB)`, true);
-        log(`DOCX downloaded: ${type}`, 'success');
-    } catch (e) {
-        showResult('result-docx-download', e.message, false);
-    }
+async function testGenericEmail(btn) {
+    return sendMail('result-generic-email', 'generic email', { type: 'generic', recipients: [rcpt()], subject: val('generic-subject'), html_body: val('generic-body'), sender: sender() }, btn);
 }
-
-// ============================================
-// ATTENDANCE TESTS
-// ============================================
-async function createAttendanceForm() {
-    const meetingId = document.getElementById('attendance-meeting-select').value;
-    if (!meetingId) return showResult('result-attendance-form', 'Meeting required', false);
-
-    log('Creating attendance form...', 'info');
+async function testProjectEmail(btn, silentPick) {
+    const e = byId(DATA.events, val('project-event')) || (silentPick && DATA.events[0]);
+    if (!e) return showResult('result-project-email', 'Select a project first.', 'warn');
+    const type = silentPick ? 'project_notification' : val('project-type');
+    const payload = { type, recipients: [rcpt()], sender: sender(), event: e };
+    if (val('project-status')) payload.report_status = val('project-status');
     try {
-        const res = await fetch(CONFIG.FUNCTIONS.ATTENDANCE_FORM + '?action=create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ meeting_id: meetingId, send_to_members: false })
-        });
-        const result = await res.json();
-        showResult('result-attendance-form', result, result.success);
-        log(result.success ? `Form URL: ${result.form_url}` : 'Failed', result.success ? 'success' : 'error');
-    } catch (e) {
-        showResult('result-attendance-form', e.message, false);
-    }
-}
-
-async function triggerAttendanceForm() {
-    const meetingId = document.getElementById('attendance-meeting-select').value;
-    if (!meetingId) return showResult('result-attendance-form', 'Meeting required', false);
-
-    log('Triggering attendance form + email...', 'info');
-    try {
-        const res = await fetch(CONFIG.FUNCTIONS.ATTENDANCE_FORM + '?action=trigger', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ meeting_id: meetingId })
-        });
-        const result = await res.json();
-        showResult('result-attendance-form', result, result.success);
-    } catch (e) {
-        showResult('result-attendance-form', e.message, false);
-    }
-}
-
-async function getAttendanceResponses() {
-    const meetingId = document.getElementById('attendance-meeting-select').value;
-    if (!meetingId) return showResult('result-attendance-form', 'Meeting required', false);
-
-    try {
-        const res = await fetch(CONFIG.FUNCTIONS.ATTENDANCE_FORM + '?action=responses', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ meeting_id: meetingId })
-        });
-        const result = await res.json();
-        showResult('result-attendance-form', result, result.success);
-    } catch (e) {
-        showResult('result-attendance-form', e.message, false);
-    }
-}
-
-async function previewAttendanceForm() {
-    const meetingId = document.getElementById('preview-meeting-select').value;
-    if (!meetingId) return showResult('result-attendance-preview', 'Meeting required', false);
-
-    try {
-        const res = await fetch(CONFIG.FUNCTIONS.ATTENDANCE_FORM + '?action=create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ meeting_id: meetingId, send_to_members: false })
-        });
-        const result = await res.json();
-        if (result.success && result.form_url) {
-            window.open(result.form_url, '_blank');
-            showResult('result-attendance-preview', 'Opened in new tab: ' + result.form_url, true);
-            log('Attendance form opened', 'success');
-        } else {
-            showResult('result-attendance-preview', result, false);
+        if (chk('project-attach') && !silentPick) {
+            log('Generating report PDF to attach...', 'info');
+            payload.files = [await makeFile('GENERATE_PDF', { type: 'event_report', eventId: e.id }, `Report_${(e.event_name || 'project').replace(/[^\w]+/g, '_')}.pdf`, 'application/pdf')];
         }
-    } catch (e) {
-        showResult('result-attendance-preview', e.message, false);
-    }
+    } catch (err) { return showResult('result-project-email', err.message, false); }
+    return sendMail('result-project-email', type, payload, btn);
 }
-
-// ============================================
-// BIRTHDAY TESTS
-// ============================================
-async function triggerBirthdayCheck() {
-    log('Running birthday check...', 'info');
+async function testMeetingInvite(btn, silentPick) {
+    const m = byId(DATA.meetings, val('meeting-select')) || (silentPick && DATA.meetings[0]);
+    if (!m) return showResult('result-meeting-email', 'Select a meeting first.', 'warn');
+    const payload = { type: 'meeting_invitation', recipients: [rcpt()], sender: sender(), meeting: m };
     try {
-        const res = await fetch(CONFIG.FUNCTIONS.BIRTHDAY_CHECK, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ trigger: 'manual_test' })
-        });
-        const result = await res.json();
-        showResult('result-birthday-check', result, result.success);
-        log(`Sent: ${result.sent}, Skipped: ${result.skipped}`, 'success');
-    } catch (e) {
-        showResult('result-birthday-check', e.message, false);
-    }
+        if (chk('meeting-attach') && !silentPick) payload.files = [await makeFile('GENERATE_PDF', { type: 'meeting_agenda', meetingId: m.id }, 'Agenda.pdf', 'application/pdf')];
+    } catch (err) { return showResult('result-meeting-email', err.message, false); }
+    return sendMail('result-meeting-email', 'meeting invitation', payload, btn);
 }
-
-async function getTodaysBirthdays() {
+async function testMinutesEmail(btn, silentPick) {
+    const m = byId(DATA.meetings, val('minutes-meeting-select')) || (silentPick && DATA.meetings[0]);
+    if (!m) return showResult('result-minutes-email', 'Select a meeting first.', 'warn');
+    const payload = { type: 'meeting_minutes', recipients: [rcpt()], sender: sender(), meeting: m };
     try {
-        const { data } = await db.rpc('get_todays_birthdays');
-        showResult('result-birthday-check', { count: data?.length || 0, members: data }, true);
-    } catch (e) {
-        showResult('result-birthday-check', e.message, false);
-    }
+        if (chk('minutes-attach') && !silentPick) payload.files = [
+            await makeFile('GENERATE_PDF', { type: 'meeting_minutes', meetingId: m.id }, 'Minutes.pdf', 'application/pdf'),
+            await makeFile('GENERATE_PDF', { type: 'meeting_attendance', meetingId: m.id }, 'Attendance.pdf', 'application/pdf')];
+    } catch (err) { return showResult('result-minutes-email', err.message, false); }
+    return sendMail('result-minutes-email', 'meeting minutes', payload, btn);
 }
-
-async function sendIndividualBirthdayWish() {
-    const memberId = document.getElementById('birthday-member-select').value;
-    if (!memberId) return showResult('result-birthday-individual', 'Select a member', false);
-
-    const { data: member } = await db.from('users').select('*').eq('id', memberId).single();
-    if (!member?.email) return showResult('result-birthday-individual', 'Member has no email', false);
-
-    log(`Sending birthday wish to ${member.full_name}...`, 'info');
+async function testAttendanceMail(btn, silentPick) {
+    const m = byId(DATA.meetings, val('minutes-meeting-select')) || (silentPick && DATA.meetings[0]);
+    if (!m) return showResult('result-minutes-email', 'Select a meeting first.', 'warn');
+    const meeting = Object.assign({}, m, { attendance_form_url: m.attendance_form_url || (location.origin + '/attendance.html?meeting=' + m.id) });
+    return sendMail('result-minutes-email', 'attendance form mail', { type: 'meeting_attendance_form', recipients: [rcpt()], sender: sender(), meeting }, btn);
+}
+async function testTreasuryEmail(btn, silentPick) {
+    if (!needDb('result-treasury-email')) return;
+    const month = (silentPick ? prevMonthYM() : val('treasury-mail-month')) || prevMonthYM();
+    const [y, m] = month.split('-').map(Number);
+    const start = `${month}-01`, end = ymd(new Date(y, m, 0));
     try {
-        const res = await fetch(CONFIG.FUNCTIONS.SEND_EMAIL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: 'birthday_wish',
-                recipients: [member.email],
-                member: { full_name: member.full_name, email: member.email, photo_url: member.photo_url }
-            })
-        });
-        const result = await res.json();
-        showResult('result-birthday-individual', result, result.success);
-    } catch (e) {
-        showResult('result-birthday-individual', e.message, false);
+        await loadTreasuryData();
+        const r = computeRange(start, end);
+        const payload = { type: 'monthly_treasury_statement', recipients: [rcpt()], sender: SENDERS.treasurer && Object.assign({ email: 'rc.cbeunity@gmail.com' }, SENDERS.treasurer),
+            month: monthLabel(month), total_income: r.income, total_expense: r.expense, net_balance: r.net, transaction_count: r.count,
+            opening_balance: r.opening, closing_balance: r.closing, pending_count: r.pending };
+        if (chk('treasury-mail-attach') && !silentPick) payload.files = [await makeFile('GENERATE_PDF', { type: 'monthly_treasury', month }, `Treasury_${month}.pdf`, 'application/pdf')];
+        return sendMail('result-treasury-email', 'treasury statement', payload, btn);
+    } catch (e) { showResult('result-treasury-email', e.message, false); }
+}
+async function testBulletinEmail(btn, silentPick) {
+    const b = byId(DATA.bulletins, val('bulletin-select')) || (silentPick && DATA.bulletins[0]);
+    if (!b) return showResult('result-bulletin-email', 'Select a bulletin first.', 'warn');
+    return sendMail('result-bulletin-email', 'bulletin email', { type: 'bulletin_published', recipients: [rcpt()], sender: Object.assign({ email: 'rc.cbeunity@gmail.com' }, { role: 'secretary_comm', name: 'Test Editor', portfolio: 'Secretary - Communication' }), bulletin: b }, btn);
+}
+async function testMembership(type, btn) {
+    const name = val('member-approved-name') || 'Rtr. Test Member';
+    return sendMail('result-member-approved', type, { type, recipients: [rcpt()], member: { full_name: name, email: rcpt(), phone: '+91 90000 00000', profession: 'Test' } }, btn);
+}
+async function sendAllTemplates(btn) {
+    const to = rcpt(); if (!to) return showResult('result-mail-all', 'Enter a recipient first.', 'warn');
+    if (!confirm(`Send one of every mail template to ${to}? This sends about 14 emails.`)) return;
+    busy(btn, true);
+    const step = async (label, fn) => {
+        try { await fn(); } catch (e) { log(label + ': ' + e.message, 'error'); }
+        await sleep(1200);
+    };
+    log('--- Sending every template ---', 'info');
+    await step('generic', () => testGenericEmail());
+    await step('project notification', () => testProjectEmail(null, true));
+    if (DATA.events[0]) {
+        for (const t of ['project_approved', 'report_approved']) {
+            await sendMail('result-mail-all', t, { type: t, recipients: [to], sender: sender(), event: DATA.events[0] }); await sleep(1200);
+        }
     }
+    await step('meeting invitation', () => testMeetingInvite(null, true));
+    await step('minutes', () => testMinutesEmail(null, true));
+    await step('attendance form', () => testAttendanceMail(null, true));
+    await step('treasury', () => testTreasuryEmail(null, true));
+    await step('bulletin', () => testBulletinEmail(null, true));
+    await sendMail('result-mail-all', 'membership_approved', { type: 'membership_approved', recipients: [to], member: { full_name: 'Rtr. Test Member', email: to } }); await sleep(1200);
+    await sendMail('result-mail-all', 'membership_received', { type: 'membership_received', recipients: [to], member: { full_name: 'Rtr. Test Member', email: to } }); await sleep(1200);
+    const mem = DATA.members.find(x => x.email) || { full_name: 'Rtr. Test Member', email: to };
+    await sendMail('result-mail-all', 'birthday_wish', { type: 'birthday_wish', recipients: [to], member: { full_name: mem.full_name, email: to, photo_url: mem.photo_url } }); await sleep(1200);
+    await sendMail('result-mail-all', 'blood_request_alert', { type: 'blood_request_alert', recipients: [to], request: { patient_name: 'Test Patient', blood_group: 'O+', units_needed: 2, urgency: 'urgent', hospital_name: 'Test Hospital', contact_person: 'Test', contact_phone: '9000000000' } });
+    log('--- Done. Open the Mail Log tab to see how each one was recorded ---', 'success');
+    showResult('result-mail-all', 'Finished. Check your inbox and the Mail Log tab. Counts above show passed / skipped / failed.', true);
+    busy(btn, false);
+}
+async function listMailSwitches() {
+    if (!needDb('result-mail-all')) return;
+    const { data, error } = await db.from('system_settings').select('key, value').or('key.like.email_%,key.like.auto_%,key.like.mail_%');
+    if (error) return showResult('result-mail-all', error.message, false);
+    showResult('result-mail-all', (data || []).sort((a, b) => a.key.localeCompare(b.key)).map(r => `${r.key.padEnd(36)} ${r.value}`).join('\n') || 'No switches found', true);
 }
 
 // ============================================
-// BLOOD TESTS
+// DOCUMENTS
 // ============================================
+RENDER.downloads = () => `
+<div class="space-y-4">
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-1 flex items-center gap-2"><i class="fa-solid fa-gears text-brand-purple"></i>Options</h3>
+    <div class="flex flex-wrap gap-x-5 gap-y-2 mt-2">
+      <label class="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" id="dl-open"> Open in a new tab instead of saving</label>
+      <label class="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" id="dl-dpp-only" onchange="fillSelects()"> Only DPP projects in the list</label>
+    </div>
+    <p class="text-[10px] text-slate-500 mt-2">Every download is checked for a real PDF / DOCX header, so an error page saved as a file is reported as a failure. Projects with Tamil text are tagged [Tamil]: use them to check that Tamil letters do not overlap in the PDF and DOCX.</p>
+  </div>
+
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-500"></i>Project and Meeting documents</h3>
+    <div class="space-y-3">
+      <select id="doc-event" data-src="events" class="input-field"></select>
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="getDoc('GENERATE_PDF','event_report',{eventId:val('doc-event')},this)" class="test-btn test-btn-danger"><i class="fa-solid fa-file-pdf"></i>Report PDF</button>
+        <button onclick="getDoc('GENERATE_DOCX','event_report',{eventId:val('doc-event')},this)" class="test-btn test-btn-primary"><i class="fa-solid fa-file-word"></i>Report DOCX</button>
+        <button onclick="getBoth('event_report',{eventId:val('doc-event')},this)" class="test-btn test-btn-secondary"><i class="fa-solid fa-copy"></i>Both</button>
+      </div>
+      <select id="doc-meeting" data-src="meetings" class="input-field"></select>
+      <div class="grid grid-cols-4 gap-2">
+        <button onclick="getDoc('GENERATE_PDF','meeting_agenda',{meetingId:val('doc-meeting')},this)" class="test-btn test-btn-primary">Agenda</button>
+        <button onclick="getDoc('GENERATE_PDF','meeting_minutes',{meetingId:val('doc-meeting')},this)" class="test-btn test-btn-primary">Minutes</button>
+        <button onclick="getDoc('GENERATE_PDF','meeting_attendance',{meetingId:val('doc-meeting')},this)" class="test-btn test-btn-success">Attendance</button>
+        <button onclick="getDoc('GENERATE_PDF','meeting_combined',{meetingId:val('doc-meeting')},this)" class="test-btn test-btn-warning">Combined</button>
+      </div>
+      <div class="grid grid-cols-4 gap-2">
+        <button onclick="getDoc('GENERATE_DOCX','meeting_agenda',{meetingId:val('doc-meeting')},this)" class="test-btn test-btn-secondary">Agenda DOCX</button>
+        <button onclick="getDoc('GENERATE_DOCX','meeting_minutes',{meetingId:val('doc-meeting')},this)" class="test-btn test-btn-secondary">Minutes DOCX</button>
+        <button onclick="getDoc('GENERATE_DOCX','meeting_attendance',{meetingId:val('doc-meeting')},this)" class="test-btn test-btn-secondary">Attend. DOCX</button>
+        <button onclick="getDoc('GENERATE_DOCX','meeting_combined',{meetingId:val('doc-meeting')},this)" class="test-btn test-btn-secondary">Combined DOCX</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-calendar text-yellow-500"></i>Monthly Avenue Report</h3>
+    <div class="grid grid-cols-2 gap-2">
+      <input type="month" id="doc-month" class="input-field" value="${prevMonthYM()}">
+      <select id="doc-avenue" data-src="avenues" class="input-field"></select>
+      <button onclick="getDoc('GENERATE_PDF','monthly_report',monthlyArgs(),this)" class="test-btn test-btn-warning"><i class="fa-solid fa-file-pdf"></i>Monthly PDF</button>
+      <button onclick="getDoc('GENERATE_DOCX','monthly_report',monthlyArgs(),this)" class="test-btn test-btn-primary"><i class="fa-solid fa-file-word"></i>Monthly DOCX</button>
+    </div>
+  </div>
+
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-wallet text-green-500"></i>Treasury documents (Rotary year)</h3>
+    <div class="space-y-3">
+      <div class="grid grid-cols-2 gap-2">
+        <input type="month" id="doc-tmonth" class="input-field" value="${prevMonthYM()}">
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="getDoc('GENERATE_PDF','monthly_treasury',{month:val('doc-tmonth')},this)" class="test-btn test-btn-warning">Month PDF</button>
+          <button onclick="getDoc('GENERATE_DOCX','monthly_treasury',{month:val('doc-tmonth')},this)" class="test-btn test-btn-secondary">Month DOCX</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <select id="doc-ry" class="input-field" onchange="syncRange()">${ryOptions(ryStart())}</select>
+        <select id="doc-q" class="input-field" onchange="syncRange()"><option value="">Full Rotary year</option><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
+        <div id="doc-range-label" class="text-[11px] font-bold flex items-center text-slate-500"></div>
+        <input type="date" id="doc-start" class="input-field"><input type="date" id="doc-end" class="input-field">
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="getDoc('GENERATE_PDF','treasury_statement',{startDate:val('doc-start'),endDate:val('doc-end')},this)" class="test-btn test-btn-warning">PDF</button>
+          <button onclick="getDoc('GENERATE_DOCX','treasury_statement',{startDate:val('doc-start'),endDate:val('doc-end')},this)" class="test-btn test-btn-secondary">DOCX</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="result-doc"></div>
+</div>`;
+function monthlyArgs() { return { month: val('doc-month'), avenueId: val('doc-avenue') || undefined }; }
+function syncRange() {
+    const r = rotaryRange(val('doc-ry'), val('doc-q') || null);
+    $('doc-start').value = r.start; $('doc-end').value = r.end;
+    $('doc-range-label').textContent = `${r.start} to ${r.end}`;
+}
+async function getDoc(key, type, args, btn) {
+    const isPdf = key === 'GENERATE_PDF';
+    const need = { event_report: 'eventId', meeting_agenda: 'meetingId', meeting_minutes: 'meetingId', meeting_attendance: 'meetingId', meeting_combined: 'meetingId', monthly_report: 'month', monthly_treasury: 'month', treasury_statement: 'startDate' }[type];
+    if (need && !args[need]) return showResult('result-doc', `Choose a value for "${need}" first.`, 'warn');
+    const payload = Object.assign({ type }, args);
+    busy(btn, true); log(`Generating ${type} ${isPdf ? 'PDF' : 'DOCX'}...`, 'info');
+    try {
+        const { res, ms } = await callFn(key, payload);
+        if (!res.ok) { let m = 'HTTP ' + res.status; try { m += ': ' + ((await res.json()).error || ''); } catch (e) {} throw new Error(m); }
+        const blob = await res.blob();
+        const magic = await fileMagic(blob);
+        const expect = isPdf ? 'pdf' : 'zip';
+        if (magic !== expect) throw new Error(`Reply is not a real ${isPdf ? 'PDF' : 'DOCX'} file (${(blob.size / 1024).toFixed(1)} KB, header "${magic}")`);
+        const name = `${type}_${Date.now()}.${isPdf ? 'pdf' : 'docx'}`;
+        if (chk('dl-open') && isPdf) window.open(URL.createObjectURL(blob), '_blank'); else download(blob, name);
+        showResult('result-doc', `${name}: ${(blob.size / 1024).toFixed(1)} KB in ${ms} ms, header OK`, true, ms);
+        log(`${type} ${isPdf ? 'PDF' : 'DOCX'} ready (${(blob.size / 1024).toFixed(1)} KB, ${ms} ms)`, 'success');
+    } catch (e) { showResult('result-doc', e.message, false); log(`${type} failed: ${e.message}`, 'error'); }
+    finally { busy(btn, false); }
+}
+async function getBoth(type, args, btn) { await getDoc('GENERATE_PDF', type, args, btn); await getDoc('GENERATE_DOCX', type, args, btn); }
+
+// ============================================
+// TREASURY
+// ============================================
+const T = { rows: [], openingAmount: 0, openingDate: '', loaded: false };
+async function loadTreasuryData(force) {
+    if (T.loaded && !force) return;
+    let all = [], from = 0;
+    for (;;) {
+        const { data, error } = await db.from('treasury').select('id, transaction_date, particular, income, expense, category, approved, created_at').order('transaction_date').range(from, from + 999);
+        if (error) throw new Error(error.message);
+        all = all.concat(data || []); if (!data || data.length < 1000) break; from += 1000;
+    }
+    T.rows = all;
+    const { data: st } = await db.from('system_settings').select('key, value').in('key', ['treasury_opening_balance', 'treasury_opening_date']);
+    T.openingAmount = 0; T.openingDate = '';
+    (st || []).forEach(r => { if (r.key === 'treasury_opening_balance') T.openingAmount = parseFloat(r.value) || 0; if (r.key === 'treasury_opening_date') T.openingDate = String(r.value || '').slice(0, 10); });
+    T.loaded = true;
+}
+// Same rules as the portal: only approved entries, entries before the opening date are already inside the opening figure
+function computeRange(start, end) {
+    const covered = (d) => !T.openingDate || d >= T.openingDate;
+    let opening = T.openingAmount, income = 0, expense = 0, count = 0, pending = 0;
+    T.rows.forEach(t => {
+        const d = String(t.transaction_date).slice(0, 10);
+        if (!covered(d)) return;
+        const inc = parseFloat(t.income) || 0, exp = parseFloat(t.expense) || 0;
+        if (d < start) { if (t.approved) opening += inc - exp; }
+        else if (d <= end) { if (t.approved) { income += inc; expense += exp; count++; } else pending++; }
+    });
+    return { opening, income, expense, net: income - expense, closing: opening + income - expense, count, pending };
+}
+RENDER.treasury = () => `
+<div class="space-y-4">
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-3 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-green-500"></i>Rotary-year summary <span class="text-[10px] font-semibold text-slate-500">(1 July to 30 June, approved entries only)</span></h3>
+    <div class="grid grid-cols-2 gap-2 mb-3">
+      <select id="tr-ry" class="input-field" onchange="runTreasury()">${ryOptions(ryStart())}</select>
+      <button onclick="runTreasury(true)" class="test-btn test-btn-primary"><i class="fa-solid fa-rotate"></i>Reload from database</button>
+    </div>
+    <div id="tr-cards"></div>
+    <div id="result-treasury-summary"></div>
+  </div>
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-3 flex items-center gap-2"><i class="fa-solid fa-table-cells text-brand-blue"></i>Quarters and 12-month trend</h3>
+    <div id="tr-quarters"></div>
+    <div id="tr-trend" class="mt-4"></div>
+  </div>
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-plus text-brand-blue"></i>Test transactions</h3>
+    <div class="space-y-3">
+      <div class="grid grid-cols-2 gap-2">
+        <select id="txn-type" class="input-field"><option value="income">Income</option><option value="expense">Expense</option></select>
+        <input type="number" id="txn-amount" class="input-field" placeholder="Amount (Rs)" step="0.01">
+      </div>
+      <input type="text" id="txn-particular" class="input-field" placeholder="Particular (saved as [TEST] ...)">
+      <div class="grid grid-cols-2 gap-2">
+        <select id="txn-category" class="input-field"><option value="membership_fee">Membership Fee</option><option value="donation">Donation</option><option value="event_expense">Event Expense</option><option value="misc_income">Misc Income</option><option value="misc_expense">Misc Expense</option></select>
+        <input type="date" id="txn-date" class="input-field" value="${ymd(new Date())}">
+      </div>
+      <label class="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" id="txn-approved"> Approved (counts in balances)</label>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="addTestTransaction()" class="test-btn test-btn-success"><i class="fa-solid fa-save"></i>Add test entry</button>
+        <button onclick="deleteTestTransactions()" class="test-btn test-btn-danger"><i class="fa-solid fa-trash"></i>Delete all [TEST] entries</button>
+      </div>
+      <div id="result-txn"></div>
+    </div>
+  </div>
+</div>`;
+async function runTreasury(force) {
+    if (!needDb('result-treasury-summary')) return;
+    try {
+        await loadTreasuryData(force);
+        const y = parseInt(val('tr-ry') || ryStart(), 10);
+        const full = rotaryRange(y), r = computeRange(full.start, full.end);
+        const card = (l, v, c) => `<div class="p-3 rounded-xl bg-slate-500/5 text-center"><p class="text-[9px] uppercase font-bold text-slate-500">${l}</p><p class="text-sm font-black ${c || ''}">${inr(v)}</p></div>`;
+        $('tr-cards').innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-5 gap-2">${card('Opening', r.opening)}${card('Income', r.income, 'text-green-600')}${card('Expense', r.expense, 'text-red-600')}${card('Net', r.net, r.net >= 0 ? 'text-green-600' : 'text-red-600')}${card('Closing', r.closing)}</div>
+            <p class="text-[10px] text-slate-500 mt-2">${ryLabel(y)}: ${r.count} approved, ${r.pending} pending. Opening balance Rs ${T.openingAmount.toLocaleString('en-IN')} as on ${T.openingDate || 'whole ledger'}.</p>`;
+        let qh = `<table class="mini-table"><tr><th>Quarter</th><th>Dates</th><th class="num">Income</th><th class="num">Expense</th><th class="num">Net</th><th class="num">Closing</th></tr>`;
+        ['Q1', 'Q2', 'Q3', 'Q4'].forEach(q => { const rg = rotaryRange(y, q), c = computeRange(rg.start, rg.end);
+            qh += `<tr><td><b>${q}</b></td><td>${rg.start} to ${rg.end}</td><td class="num">${inr(c.income)}</td><td class="num">${inr(c.expense)}</td><td class="num ${c.net < 0 ? 'text-red-600' : ''}">${inr(c.net)}</td><td class="num">${inr(c.closing)}</td></tr>`; });
+        $('tr-quarters').innerHTML = qh + '</table>';
+        const months = []; let max = 1;
+        for (let i = 0; i < 12; i++) { const mo = (6 + i) % 12, yr = i < 6 ? y : y + 1; const s = `${yr}-${pad(mo + 1)}-01`, e = ymd(new Date(yr, mo + 1, 0)); const c = computeRange(s, e); months.push({ l: `${MONTHS[i]} ${String(yr).slice(2)}`, c }); max = Math.max(max, c.income, c.expense); }
+        $('tr-trend').innerHTML = `<p class="lbl">12-month trend, July to June</p>` + months.map(m => `<div class="flex items-center gap-2 text-[10px] mb-1"><span class="w-14 font-bold">${m.l}</span><div class="flex-1"><div class="bar" style="width:${Math.max(1, m.c.income / max * 100)}%"></div><div class="bar exp mt-0.5" style="width:${Math.max(1, m.c.expense / max * 100)}%"></div></div><span class="w-40 text-right tabular-nums">${inr(m.c.income)} / ${inr(m.c.expense)}</span></div>`).join('');
+        $('result-treasury-summary').innerHTML = ''; record(true);
+        log(`Treasury ${ryLabel(y)} computed from ${T.rows.length} rows`, 'success');
+    } catch (e) { showResult('result-treasury-summary', e.message, false); log('Treasury failed: ' + e.message, 'error'); }
+}
+async function addTestTransaction() {
+    if (!needDb('result-txn')) return;
+    const type = val('txn-type'), amount = parseFloat(val('txn-amount'));
+    if (!val('txn-particular') || !amount) return showResult('result-txn', 'Enter a description and an amount.', 'warn');
+    const payload = { transaction_date: val('txn-date'), particular: '[TEST] ' + val('txn-particular'), category: val('txn-category'),
+        income: type === 'income' ? amount : 0, expense: type === 'expense' ? amount : 0, approved: chk('txn-approved') };
+    const { data, error } = await db.from('treasury').insert(payload).select().single();
+    if (error) return showResult('result-txn', error.message, false);
+    T.loaded = false; showResult('result-txn', { saved: data.id, approved: data.approved }, true);
+}
+async function deleteTestTransactions() {
+    if (!needDb('result-txn')) return;
+    if (!confirm('Delete every treasury row whose description starts with [TEST]?')) return;
+    const { data, error } = await db.from('treasury').delete().like('particular', '[TEST]%').select('id');
+    if (error) return showResult('result-txn', error.message, false);
+    T.loaded = false; showResult('result-txn', `Deleted ${data.length} test row(s)`, true);
+}
+
+// ============================================
+// GEOTAG MAP + GEOCODING
+// ============================================
+RENDER.geotag = () => `
+<div class="space-y-4">
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-1 flex items-center gap-2"><i class="fa-solid fa-map text-green-500"></i>Map tile providers</h3>
+    <p class="text-[10px] text-slate-500 mb-3">Fetches one real tile from each provider the way the geotag photo tool does. A usable provider answers HTTP 200 with CORS and shows a street map. CARTO is listed to show the "API KEY REQUIRED" picture that it returns with HTTP 200.</p>
+    <div class="grid grid-cols-3 gap-2 mb-3">
+      <input id="geo-lat" class="input-field" value="10.991547" placeholder="Latitude">
+      <input id="geo-lng" class="input-field" value="76.978930" placeholder="Longitude">
+      <button onclick="probeTiles(this)" class="test-btn test-btn-primary"><i class="fa-solid fa-satellite-dish"></i>Probe tiles</button>
+    </div>
+    <div id="tile-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+    <div id="result-tiles"></div>
+  </div>
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-3 flex items-center gap-2"><i class="fa-solid fa-magnifying-glass-location text-brand-blue"></i>Geocoding (geocode.maps.co, then OpenStreetMap)</h3>
+    <div class="space-y-3">
+      <div class="grid grid-cols-3 gap-2"><input id="gc-q" class="input-field col-span-2" value="Rotary Texcity hall, Coimbatore"><button onclick="geocode('search', this)" class="test-btn test-btn-primary">Forward</button></div>
+      <button onclick="geocode('reverse', this)" class="test-btn test-btn-secondary w-full"><i class="fa-solid fa-arrows-rotate"></i>Reverse using the coordinates above</button>
+      <div id="result-geocode"></div>
+    </div>
+  </div>
+</div>`;
+const TILE_SOURCES = [
+    { name: 'OpenStreetMap', url: (z, x, y) => `https://tile.openstreetmap.org/${z}/${x}/${y}.png` },
+    { name: 'OSM France', url: (z, x, y) => `https://a.tile.openstreetmap.fr/osmfr/${z}/${x}/${y}.png` },
+    { name: 'Esri Street', url: (z, x, y) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/${z}/${y}/${x}` },
+    { name: 'CARTO (old, key needed)', url: (z, x, y) => `https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png` }
+];
+async function probeTiles(btn) {
+    const lat = parseFloat(val('geo-lat')), lng = parseFloat(val('geo-lng')); const z = 18;
+    if (isNaN(lat) || isNaN(lng)) return showResult('result-tiles', 'Enter valid coordinates.', 'warn');
+    const n = 2 ** z, x = Math.floor((lng + 180) / 360 * n), lr = lat * Math.PI / 180, y = Math.floor((1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2 * n);
+    busy(btn, true); $('tile-grid').innerHTML = ''; const lines = [];
+    for (const s of TILE_SOURCES) {
+        const url = s.url(z, x, y), t0 = performance.now(); let verdict, ok = false, imgUrl = '';
+        try {
+            const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 8000);
+            const r = await fetch(url, { mode: 'cors', credentials: 'omit', signal: ctl.signal }); clearTimeout(to);
+            const type = r.headers.get('content-type') || '';
+            if (!r.ok) verdict = `HTTP ${r.status}`;
+            else if (!/^image\//i.test(type)) verdict = 'not an image';
+            else { const b = await r.blob(); imgUrl = URL.createObjectURL(b); ok = b.size > 200; verdict = ok ? `OK, ${(b.size / 1024).toFixed(1)} KB (check the picture)` : 'tiny reply'; }
+        } catch (e) { verdict = e.name === 'AbortError' ? 'timed out' : 'blocked (CORS or network)'; }
+        const ms = Math.round(performance.now() - t0);
+        $('tile-grid').insertAdjacentHTML('beforeend', `<div><div class="text-[10px] font-bold mb-1">${esc(s.name)}</div>${imgUrl ? `<img class="tile-img" src="${imgUrl}" alt="">` : `<div class="tile-img flex items-center justify-center text-[10px] text-red-500 font-bold p-2 text-center">${esc(verdict)}</div>`}<div class="text-[10px] mt-1 ${ok ? 'text-green-600' : 'text-red-500'} font-semibold">${esc(verdict)} &middot; ${ms} ms</div></div>`);
+        lines.push(`${s.name}: ${verdict} (${ms} ms)`); record(ok ? true : (s.name.startsWith('CARTO') ? 'warn' : false), ms);
+    }
+    log('Tile probe finished: ' + lines.join(' | '), 'info'); $('result-tiles').innerHTML = ''; busy(btn, false);
+}
+async function geocode(path, btn) {
+    busy(btn, true);
+    const params = path === 'search' ? { q: val('gc-q') } : { lat: val('geo-lat'), lon: val('geo-lng') };
+    const qs = new URLSearchParams(params).toString();
+    const attempts = [];
+    if (cfg.geo) attempts.push({ name: 'geocode.maps.co', url: `https://geocode.maps.co/${path}?${qs}&api_key=${encodeURIComponent(cfg.geo)}`, init: {} });
+    else attempts.push({ name: 'geocode.maps.co (no key set)', skip: true });
+    attempts.push({ name: 'Nominatim', url: `https://nominatim.openstreetmap.org/${path}?format=json&${qs}${path === 'search' ? '&limit=1' : ''}`, init: { headers: { 'Accept-Language': 'en' } } });
+    const out = [];
+    for (const a of attempts) {
+        if (a.skip) { out.push(a.name); continue; }
+        const t0 = performance.now();
+        try {
+            const r = await fetch(a.url, a.init); const ms = Math.round(performance.now() - t0);
+            const j = await r.json().catch(() => null);
+            const first = Array.isArray(j) ? j[0] : j;
+            const good = r.ok && first && !first.error && (first.lat || first.display_name);
+            out.push(`${a.name}: HTTP ${r.status}, ${ms} ms, ${good ? 'answer: ' + (first.display_name || first.lat + ',' + first.lon) : 'no usable answer'}`);
+            record(good ? true : false, ms);
+            if (good) break;
+        } catch (e) { out.push(`${a.name}: failed (${e.message})`); record(false); }
+    }
+    showResult('result-geocode', out.join('\n'), out.some(l => /answer:/.test(l))); busy(btn, false);
+}
+
+// ============================================
+// MAIL LOG
+// ============================================
+RENDER.maillog = () => `
+<div class="space-y-4"><div class="test-card p-5">
+  <div class="flex items-center justify-between mb-3"><h3 class="text-sm font-black flex items-center gap-2"><i class="fa-solid fa-inbox text-brand-blue"></i>Recent emails</h3>
+    <div class="flex gap-2"><select id="ml-status" class="input-field" style="width:auto" onchange="loadMailLog()"><option value="">All</option><option>sent</option><option>failed</option><option>pending</option></select>
+    <button onclick="loadMailLog()" class="test-btn test-btn-primary"><i class="fa-solid fa-rotate"></i>Reload</button></div></div>
+  <div id="ml-body" class="overflow-x-auto"></div><div id="result-maillog"></div></div></div>`;
+async function loadMailLog() {
+    if (!needDb('result-maillog')) return;
+    let q = db.from('email_log').select('*').order('created_at', { ascending: false }).limit(60);
+    if (val('ml-status')) q = q.eq('status', val('ml-status'));
+    let { data, error } = await q;
+    if (error) { ({ data, error } = await db.from('email_log').select('*').limit(60)); }
+    if (error) return showResult('result-maillog', error.message, false);
+    const badge = (s) => `<span class="badge ${s === 'sent' ? 'badge-green' : s === 'failed' ? 'badge-red' : 'badge-amber'}">${esc(s || '?')}</span>`;
+    $('ml-body').innerHTML = `<table class="mini-table"><tr><th>When</th><th>Type</th><th>To</th><th>Subject</th><th>Status</th></tr>${(data || []).map(r => `<tr><td>${esc(new Date(r.sent_at || r.created_at || 0).toLocaleString('en-IN'))}</td><td>${esc(r.email_type || r.recipient_type)}</td><td>${esc((r.recipient_emails || []).join(', '))}</td><td>${esc(r.subject)}${r.error_message ? `<div class="text-red-500 text-[10px]">${esc(r.error_message)}</div>` : ''}</td><td>${badge(r.status)}</td></tr>`).join('') || '<tr><td colspan="5" class="text-center text-slate-400 py-4">No rows</td></tr>'}</table>`;
+    const failed = (data || []).filter(r => r.status === 'failed').length;
+    $('result-maillog').innerHTML = ''; record(true); log(`Mail log: ${(data || []).length} rows, ${failed} failed`, failed ? 'warning' : 'success');
+}
+
+// ============================================
+// ATTENDANCE
+// ============================================
+RENDER.attendance = () => `
+<div class="space-y-4"><div class="test-card p-5">
+  <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-file-signature text-green-500"></i>Attendance Form</h3>
+  <div class="space-y-3">
+    <select id="attendance-meeting-select" data-src="meetings" class="input-field"></select>
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="attendanceCall('create', this)" class="test-btn test-btn-primary"><i class="fa-solid fa-plus"></i>Create Form</button>
+      <button onclick="attendanceCall('trigger', this)" class="test-btn test-btn-success"><i class="fa-solid fa-paper-plane"></i>Trigger + Email</button>
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="attendanceCall('responses', this)" class="test-btn test-btn-secondary"><i class="fa-solid fa-list"></i>Get Responses</button>
+      <button onclick="attendanceOpen()" class="test-btn test-btn-secondary"><i class="fa-solid fa-external-link"></i>Open Form</button>
+    </div>
+    <div id="result-attendance-form"></div>
+  </div></div></div>`;
+async function attendanceCall(action, btn) {
+    const id = val('attendance-meeting-select'); if (!id) return showResult('result-attendance-form', 'Select a meeting.', 'warn');
+    busy(btn, true);
+    try {
+        const body = { meeting_id: id }; if (action === 'create') body.send_to_members = false;
+        const { res, ms } = await callFn('ATTENDANCE_FORM', body, '?action=' + action);
+        const out = await res.json().catch(() => ({ error: 'HTTP ' + res.status }));
+        showResult('result-attendance-form', out, !!out.success, ms); log(`Attendance ${action}: ${out.success ? 'ok' : out.error}`, out.success ? 'success' : 'error');
+        return out;
+    } catch (e) { showResult('result-attendance-form', e.message, false); } finally { busy(btn, false); }
+}
+async function attendanceOpen() { const o = await attendanceCall('create'); if (o && o.form_url) window.open(o.form_url, '_blank'); }
+
+// ============================================
+// BIRTHDAYS
+// ============================================
+RENDER.birthday = () => `
+<div class="space-y-4">
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-cake-candles text-pink-500"></i>Birthday Check</h3>
+    <div class="space-y-3">
+      <p class="text-[10px] text-slate-500">"Trigger" runs the real job and emails the members whose birthday is today.</p>
+      <button onclick="triggerBirthdayCheck(this)" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-play"></i>Trigger Birthday Check Now</button>
+      <button onclick="getTodaysBirthdays()" class="test-btn test-btn-secondary w-full"><i class="fa-solid fa-list"></i>List Today's Birthdays (from users table)</button>
+      <div id="result-birthday-check"></div>
+    </div></div>
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-user-plus text-brand-purple"></i>Send Birthday Wish (to the test address)</h3>
+    <div class="space-y-3">
+      <select id="birthday-member-select" data-src="members" class="input-field"></select>
+      <button onclick="sendIndividualBirthdayWish(this)" class="test-btn test-btn-success w-full"><i class="fa-solid fa-paper-plane"></i>Send Wish</button>
+      <div id="result-birthday-individual"></div>
+    </div></div>
+</div>`;
+async function triggerBirthdayCheck(btn) {
+    if (!confirm('This sends real birthday mails to members whose birthday is today. Continue?')) return;
+    busy(btn, true);
+    try {
+        const { res, ms } = await callFn('BIRTHDAY_CHECK', { trigger: 'manual_test' }); const out = await res.json().catch(() => ({ error: 'HTTP ' + res.status }));
+        showResult('result-birthday-check', out, !!out.success, ms); log(`Birthday check: sent ${out.sent ?? '?'}, skipped ${out.skipped ?? '?'}`, out.success ? 'success' : 'error');
+    } catch (e) { showResult('result-birthday-check', e.message, false); } finally { busy(btn, false); }
+}
+function getTodaysBirthdays() {
+    if (!needDb('result-birthday-check')) return;
+    const t = new Date(), md = `${pad(t.getMonth() + 1)}-${pad(t.getDate())}`;
+    const list = DATA.members.filter(m => m.date_of_birth && String(m.date_of_birth).slice(5, 10) === md).map(m => ({ name: m.full_name, dob: m.date_of_birth, has_email: !!m.email }));
+    showResult('result-birthday-check', { today: ymd(t), count: list.length, members: list }, true);
+}
+async function sendIndividualBirthdayWish(btn) {
+    const m = byId(DATA.members, val('birthday-member-select')); if (!m) return showResult('result-birthday-individual', 'Select a member.', 'warn');
+    return sendMail('result-birthday-individual', 'birthday wish', { type: 'birthday_wish', recipients: [rcpt()], member: { full_name: m.full_name, email: m.email, photo_url: m.photo_url } }, btn);
+}
+
+// ============================================
+// BLOOD
+// ============================================
+RENDER.blood = () => `
+<div class="space-y-4">
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-droplet text-red-500"></i>Blood Request</h3>
+    <div class="space-y-3">
+      <div class="grid grid-cols-2 gap-2">
+        <input type="text" id="blood-patient" class="input-field" placeholder="Patient Name" value="Test Patient">
+        <select id="blood-group" class="input-field"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option selected>O+</option><option>O-</option></select>
+        <input type="number" id="blood-units" class="input-field" placeholder="Units" value="2" min="1">
+        <select id="blood-urgency" class="input-field"><option value="normal">Normal</option><option value="urgent">Urgent</option><option value="emergency">EMERGENCY</option></select>
+      </div>
+      <input type="text" id="blood-hospital" class="input-field" placeholder="Hospital Name" value="Test Hospital">
+      <div class="grid grid-cols-2 gap-2"><input type="text" id="blood-contact" class="input-field" placeholder="Contact Person" value="Test"><input type="tel" id="blood-phone" class="input-field" placeholder="Phone" value="9000000000"></div>
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="submitBloodRequest()" class="test-btn test-btn-danger"><i class="fa-solid fa-database"></i>Save [TEST]</button>
+        <button onclick="sendBloodAlert(this)" class="test-btn test-btn-warning"><i class="fa-solid fa-paper-plane"></i>Email Alert</button>
+        <button onclick="sendBloodWhatsApp()" class="test-btn test-btn-success"><i class="fa-brands fa-whatsapp"></i>WhatsApp</button>
+      </div>
+      <div id="result-blood"></div>
+    </div></div>
+  <div class="test-card p-5">
+    <h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-list text-brand-blue"></i>Active Requests</h3>
+    <div class="grid grid-cols-2 gap-2"><button onclick="loadBloodRequests()" class="test-btn test-btn-primary"><i class="fa-solid fa-rotate"></i>Load</button><button onclick="deleteTestBlood()" class="test-btn test-btn-danger"><i class="fa-solid fa-trash"></i>Delete [TEST] requests</button></div>
+    <div id="blood-requests-list" class="mt-3 space-y-2"></div>
+  </div>
+</div>`;
+function bloodData() { return { patient_name: val('blood-patient'), blood_group: val('blood-group'), units_needed: parseInt(val('blood-units'), 10) || 1, urgency: val('blood-urgency'), hospital_name: val('blood-hospital'), contact_person: val('blood-contact'), contact_phone: val('blood-phone') }; }
 async function submitBloodRequest() {
-    const payload = {
-        patient_name: document.getElementById('blood-patient').value,
-        blood_group: document.getElementById('blood-group').value,
-        units_needed: parseInt(document.getElementById('blood-units').value),
-        urgency: document.getElementById('blood-urgency').value,
-        hospital_name: document.getElementById('blood-hospital').value,
-        contact_person: document.getElementById('blood-contact').value,
-        contact_phone: document.getElementById('blood-phone').value,
-        status: 'active'
-    };
-    if (!payload.patient_name) return showResult('result-blood', 'Patient name required', false);
-
-    log('Submitting blood request...', 'info');
-    try {
-        const { data, error } = await db.from('blood_requests').insert(payload).select().single();
-        if (error) throw error;
-        showResult('result-blood', { success: true, data }, true);
-    } catch (e) {
-        showResult('result-blood', e.message, false);
-    }
+    if (!needDb('result-blood')) return;
+    const p = bloodData(); if (!p.patient_name) return showResult('result-blood', 'Patient name required', 'warn');
+    p.patient_name = '[TEST] ' + p.patient_name.replace(/^\[TEST\]\s*/, ''); p.status = 'active';
+    const { data, error } = await db.from('blood_requests').insert(p).select().single();
+    showResult('result-blood', error ? error.message : { saved: data.id }, !error);
 }
-
-async function sendBloodAlert() {
-    const payload = {
-        patient_name: document.getElementById('blood-patient').value,
-        blood_group: document.getElementById('blood-group').value,
-        units_needed: parseInt(document.getElementById('blood-units').value),
-        urgency: document.getElementById('blood-urgency').value,
-        hospital_name: document.getElementById('blood-hospital').value,
-        contact_person: document.getElementById('blood-contact').value,
-        contact_phone: document.getElementById('blood-phone').value
-    };
-    const recipient = prompt('Enter email to send alert to:', 'rc.cbeunity@gmail.com');
-    if (!recipient) return;
-
-    log('Sending blood alert email...', 'info');
-    try {
-        const res = await fetch(CONFIG.FUNCTIONS.SEND_EMAIL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: 'blood_request_alert',
-                recipients: [recipient],
-                request: payload
-            })
-        });
-        const result = await res.json();
-        showResult('result-blood', result, result.success);
-    } catch (e) {
-        showResult('result-blood', e.message, false);
-    }
-}
-
+async function sendBloodAlert(btn) { return sendMail('result-blood', 'blood alert', { type: 'blood_request_alert', recipients: [rcpt()], request: bloodData() }, btn); }
 function sendBloodWhatsApp() {
-    const msg = encodeURIComponent(
-        `*URGENT BLOOD REQUEST*\n\n` +
-        `Patient: ${document.getElementById('blood-patient').value}\n` +
-        `Blood Group: ${document.getElementById('blood-group').value}\n` +
-        `Units: ${document.getElementById('blood-units').value}\n` +
-        `Urgency: ${document.getElementById('blood-urgency').value.toUpperCase()}\n` +
-        `Hospital: ${document.getElementById('blood-hospital').value}\n` +
-        `Contact: ${document.getElementById('blood-contact').value} - ${document.getElementById('blood-phone').value}\n\n` +
-        `Via Rotaract Club of Coimbatore Unity`
-    );
+    const p = bloodData();
+    const msg = encodeURIComponent(`*URGENT BLOOD REQUEST*\n\nPatient: ${p.patient_name}\nBlood Group: ${p.blood_group}\nUnits: ${p.units_needed}\nUrgency: ${p.urgency.toUpperCase()}\nHospital: ${p.hospital_name}\nContact: ${p.contact_person} - ${p.contact_phone}\n\nVia Rotaract Club of Coimbatore Unity`);
     window.open(`https://wa.me/919789903206?text=${msg}`, '_blank');
     setTimeout(() => window.open(`https://wa.me/919789953206?text=${msg}`, '_blank'), 1500);
-    showResult('result-blood', 'WhatsApp opened for both donor chairs', true);
+    showResult('result-blood', 'WhatsApp opened for both donor chairs (allow pop-ups if only one opened).', true);
 }
-
 async function loadBloodRequests() {
-    const { data } = await db.from('blood_requests').select('*').eq('status', 'active').order('created_at', { ascending: false });
-    const container = document.getElementById('blood-requests-list');
-    if (!data || data.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">No active requests</p>';
-        return;
-    }
-    container.innerHTML = data.map(r => `
-        <div class="p-3 rounded-xl bg-red-500/5 border border-red-500/20 text-xs">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="font-bold">${r.patient_name} (${r.blood_group})</p>
-                    <p class="text-slate-500">${r.hospital_name} | ${r.contact_phone}</p>
-                </div>
-                <span class="badge badge-red">${r.urgency}</span>
-            </div>
-        </div>
-    `).join('');
+    if (!needDb('result-blood')) return;
+    const { data, error } = await db.from('blood_requests').select('*').eq('status', 'active').order('created_at', { ascending: false });
+    if (error) return showResult('result-blood', error.message, false);
+    $('blood-requests-list').innerHTML = (data || []).map(r => `<div class="p-3 rounded-xl bg-red-500/5 border border-red-500/20 text-xs flex items-center justify-between"><div><p class="font-bold">${esc(r.patient_name)} (${esc(r.blood_group)})</p><p class="text-slate-500">${esc(r.hospital_name)} | ${esc(r.contact_phone)}</p></div><span class="badge badge-red">${esc(r.urgency)}</span></div>`).join('') || '<p class="text-xs text-slate-400 text-center py-4">No active requests</p>';
+}
+async function deleteTestBlood() {
+    if (!needDb('result-blood')) return;
+    const { data, error } = await db.from('blood_requests').delete().like('patient_name', '[TEST]%').select('id');
+    showResult('result-blood', error ? error.message : `Deleted ${data.length} test request(s)`, !error); loadBloodRequests();
 }
 
 // ============================================
-// TREASURY TESTS
+// DATABASE
 // ============================================
-async function getTreasurySummary() {
-    const start = document.getElementById('treasury-start').value;
-    const end = document.getElementById('treasury-end').value;
-    try {
-        const { data } = await db.rpc('get_treasury_summary', { p_start: start, p_end: end });
-        showResult('result-treasury-summary', data?.[0] || {}, true);
-    } catch (e) {
-        showResult('result-treasury-summary', e.message, false);
-    }
+RENDER.database = () => `
+<div class="space-y-4">
+  <div class="test-card p-5"><h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-database text-brand-blue"></i>Table Row Counts</h3>
+    <button onclick="getTableCounts(this)" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-table"></i>Check All Tables</button><div id="result-table-counts" class="mt-3"></div></div>
+  <div class="test-card p-5"><h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-broom text-yellow-500"></i>Maintenance functions (optional)</h3>
+    <p class="text-[10px] text-slate-500 mb-2">A function that does not exist in your database is reported as "not installed", not as a failure.</p>
+    <div class="space-y-2">
+      <button onclick="rpcTest('run_daily_cleanup')" class="test-btn test-btn-warning w-full">Run Daily Cleanup</button>
+      <button onclick="rpcTest('update_club_statistics')" class="test-btn test-btn-primary w-full">Update Statistics</button>
+      <button onclick="rpcTest('cleanup_expired_cache')" class="test-btn test-btn-secondary w-full">Cleanup Expired Cache</button>
+      <button onclick="rpcTest('get_storage_usage_mb')" class="test-btn test-btn-secondary w-full">Storage Usage (MB)</button>
+      <div id="result-maintenance"></div></div></div>
+</div>`;
+async function getTableCounts(btn) {
+    if (!needDb('result-table-counts')) return; busy(btn, true);
+    const tables = ['users', 'events', 'meetings', 'meeting_attendance', 'treasury', 'bulletins', 'blood_requests', 'membership_applications', 'avenues', 'event_photos', 'email_log', 'email_queue', 'system_settings', 'club_year_config', 'club_trainers', 'past_presidents', 'past_secretaries', 'chat_rooms', 'chat_messages', 'activity_log'];
+    const out = {};
+    await Promise.all(tables.map(async t => { const { count, error } = await db.from(t).select('*', { count: 'exact', head: true }); out[t] = error ? 'missing / no access' : count; }));
+    const sorted = {}; tables.forEach(t => sorted[t] = out[t]);
+    showResult('result-table-counts', sorted, true); busy(btn, false);
 }
-
-async function addTestTransaction() {
-    const type = document.getElementById('txn-type').value;
-    const amount = parseFloat(document.getElementById('txn-amount').value);
-    const payload = {
-        transaction_date: document.getElementById('txn-date').value,
-        particular: document.getElementById('txn-particular').value,
-        category: document.getElementById('txn-category').value,
-        income: type === 'income' ? amount : 0,
-        expense: type === 'expense' ? amount : 0,
-        approved: true
-    };
-    if (!payload.particular || !amount) return showResult('result-txn', 'Fill all fields', false);
-
-    try {
-        const { data, error } = await db.from('treasury').insert(payload).select().single();
-        if (error) throw error;
-        showResult('result-txn', { success: true, data }, true);
-    } catch (e) {
-        showResult('result-txn', e.message, false);
-    }
-}
-
-async function recalculateBalances() {
-    try {
-        await db.rpc('recalculate_all_balances');
-        showResult('result-txn', 'All balances recalculated', true);
-    } catch (e) {
-        showResult('result-txn', e.message, false);
-    }
+async function rpcTest(name) {
+    if (!needDb('result-maintenance')) return;
+    const t0 = performance.now(); const { data, error } = await db.rpc(name); const ms = Math.round(performance.now() - t0);
+    if (error) { const missing = /could not find|does not exist|not found/i.test(error.message); return showResult('result-maintenance', missing ? `${name}: not installed in this database` : `${name}: ${error.message}`, missing ? 'warn' : false, ms); }
+    showResult('result-maintenance', `${name}: ${JSON.stringify(data)}`, true, ms);
 }
 
 // ============================================
-// DATABASE TESTS
+// HEALTH
 // ============================================
-async function getTableCounts() {
-    const tables = ['users', 'events', 'meetings', 'treasury', 'bulletins', 'blood_requests', 'membership_applications', 'club_trainers', 'past_presidents', 'past_secretaries', 'game_rooms', 'notifications', 'activity_log'];
-    const results = {};
-    for (const t of tables) {
-        try {
-            const { count } = await db.from(t).select('id', { count: 'exact', head: true });
-            results[t] = count || 0;
-        } catch { results[t] = 'ERROR'; }
-    }
-    showResult('result-table-counts', results, true);
+RENDER.functions = () => `
+<div class="space-y-4">
+  <div class="test-card p-5"><h3 class="text-sm font-black mb-2 flex items-center gap-2"><i class="fa-solid fa-heart-pulse text-red-500"></i>One-click smoke test</h3>
+    <p class="text-[10px] text-slate-500 mb-3">Checks the database, all five edge functions, Apps Script, the three map providers and treasury maths. Sends no email and creates no data.</p>
+    <button onclick="smokeTest(this)" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-play"></i>Run smoke test</button><div id="smoke-body" class="mt-3"></div></div>
+  <div class="test-card p-5"><h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-bolt text-brand-purple"></i>Edge Functions</h3>
+    <div class="grid grid-cols-2 gap-2">${Object.keys(FN).map(k => `<button onclick="pingFunction('${k}')" class="test-btn test-btn-primary">${k.replace(/_/g, ' ')}</button>`).join('')}</div><div id="result-ping"></div></div>
+  <div class="test-card p-5"><h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-link text-brand-cyan"></i>Google Apps Script</h3>
+    <button onclick="pingGAS()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-signal"></i>Test GAS connection</button><div id="result-gas-ping" class="mt-3"></div></div>
+</div>`;
+async function pingOne(key) {
+    const t0 = performance.now();
+    try { const r = await fetch(fnUrl(FN[key]), { method: 'OPTIONS' }); return { ok: r.ok, ms: Math.round(performance.now() - t0), note: 'HTTP ' + r.status }; }
+    catch (e) { return { ok: false, ms: Math.round(performance.now() - t0), note: e.message }; }
 }
-
-async function runDailyCleanup() {
-    try {
-        const { data } = await db.rpc('run_daily_cleanup');
-        showResult('result-maintenance', data, true);
-    } catch (e) {
-        showResult('result-maintenance', e.message, false);
-    }
+async function pingFunction(key) { const r = await pingOne(key); showResult('result-ping', `${key}: ${r.note} (${r.ms} ms)`, r.ok, r.ms); log(`${key}: ${r.note}`, r.ok ? 'success' : 'error'); }
+async function gasInfo() {
+    const t0 = performance.now(); const r = await fetch(cfg.gas); const text = await r.text(); const ms = Math.round(performance.now() - t0);
+    let j = null; try { j = JSON.parse(text); } catch (e) {}
+    return { ok: r.ok && !!j && j.status === 'active', ms, j, text };
 }
-
-async function updateStatistics() {
-    try {
-        await db.rpc('update_club_statistics');
-        showResult('result-maintenance', 'Statistics updated', true);
-    } catch (e) {
-        showResult('result-maintenance', e.message, false);
-    }
-}
-
-async function cleanupCache() {
-    try {
-        const { data } = await db.rpc('cleanup_expired_cache');
-        showResult('result-maintenance', `Cleaned ${data} cache entries`, true);
-    } catch (e) {
-        showResult('result-maintenance', e.message, false);
-    }
-}
-
-async function getStorageUsage() {
-    try {
-        const { data } = await db.rpc('get_storage_usage_mb');
-        showResult('result-storage', data, true);
-    } catch (e) {
-        showResult('result-storage', e.message, false);
-    }
-}
-
-// ============================================
-// FUNCTION PING TESTS
-// ============================================
-async function pingFunction(key) {
-    const url = CONFIG.FUNCTIONS[key];
-    log(`Pinging ${key}...`, 'info');
-    try {
-        const start = Date.now();
-        const res = await fetch(url, { method: 'OPTIONS' });
-        const time = Date.now() - start;
-        showResult('result-ping', `${key}: ${res.status} (${time}ms)`, res.ok);
-    } catch (e) {
-        showResult('result-ping', `${key}: ${e.message}`, false);
-    }
-}
-
 async function pingGAS() {
-    log('Pinging Google Apps Script...', 'info');
-    try {
-        const res = await fetch(CONFIG.GAS_URL, { method: 'GET' });
-        const text = await res.text();
-        showResult('result-gas-ping', `Status: ${res.status} | Response: ${text.substring(0, 200)}`, res.ok);
-    } catch (e) {
-        showResult('result-gas-ping', e.message, false);
-    }
+    try { const g = await gasInfo(); showResult('result-gas-ping', g.j ? { status: g.j.status, version: g.j.version, remaining_daily_quota: g.j.remaining_daily_quota, ms: g.ms } : g.text.slice(0, 300), g.ok, g.ms); log(g.ok ? `GAS active, version ${g.j.version}, quota left ${g.j.remaining_daily_quota}` : 'GAS did not answer as expected', g.ok ? 'success' : 'error'); }
+    catch (e) { showResult('result-gas-ping', e.message + ' (a browser CORS block can look like this; open the URL in a tab to confirm)', false); }
+}
+async function smokeTest(btn) {
+    busy(btn, true); const rows = [];
+    const add = (name, ok, note) => { rows.push({ name, ok, note }); $('smoke-body').innerHTML = `<table class="mini-table">${rows.map(r => `<tr><td>${r.ok === true ? '<span class="badge badge-green">pass</span>' : r.ok === 'warn' ? '<span class="badge badge-amber">check</span>' : '<span class="badge badge-red">fail</span>'}</td><td><b>${esc(r.name)}</b></td><td>${esc(r.note)}</td></tr>`).join('')}</table>`; record(ok); };
+    $('smoke-body').innerHTML = '';
+    if (db) { try { const { error } = await db.from('system_settings').select('key').limit(1); add('Database', !error, error ? error.message : 'reachable'); } catch (e) { add('Database', false, e.message); } }
+    else add('Database', 'warn', 'No service key in Settings');
+    for (const k of Object.keys(FN)) { const r = await pingOne(k); add('Function ' + FN[k], r.ok, `${r.note}, ${r.ms} ms`); }
+    try { const g = await gasInfo(); add('Apps Script', g.ok, g.j ? `v${g.j.version}, quota left ${g.j.remaining_daily_quota}` : 'unexpected reply'); } catch (e) { add('Apps Script', 'warn', 'Browser could not read it: ' + e.message); }
+    for (const s of TILE_SOURCES.slice(0, 3)) { try { const r = await fetch(s.url(18, 181000, 123000), { mode: 'cors', credentials: 'omit' }); const type = r.headers.get('content-type') || ''; add('Map: ' + s.name, r.ok && /^image\//.test(type), 'HTTP ' + r.status); } catch (e) { add('Map: ' + s.name, false, 'blocked'); } }
+    if (db) { try { await loadTreasuryData(true); const y = ryStart(), full = rotaryRange(y), a = computeRange(full.start, full.end);
+        const qs = ['Q1', 'Q2', 'Q3', 'Q4'].map(q => { const g = rotaryRange(y, q); return computeRange(g.start, g.end); });
+        const sumInc = qs.reduce((t, q) => t + q.income, 0), sumExp = qs.reduce((t, q) => t + q.expense, 0);
+        add('Treasury: quarters add up to the Rotary year', Math.abs(sumInc - a.income) < 0.01 && Math.abs(sumExp - a.expense) < 0.01, `${ryLabel(y)} income ${inr(a.income)}, expense ${inr(a.expense)}`);
+    } catch (e) { add('Treasury maths', false, e.message); } }
+    const bad = rows.filter(r => r.ok === false).length; log(`Smoke test: ${rows.length - bad} of ${rows.length} fine`, bad ? 'warning' : 'success'); busy(btn, false);
 }
 
 // ============================================
-// AUTH TESTS
+// AUTH
 // ============================================
+RENDER.auth = () => `
+<div class="space-y-4">
+  <div class="test-card p-5"><h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-key text-yellow-500"></i>Login test</h3>
+    <div class="space-y-3"><input type="email" id="login-email" class="input-field" placeholder="Email" autocomplete="off"><input type="password" id="login-password" class="input-field" placeholder="Password" autocomplete="off">
+      <button onclick="testLogin()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-unlock"></i>Test Login</button><div id="result-login"></div></div></div>
+  <div class="test-card p-5"><h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-user-plus text-green-500"></i>Create Test User</h3>
+    <div class="space-y-3"><input type="text" id="new-user-name" class="input-field" placeholder="Full Name"><input type="email" id="new-user-email" class="input-field" placeholder="Email"><input type="password" id="new-user-password" class="input-field" placeholder="Password" autocomplete="new-password">
+      <select id="new-user-role" class="input-field"><option value="member">Member</option><option value="board_member">Board Member</option><option value="secretary">Secretary</option><option value="treasurer">Treasurer</option></select>
+      <button onclick="createTestUser()" class="test-btn test-btn-success w-full"><i class="fa-solid fa-user-plus"></i>Create User</button><div id="result-create-user"></div></div></div>
+  <div class="test-card p-5"><h3 class="text-sm font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-users text-brand-blue"></i>User Statistics</h3>
+    <button onclick="getUserStats()" class="test-btn test-btn-primary w-full"><i class="fa-solid fa-chart-pie"></i>Load Stats</button><div id="result-user-stats" class="mt-3"></div></div>
+</div>`;
 async function testLogin() {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    try {
-        const { data, error } = await db.rpc('verify_user_login', { p_email: email, p_password: password });
-        if (error) throw error;
-        showResult('result-login', data?.[0] || 'Invalid credentials', data?.length > 0);
-    } catch (e) {
-        showResult('result-login', e.message, false);
-    }
+    if (!needDb('result-login')) return;
+    const { data, error } = await db.rpc('verify_user_login', { p_email: val('login-email'), p_password: val('login-password') });
+    if (error) return showResult('result-login', error.message, false);
+    const row = data && data[0]; showResult('result-login', row ? { role: row.role, name: row.full_name, ok: true } : 'Invalid credentials', !!row);
+    $('login-password').value = '';
 }
-
 async function createTestUser() {
-    const name = document.getElementById('new-user-name').value;
-    const email = document.getElementById('new-user-email').value;
-    const password = document.getElementById('new-user-password').value;
-    const role = document.getElementById('new-user-role').value;
-    if (!name || !email || !password) return showResult('result-create-user', 'Fill all fields', false);
-
-    try {
-        const { data, error } = await db.rpc('create_admin_user', {
-            p_email: email, p_password: password, p_name: name, p_role: role,
-            p_portfolio: null, p_avenue: null, p_is_board: false
-        });
-        if (error) throw error;
-        showResult('result-create-user', `Created user ID: ${data}`, true);
-    } catch (e) {
-        showResult('result-create-user', e.message, false);
-    }
+    if (!needDb('result-create-user')) return;
+    const name = val('new-user-name'), email = val('new-user-email'), password = val('new-user-password'), role = val('new-user-role');
+    if (!name || !email || !password) return showResult('result-create-user', 'Fill all fields', 'warn');
+    const { data, error } = await db.rpc('create_admin_user', { p_email: email, p_password: password, p_name: name, p_role: role, p_portfolio: null, p_avenue: null, p_is_board: false });
+    showResult('result-create-user', error ? error.message : `Created user ID: ${data}`, !error); $('new-user-password').value = '';
 }
-
 async function getUserStats() {
-    try {
-        const { data: all } = await db.from('users').select('role, is_active');
-        const stats = {
-            total: all?.length || 0,
-            active: all?.filter(u => u.is_active).length || 0,
-            super_admin: all?.filter(u => u.role === 'super_admin').length || 0,
-            executives: all?.filter(u => ['president', 'ipp', 'vice_president', 'secretary', 'secretary_admin', 'secretary_comm', 'treasurer', 'advisor'].includes(u.role)).length || 0,
-            members: all?.filter(u => u.role === 'member').length || 0
-        };
-        showResult('result-user-stats', stats, true);
-    } catch (e) {
-        showResult('result-user-stats', e.message, false);
-    }
+    if (!needDb('result-user-stats')) return;
+    const { data: all, error } = await db.from('users').select('role, is_active'); if (error) return showResult('result-user-stats', error.message, false);
+    const ex = ['president', 'ipp', 'vice_president', 'secretary', 'secretary_admin', 'secretary_comm', 'treasurer', 'advisor'];
+    showResult('result-user-stats', { total: all.length, active: all.filter(u => u.is_active).length, super_admin: all.filter(u => u.role === 'super_admin').length, executives: all.filter(u => ex.includes(u.role)).length, members: all.filter(u => u.role === 'member').length }, true);
 }
 
 // ============================================
-// THEME
+// THEME + BOOT
 // ============================================
-document.getElementById('theme-toggle').addEventListener('click', () => {
+$('theme-toggle').addEventListener('click', () => {
     document.documentElement.classList.toggle('dark');
-    localStorage.setItem('unity_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    try { localStorage.setItem('unity_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); } catch (e) {}
 });
-if (localStorage.getItem('unity_theme') === 'dark' || (!localStorage.getItem('unity_theme') && window.matchMedia('(prefers-color-scheme:dark)').matches)) {
-    document.documentElement.classList.add('dark');
-}
+try { if (localStorage.getItem('unity_theme') === 'dark' || (!localStorage.getItem('unity_theme') && window.matchMedia('(prefers-color-scheme:dark)').matches)) document.documentElement.classList.add('dark'); } catch (e) {}
 
-// ============================================
-// INIT
-// ============================================
-(async function init() {
-    log('Unity Portal Test Console v5.0.0 loaded', 'success');
-    log('Checking Supabase connection...', 'info');
+async function boot(reload) {
+    initDb(); T.loaded = false;
+    log('Checking connection...', 'info');
     await checkConnection();
+    await loadAll();
+    if (reload) switchCategory(currentTab); else fillSelects();
+    if (!reload) log('Ready. Settings holds the keys; nothing secret is stored in this file.', 'success');
+}
+(async function init() {
+    log('Unity Portal Test Console v6.0.0 loaded' + (cfg._portal ? ' (connected from the portal)' : ''), 'success');
     switchCategory('emails');
-    await reloadAllOptions();
-    log('All dropdowns loaded. Ready to test.', 'success');
+    await boot();
 })();
 </script>
-
 </body>
 </html>
