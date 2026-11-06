@@ -2551,6 +2551,7 @@
                                     <p class="admin-page-subtitle">Super Admin exclusive — manage every single aspect of the website.</p>
                                 </div>
                                 <div class="flex gap-2">
+                                    ${userRole === 'super_admin' ? `<button class="btn-secondary btn-sm" onclick="AdminPanel.modules.settings.openTestConsole()" title="Open the Test Console (Super Admin only)" aria-label="Open Test Console" style="border-color:rgba(239,68,68,.45)"><span style="font-size:15px;line-height:1">&#128520;</span></button>` : ''}
                                     <button class="btn-secondary btn-sm" onclick="AdminPanel.modules.settings.exportSettings()"><i class="fa-solid fa-download mr-1"></i> Export</button>
                                     <button class="btn-primary btn-sm" onclick="AdminPanel.modules.settings.importSettings()"><i class="fa-solid fa-upload mr-1"></i> Import</button>
                                 </div>
@@ -3522,6 +3523,13 @@
             // =========================================
             // IMPORT / EXPORT
             // =========================================
+            // Opens the Test Console in a new tab. The console picks up the connection from this tab (window.opener),
+            // so no key is ever placed in a URL or in the console file.
+            openTestConsole() {
+                const w = window.open('test-console.html', '_blank');
+                if (!w) { try { AdminPanel.notify && AdminPanel.notify('error', 'Allow pop-ups to open the Test Console.'); } catch (e) {} }
+            },
+
             async exportSettings() {
                 try {
                     const { data } = await window.DB_ADMIN.from('system_settings').select('*').order('key');
