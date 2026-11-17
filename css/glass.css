@@ -1,0 +1,154 @@
+/* Unity glass layer. Recipes taken from the supplied glassmorphism references:
+   - login page: soft blurred colour shapes behind a translucent card, 10px blur, 1px light edge, frosted inputs
+   - login/register form: pop-in scale transition on the dialog, border-white/20 inputs
+   - template: one reusable blurred panel class
+   Loaded after styles.css and admin.css. Colours come from the brand variables in index.html. */
+
+:root {
+    --glass-edge: rgb(255 255 255 / .55);
+    --glass-field: rgb(255 255 255 / .55);
+    --glass-field-edge: rgb(15 23 42 / .12);
+    --glass-ring: rgb(var(--b-blue, 26 115 232) / .55);
+}
+.dark {
+    --glass-edge: rgb(255 255 255 / .10);
+    --glass-field: rgb(255 255 255 / .07);
+    --glass-field-edge: rgb(255 255 255 / .20);
+}
+
+/* 1. Ambient colour shapes behind the hero (login-page reference). They give the frosted cards
+      something to blur, including on phones where the 3D canvas is off. Transform-only motion. */
+#home::before,
+#home::after {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: 50%;
+    filter: blur(4rem);
+    will-change: transform;
+}
+#home::before {
+    width: 38vw; height: 38vw;
+    left: -8vw; top: 6%;
+    background: radial-gradient(circle, rgb(var(--b-blue, 26 115 232) / .38), transparent 68%);
+    animation: glass-drift 22s ease-in-out infinite alternate;
+}
+#home::after {
+    width: 30vw; height: 30vw;
+    right: -6vw; bottom: -4%;
+    background: radial-gradient(circle, rgb(var(--b-cyan, 6 182 212) / .34), transparent 68%);
+    animation: glass-drift 28s ease-in-out infinite alternate-reverse;
+}
+@keyframes glass-drift {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(4vw, 3vw, 0) scale(1.12); }
+}
+
+/* 2. Portal login dialog (login/register form reference): pop-in, frosted card, frosted fields */
+#auth-dialog-modal:not(.hidden) > .relative.z-10 {
+    animation: glass-pop .5s cubic-bezier(.2, .8, .2, 1) both;
+}
+@keyframes glass-pop {
+    from { opacity: 0; transform: scale(.92) translateY(1.25rem); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+#auth-dialog-modal .max-w-md > div {
+    backdrop-filter: blur(1.5rem) saturate(1.4);
+    -webkit-backdrop-filter: blur(1.5rem) saturate(1.4);
+    border: 1px solid var(--glass-edge);
+    box-shadow: 0 0 40px rgb(8 7 16 / .35), inset 0 1px 0 rgb(255 255 255 / .35);
+}
+#auth-dialog-form input,
+.join-form input, .join-form select, .join-form textarea {
+    background: var(--glass-field);
+    border: 1px solid var(--glass-field-edge);
+    border-radius: .75rem;
+    transition: border-color .2s, background-color .2s, box-shadow .2s;
+}
+#auth-dialog-form input:focus-visible,
+.join-form input:focus-visible, .join-form select:focus-visible, .join-form textarea:focus-visible {
+    outline: 2px solid var(--glass-ring);
+    outline-offset: 2px;
+    border-color: transparent;
+}
+#auth-dialog-form button[type="submit"] { padding: .9em 1.4em; }
+#auth-dialog-form button[type="submit"]:hover { transform: translateY(-1px); }
+
+/* 3. Reusable panel (template reference), lighter blur on phones for speed */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(1.5rem);
+    -webkit-backdrop-filter: blur(1.5rem);
+    border: 1px solid var(--glass-edge);
+    border-radius: 2rem;
+    box-shadow: var(--glass-shadow);
+}
+@media (max-width: 767px) {
+    .glass-card, .glass-static, .glass-heavy, .glass-panel {
+        backdrop-filter: blur(.75rem);
+        -webkit-backdrop-filter: blur(.75rem);
+    }
+    #home::before, #home::after { filter: blur(2.5rem); }
+}
+
+/* 4. Fallbacks: no backdrop-filter, reduced transparency, reduced motion */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-card, .glass-static, .glass-heavy, .glass-panel,
+    #auth-dialog-modal .max-w-md > div { background: rgb(255 255 255 / .94); }
+    .dark .glass-card, .dark .glass-static, .dark .glass-heavy, .dark .glass-panel,
+    .dark #auth-dialog-modal .max-w-md > div { background: rgb(5 10 24 / .94); }
+}
+@media (prefers-reduced-transparency: reduce) {
+    .glass-card, .glass-static, .glass-heavy, .glass-panel,
+    #auth-dialog-modal .max-w-md > div {
+        backdrop-filter: none; -webkit-backdrop-filter: none;
+        background: rgb(255 255 255 / .96);
+    }
+    .dark .glass-card, .dark .glass-static, .dark .glass-heavy, .dark .glass-panel,
+    .dark #auth-dialog-modal .max-w-md > div { background: rgb(5 10 24 / .96); }
+}
+@media (prefers-reduced-motion: reduce) {
+    #home::before, #home::after, #auth-dialog-modal:not(.hidden) > .relative.z-10 { animation: none; }
+}
+
+/* 5. Games and attendance pages (same glass system, brand-variable fallbacks above) */
+body.page-games::before, body.page-games::after {
+    content: ""; position: fixed; z-index: 0; pointer-events: none; border-radius: 50%; filter: blur(4rem);
+}
+body.page-games::before {
+    width: 42vw; height: 42vw; left: -8vw; top: -6vw;
+    background: radial-gradient(circle, rgb(var(--b-blue, 26 115 232) / .40), transparent 68%);
+    animation: glass-drift 22s ease-in-out infinite alternate;
+}
+body.page-games::after {
+    width: 34vw; height: 34vw; right: -6vw; bottom: -6vw;
+    background: radial-gradient(circle, rgb(var(--b-cyan, 6 182 212) / .36), transparent 68%);
+    animation: glass-drift 28s ease-in-out infinite alternate-reverse;
+}
+.arcade-landing { z-index: 1; }
+.arcade-landing .glass-panel { padding: 2.5rem 3rem; max-width: 90%; }
+.arcade-landing .glass-panel .btn-primary { margin-top: 1rem; cursor: pointer; }
+
+body.page-attendance .orb:nth-of-type(1) { background: rgb(var(--b-blue, 26 115 232) / .38); }
+body.page-attendance .orb:nth-of-type(2) { background: rgb(var(--b-cyan, 6 182 212) / .30); }
+body.page-attendance .orb:nth-of-type(3) { background: rgb(var(--b-blue, 26 115 232) / .24); }
+body.page-attendance .glass-card {
+    background: rgb(255 255 255 / .42);
+    border: 1px solid var(--glass-edge);
+    box-shadow: 0 0 40px rgb(8 7 16 / .14), inset 0 1px 0 rgb(255 255 255 / .35);
+}
+.dark body.page-attendance .glass-card { background: rgb(255 255 255 / .06); }
+body.page-attendance .glass-input {
+    background: var(--glass-field);
+    border: 1px solid var(--glass-field-edge);
+    border-radius: .75rem;
+}
+body.page-attendance .glass-input:focus {
+    outline: 2px solid var(--glass-ring); outline-offset: 2px; border-color: transparent; box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) { body.page-games::before, body.page-games::after { animation: none; } }
+@media (prefers-reduced-transparency: reduce) {
+    body.page-attendance .glass-card { background: rgb(255 255 255 / .96); }
+    .dark body.page-attendance .glass-card { background: rgb(5 10 24 / .96); }
+}

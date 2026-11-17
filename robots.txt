@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /attendance.html
+Disallow: /test-console.html
+
+Sitemap: https://rotaractcbeunity.in/sitemap.xml
